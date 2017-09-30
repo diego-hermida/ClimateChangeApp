@@ -1,23 +1,19 @@
 import requests
 
-BASE_URL = 'http://api.wunderground.com/api/{TOKEN}/history_{YYYYMMDD}/lang:{LANG}/q/{STATE|COUNTRY}/{CITY}.json'
-LANG = 'EN'
-COUNTRY = 'SPAIN'
-CITY = 'Madrid'
-DATE = '20170929'
-TOKENS = ['5f06ae04f7342abf', 'e63c2d687265be99']
+from util.util import get_config
+
+config = get_config(__file__)
 
 
 def get_data():
     data = []
-    token_iter = iter(TOKENS)
+    token_iter = iter(config['TOKENS'])
     token = next(token_iter)
 
-    url = BASE_URL.replace('{TOKEN}', token).replace('{YYYYMMDD}', DATE).replace('{LANG}', LANG). \
-        replace('{STATE|COUNTRY}', COUNTRY).replace('{CITY}', CITY)
+    url = config['BASE_URL'].replace('{TOKEN}', token).replace('{YYYYMMDD}', config['DATE']).replace('{LANG}', config[
+        'LANG']).replace('{STATE|COUNTRY}', config['COUNTRY']).replace('{CITY}', config['CITY'])
     r = requests.get(url)
     data.append(r.content)
-
     return data
 
 

@@ -1,14 +1,14 @@
 import requests
 
-BASE_URL = 'https://api.waqi.info/feed/'
-LOCATIONS = ['Madrid', 'Barcelona']
-TOKEN = '/?token=' + 'acb2cc5e80eca1f4aec3fa17785bc7a42f877cdf'
+from util.util import get_config
+
+config = get_config(__file__)
 
 
 def get_data():
     data = []
-    for loc in LOCATIONS:
-        r = requests.get(BASE_URL + loc + TOKEN)
+    for loc in config['LOCATIONS']:
+        r = requests.get(config['BASE_URL'] + loc + '/?token=' + config['TOKEN'])
         data.append(r.content)
     return data
     # r.content --> contiene el objeto JSON
@@ -22,3 +22,4 @@ def get_data():
 
 if __name__ == '__main__':
     data = get_data()
+    print(data)

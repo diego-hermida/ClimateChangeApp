@@ -1,22 +1,22 @@
 from ftplib import FTP
 
-URL = 'podaac.jpl.nasa.gov'
-FILES = ['antartica_mass.txt', 'greenland_mass.txt', 'ocean_mass.txt']
-DIR = '/allData/tellus/L3/mascon/RL05/JPL/CRI/mass_variability_time_series'
+from util.util import get_config
+
+config = get_config(__file__)
 
 
 def get_data():
-    ftp = FTP(URL)
+    ftp = FTP(config['URL'])
     ftp.login()
-    ftp.cwd(DIR)  # Accessing directory
+    ftp.cwd(config['DIR'])  # Accessing directory
 
     file_names = [x for x in ftp.nlst() if x.endswith('.txt')]
 
     data = {}
-    for (index, filename) in enumerate(FILES):
+    for (index, filename) in enumerate(config['FILES']):
         temp = []
         ftp.retrbinary('RETR ' + file_names[index], temp.append)
-        data[FILES[index]] = temp[0]
+        data[config['FILES'][index]] = temp[0]
     ftp.quit()
     return data
 

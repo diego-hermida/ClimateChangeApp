@@ -1,24 +1,25 @@
 from ftplib import FTP
 
-URL = 'podaac.jpl.nasa.gov'
-FILE = 'sea_level_rise.txt'
-DIR = '/allData/merged_alt/L2/TP_J1_OSTM/global_mean_sea_level/'
+from util.util import get_config
+
+config = get_config(__file__)
 
 
 def get_data():
-    ftp = FTP(URL)
+    ftp = FTP(config['URL'])
     ftp.login()
-    ftp.cwd(DIR)  # Accessing directory
+    ftp.cwd(config['DIR'])  # Accessing directory
 
     file_names = [x for x in ftp.nlst() if x.startswith('GMSL') and x.endswith('.txt')]
 
     data = {};
     temp = []
     ftp.retrbinary('RETR ' + file_names[0], temp.append)
-    data[FILE] = temp[0]
+    data[config['FILE']] = temp[0]
     ftp.quit()
     return data
 
 
 if __name__ == '__main__':
     data = get_data()
+    print(data)
