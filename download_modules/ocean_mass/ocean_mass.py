@@ -4,28 +4,22 @@ URL = 'podaac.jpl.nasa.gov'
 FILES = ['antartica_mass.txt', 'greenland_mass.txt', 'ocean_mass.txt']
 DIR = '/allData/tellus/L3/mascon/RL05/JPL/CRI/mass_variability_time_series'
 
-def save_data():
 
-    # Connecting to FTP server
+def get_data():
     ftp = FTP(URL)
-
-    # Login to FTP server
     ftp.login()
+    ftp.cwd(DIR)  # Accessing directory
 
-    # Accessing directory
-    ftp.cwd(DIR)
+    file_names = [x for x in ftp.nlst() if x.endswith('.txt')]
 
-    # Retrieving requested filename
-    l = [x for x in ftp.nlst() if x.endswith('.txt')]
-
-    # Downloading content to file
+    data = {}
     for (index, filename) in enumerate(FILES):
-        with open(filename, 'wb') as f:
-            ftp.retrbinary('RETR ' + l[index], f.write)
-
-    # Disconnecting from FTP server
+        temp = []
+        ftp.retrbinary('RETR ' + file_names[index], temp.append)
+        data[FILES[index]] = temp[0]
     ftp.quit()
+    return data
 
 
-if __name__ == '__main__' :
-    save_data()
+if __name__ == '__main__':
+    data = get_data()
