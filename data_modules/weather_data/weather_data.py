@@ -7,13 +7,11 @@ config = get_config(__file__)
 
 def get_data():
     data = []
-    token_iter = iter(config['TOKENS'])
-    token = next(token_iter)
-
-    url = config['BASE_URL'].replace('{TOKEN}', token).replace('{YYYYMMDD}', config['DATE']).replace('{LANG}', config[
-        'LANG']).replace('{STATE|COUNTRY}', config['COUNTRY']).replace('{CITY}', config['CITY'])
-    r = requests.get(url)
-    data.append(r.content)
+    for token in config['TOKENS'] * config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN']:
+        url = config['BASE_URL'].replace('{TOKEN}', token).replace('{YYYYMMDD}', config['DATE']).replace('{LANG}',
+            config['LANG']).replace('{STATE|COUNTRY}', config['COUNTRY']).replace('{CITY}', config['CITY'])
+        r = requests.get(url)
+        data.append(r.content)
     return data
 
 

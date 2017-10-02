@@ -8,18 +8,17 @@ config = get_config(__file__)
 def get_data():
     ftp = FTP(config['URL'])
     ftp.login()
-    ftp.cwd(config['DIR'])  # Accessing directory
+    ftp.cwd(config['DATA_DIR'])  # Accessing directory
 
-    file_names = [x for x in ftp.nlst() if x.startswith('GMSL') and x.endswith('.txt')]
+    file_names = [x for x in ftp.nlst() if x.startswith('GMSL') and x.endswith(config['FILE_EXT'])]
 
-    data = {};
+    data = {}
     temp = []
     ftp.retrbinary('RETR ' + file_names[0], temp.append)
-    data[config['FILE']] = temp[0]
+    data[config['FILE_NAME']] = temp[0]
     ftp.quit()
     return data
 
 
 if __name__ == '__main__':
     data = get_data()
-    print(data)
