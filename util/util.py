@@ -12,6 +12,15 @@ def enum(*args):
     enums = dict(zip(args, args))
     return type('Enum', (), enums)
 
+
+class Reader:
+    def __init__(self):
+        self.data = []
+
+    def __call__(self, s):
+        if not s.startswith('HDR'):
+            self.data.append(s)
+
 # if __name__ == '__main__':
 #     uri = 'mongodb://climatechange_data_gathering_subsystem:TFG_Diego_Hermida_Carrera@localhost/'
 #     client = pymongo.MongoClient('127.0.0.1', 27017)
