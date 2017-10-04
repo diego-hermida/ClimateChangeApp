@@ -1,8 +1,6 @@
 from ftplib import FTP
 
-from PyAstronomy import pyasl
-
-from util.util import enum, get_config, Reader
+from util.util import decimal_date_to_string, enum, get_config, Reader
 
 config = get_config(__file__)
 MassType = enum('antarctica', 'greenland', 'ocean')
@@ -39,7 +37,7 @@ def to_JSON(data, data_type):
     if data_type is MassType.ocean:
         for line in data:
             fields = line.split()
-            date = pyasl.decimalYearGregorianDate(float(fields[0]), config['DATE_FORMAT'])
+            date = decimal_date_to_string(float(fields[0]), config['DATE_FORMAT'])
             measure = {'date': date, 'type': data_type, 'measures': []}
             measure['measures'].append({'height': fields[1], 'units': MeasureUnits.mm})
             measure['measures'].append({'uncertainty': fields[2], 'units': MeasureUnits.mm})
@@ -48,7 +46,7 @@ def to_JSON(data, data_type):
     else:
         for line in data:
             fields = line.split()
-            date = pyasl.decimalYearGregorianDate(float(fields[0]), config['DATE_FORMAT'])
+            date = decimal_date_to_string(float(fields[0]), config['DATE_FORMAT'])
             measure = {'date': date, 'type': data_type, 'measures': []}
             measure['measures'].append({'mass': fields[1], 'units': MeasureUnits.Gt})
             measure['measures'].append({'uncertainty': fields[2], 'units': MeasureUnits.Gt})

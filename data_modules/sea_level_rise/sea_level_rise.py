@@ -1,8 +1,7 @@
 from ftplib import FTP
 
-from PyAstronomy import pyasl
 
-from util.util import enum, get_config, Reader
+from util.util import decimal_date_to_string, enum, get_config, Reader
 
 config = get_config(__file__)
 MeasureUnits = enum('mm')
@@ -25,7 +24,7 @@ def to_JSON(data):
     json_data = []
     for line in data:
         fields = line.split()
-        date = pyasl.decimalYearGregorianDate(float(fields[2]), config['DATE_FORMAT'])
+        date = decimal_date_to_string(float(fields[2]), config['DATE_FORMAT'])
         altimeter = 'dual_frequency' if fields[0] == 0 else 'single_frequency'
         measure = {'date': date, 'altimeter': altimeter, 'observations': fields[3],
                    'weighted_observations': fields[4], 'measures': []}
