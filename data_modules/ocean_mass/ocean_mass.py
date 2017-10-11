@@ -1,5 +1,3 @@
-import json
-
 from ftplib import FTP
 from util.db_util import connect
 from util.util import decimal_date_to_string, enum, get_config, get_module_name, Reader
