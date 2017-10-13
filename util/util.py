@@ -2,6 +2,8 @@ import datetime
 import threading
 import yaml
 
+from util.relativedelta import relativedelta
+
 
 def decimal_date_to_string(decimal_date, date_format):
     decimal_date = float(decimal_date)
@@ -28,6 +30,9 @@ def get_module_name(path):
     return path.split('/')[-1].replace('.py', '')
 
 
+TimeUnits = enum('s', 'm', 'h', 'day', 'month', 'year')
+
+
 class Reader:
     def __init__(self):
         self.data = []
@@ -45,3 +50,38 @@ class DataCollector(threading.Thread):
     def run(self):
         data = self.data_module.get_data()
         self.data_module.save_data(data)
+
+
+class TimeDelta:
+    def __init__(self, value: int, units: TimeUnits):
+        self.value = value
+        self.units = units
+
+    def to_dict(self):
+        return {'value': self.value, 'units': self.units}
+
+
+def worktime(date: datetime, frequency: TimeDelta) -> bool:
+    """
+    Given a date, adds a relative time measure (derived from "frequency" object)
+        :param date: Base date object.
+        :param frequency: TimeDelta(value: int, units: TimeUnits) object, to be added to "date".
+        :return: True if current timestamp is later than datetime plus timedelta.
+        :rtype: bool
+    """
+    min_work_date = None
+    if frequency.units == TimeUnits.s:
+        min_work_date = date + relativedelta(seconds=frequency.value)
+    elif frequency.units == TimeUnits.m:
+        min_work_date = date + relativedelta(minutes=frequency.value)
+    elif frequency.units == TimeUnits.h:
+        min_work_date = date + relativedelta(hours=frequency.value)
+    elif frequency.units == TimeUnits.day:
+        min_work_date = date + relativedelta(days=frequency.value)
+    elif frequency.units == TimeUnits.month:
+        min_work_date = date + relativedelta(months=frequency.value)
+    elif frequency.units == TimeUnits.year:
+        min_work_date = date + relativedelta(years=frequency.value)
+    else:
+        raise ValueError('Unsupported TimeUnit value: ' + frequency.units)
+    return min_work_date <= datetime.datetime.now()
