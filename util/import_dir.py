@@ -1,15 +1,9 @@
 # ---------------------------------------------------------------------------------------------------
 # Based on: http://gitlab.com/aurelien-lourot/importdir
 # Customized by: diego.hermida@udc.es
-#   - Recursive directory search
-#   - Return imported modules as a list
+#   - Recursive directory search.
+#   - Return modules as a list after having imported them.
 # ---------------------------------------------------------------------------------------------------
-
-import os
-import re
-import sys
-from importlib import import_module
-
 
 # ---------------------------------------------------------------------------------------------------
 # Interface
@@ -29,17 +23,16 @@ def import_modules(path, recursive=False, base_package=None):
 # Implementation
 # ---------------------------------------------------------------------------------------------------
 
+import os
+import re
+import sys
+from importlib import import_module
+
 # File name of a module:
 __module_file_regexp = "(.+)\.py(c?)$"
 
 
 def __get_module_names(path, recursive=False, base_package=None):
-    """ Returns a list of all module names residing recursively (or not) in directory "path".
-        :param path: Base directory to be scanned.
-        :param recursive: When set to 'True', modules in all subpackages (and so on) are also retrieved.
-        :param base_package: If set, module name will remove absolute path before "base_package" and start there.
-        :rtype: list
-    """
     result = []
     for entry in os.listdir(path):
         if entry == '__pycache__': continue
@@ -57,11 +50,8 @@ def __get_module_names(path, recursive=False, base_package=None):
 
 
 def __import_modules(path, recursive=False, base_package=None):
-    """
-        Private function which does the import work.
-    """
     modules = []
     sys.path.append(path)  # adds provided directory to list we can import from
     for module_name in sorted(__get_module_names(path, recursive=recursive, base_package=base_package)):
-        modules.append(import_module(module_name))
+        modules.append(import_module(module_name))  # Performs import
     return modules

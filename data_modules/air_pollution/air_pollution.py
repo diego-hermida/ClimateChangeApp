@@ -1,26 +1,45 @@
+# ---------------------------------------------------------------------------------------------------
+# Interface
+# ---------------------------------------------------------------------------------------------------
+
+def get_data():
+    """
+        Obtains data from the WAQI API via HTTP requests.
+        L requests are made each time this function is called (L = number of locations)
+        Parameters are read from configuration file (air_pollution.config)
+        :return: A flat list of key-value objects.
+        :rtype: list
+    """
+    return __get_data()
+
+
+def save_data(data):
+    """
+       Saves data into a persistent storage system (Currently, a MongoDB instance).
+       Data is saved in a collection with the same name as the module.
+       :param data: A list of values to persist, which might be empty.
+    """
+    __save_data(data)
+
+
+# ---------------------------------------------------------------------------------------------------
+# Implementation
+# ---------------------------------------------------------------------------------------------------
+
 import json
 import requests
 
 from util.db_util import connect
 from util.util import get_config, get_module_name
 
-config = get_config(__file__)
-module_name = get_module_name(__file__)
+__config = get_config(__file__)
+__module_name = get_module_name(__file__)
 
 
-def get_data():
-    """
-        Obtains data from the WAQI API via HTTP requests.
-        L requests are made each time this function is called (L = number of locations)
-
-        Parameters are read from configuration file (air_pollution.config)
-
-        :return: A flat list of key-value objects.
-        :rtype: list
-    """
+def __get_data():
     data = []
-    for loc in config['LOCATIONS']:
-        url = config['BASE_URL'].replace('{LOC}', loc) + config['TOKEN']
+    for loc in __config['LOCATIONS']:
+        url = __config['BASE_URL'].replace('{LOC}', loc) + __config['TOKEN']
         r = requests.get(url)
         data.append(json.loads(r.content.decode('utf-8')))
     return data
@@ -30,13 +49,6 @@ def get_data():
     # TODO:  - [b'{"status":"error","message":"404"}', b'{"status":"error","message":"404"}']
 
 
-def save_data(data):
-    connection = connect(module_name)
+def __save_data(data):
+    connection = connect(__module_name)
     connection.insert_many(data)
-
-
-if __name__ == '__main__':
-    data = get_data()
-    with open('file.txt', 'w') as f:
-        f.write(json.dumps(data, indent=4, separators=(',', ': ')))
-    #save_data(data)
