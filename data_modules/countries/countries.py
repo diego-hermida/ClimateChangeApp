@@ -40,9 +40,8 @@ def __get_data():
     r = requests.get(url)
     data = json.loads(r.content.decode('utf-8'))[1]  # Avoids saving indicator meta-info
     for value in data:  # Creates '_id' attribute and removes non-util fields
-        value['_id'] = value['iso2Code']
+        value['_id'] = value['id']
         del value['id']
-        del value['iso2Code']
         del value['adminregion']
         del value['lendingType']
     return data
