@@ -1,7 +1,7 @@
 import datetime
-import threading
 import yaml
 
+from abc import ABC, abstractmethod
 from utilities.relativedelta import relativedelta
 
 
@@ -30,7 +30,9 @@ def get_module_name(path):
     return path.split('/')[-1].replace('.py', '')
 
 
-TimeUnits = enum('s', 'm', 'h', 'day', 'month', 'year')
+TimeUnits = enum('s', 'm', 'h', 'day', 'month', 'year', 'NEVER')
+MeasureUnits = enum('mm', 'm', 'km', 'Gt')
+MassType = enum('antarctica', 'greenland', 'ocean')
 
 
 class Reader:
@@ -42,14 +44,29 @@ class Reader:
             self.data.append(s)
 
 
-class DataCollector(threading.Thread):
-    def __init__(self, data_module):
-        self.data_module = data_module
-        threading.Thread.__init__(self)
+class DataCollector(ABC):
+    def __init__(self):
+        pass
 
-    def run(self):
-        data = self.data_module.get_data()
-        self.data_module.save_data(data)
+    @abstractmethod
+    def restore_state(self):
+        pass
+
+    @abstractmethod
+    def worktime(self) -> bool:
+        pass
+
+    @abstractmethod
+    def get_data(self):
+        pass
+
+    @abstractmethod
+    def save_data(self):
+        pass
+
+    @abstractmethod
+    def save_state(self):
+        pass
 
 
 class TimeDelta:
@@ -57,7 +74,7 @@ class TimeDelta:
         self.value = value
         self.units = units
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {'value': self.value, 'units': self.units}
 
 
@@ -82,6 +99,8 @@ def worktime(date: datetime, frequency: TimeDelta) -> bool:
         min_work_date = date + relativedelta(months=frequency.value)
     elif frequency.units == TimeUnits.year:
         min_work_date = date + relativedelta(years=frequency.value)
+    elif frequency.units == TimeUnits.NEVER:
+        return False
     else:
         raise ValueError('Unsupported TimeUnit value: ' + frequency.units)
     return min_work_date <= datetime.datetime.now()
