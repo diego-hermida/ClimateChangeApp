@@ -2,7 +2,7 @@ import datetime
 import threading
 import yaml
 
-from util.relativedelta import relativedelta
+from utilities.relativedelta import relativedelta
 
 
 def decimal_date_to_string(decimal_date, date_format):

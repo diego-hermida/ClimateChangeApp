@@ -28,8 +28,8 @@ def save_data(data):
 import json
 import requests
 
-from util.db_util import connect
-from util.util import get_config, get_module_name
+from utilities.db_util import connect
+from utilities.util import get_config, get_module_name
 
 __config = get_config(__file__)
 __module_name = get_module_name(__file__)
@@ -39,7 +39,7 @@ def __get_data():
     url = __config['BASE_URL'].replace('{LANG}', __config['LANG'])
     r = requests.get(url)
     data = json.loads(r.content.decode('utf-8'))[1]  # Avoids saving indicator meta-info
-    for value in data:  # Creates '_id' attribute and removes non-util fields
+    for value in data:  # Creates '_id' attribute and removes non-utilities fields
         value['_id'] = value['id']
         del value['id']
         del value['adminregion']
@@ -50,3 +50,7 @@ def __get_data():
 def __save_data(data):
     connection = connect(__module_name)
     connection.insert_many(data)
+
+if __name__ == '__main__':
+    data = get_data()
+    save_data(data)

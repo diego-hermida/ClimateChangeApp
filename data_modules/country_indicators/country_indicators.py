@@ -30,8 +30,8 @@ import itertools
 import json
 import requests
 
-from util.db_util import connect
-from util.util import get_config, get_module_name
+from utilities.db_util import connect
+from utilities.util import get_config, get_module_name
 
 __config = get_config(__file__)
 __module_name = get_module_name(__file__)
@@ -48,7 +48,7 @@ def __get_data():
             data.append(json.loads(r.content.decode('utf-8'))[1])  # Avoids saving indicator meta-info
             break
     data = list(itertools.chain.from_iterable(data))  # Flattens the list of lists
-    for value in data:  # Creates '_id' attribute and removes non-util fields
+    for value in data:  # Creates '_id' attribute and removes non-utilities fields
         value['_id'] = value['indicator']['id'] + '_' + value['country']['id'] + '_' + value['date']
         del value['decimal']
     return data

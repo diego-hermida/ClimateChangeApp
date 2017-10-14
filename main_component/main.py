@@ -1,5 +1,5 @@
-from util.import_dir import import_modules
-from util.util import get_config, DataCollector
+from utilities.import_dir import import_modules
+from utilities.util import get_config, DataCollector
 
 __config = get_config(__file__)
 

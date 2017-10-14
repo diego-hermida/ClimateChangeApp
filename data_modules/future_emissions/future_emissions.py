@@ -25,8 +25,8 @@ def save_data(data):
 # Implementation
 # ---------------------------------------------------------------------------------------------------
 
-from util.db_util import connect
-from util.util import get_config, get_module_name
+from utilities.db_util import connect
+from utilities.util import get_config, get_module_name
 
 __config = get_config(__file__)
 __module_name = get_module_name(__file__)

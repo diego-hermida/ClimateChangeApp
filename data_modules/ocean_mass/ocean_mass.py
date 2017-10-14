@@ -31,8 +31,8 @@ def save_data(data):
 import itertools
 
 from ftplib import FTP
-from util.db_util import connect
-from util.util import decimal_date_to_string, enum, get_config, get_module_name, Reader
+from utilities.db_util import connect
+from utilities.util import decimal_date_to_string, enum, get_config, get_module_name, Reader
 
 __config = get_config(__file__)
 __module_name = get_module_name(__file__)
