@@ -41,7 +41,7 @@ from importlib import import_module
 # Regular expression of a module:
 __module_file_regexp = "(.+)\.py(c?)$"
 __dirs = []
-
+__mock_packages_keyword = 'mock'
 
 def __get_module_names(path, recursive=False, base_package=None, include_paths=False):
     result = []
@@ -60,9 +60,12 @@ def __get_module_names(path, recursive=False, base_package=None, include_paths=F
                 name = regexp_result.groups()[0].replace(os.sep, '.')
                 name = name.lstrip('.') if base_package is None else name[name.find(base_package):]  # substring
                 result.append(name)
-    return result
+    return sorted([x for x in result if not __mock_packages_keyword in x])
 
 
 def __import_modules(path, recursive=False, base_package=None, include_paths=False):
-    return [import_module(x) for x in sorted(__get_module_names(path, recursive=recursive, base_package=base_package,
-                                                                include_paths=include_paths))]
+    return [import_module(x) for x in __get_module_names(path, recursive=recursive, base_package=base_package,
+                                                                include_paths=include_paths)]
+
+if __name__ == '__main__':
+    print(__get_module_names('/Users/diego/Documents/workspace/ClimateChangeApp_DataGatheringSubsystem/data_modules', 'data_modules'))
