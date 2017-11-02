@@ -66,6 +66,3 @@ def __get_module_names(path, recursive=False, base_package=None, include_paths=F
 def __import_modules(path, recursive=False, base_package=None, include_paths=False):
     return [import_module(x) for x in __get_module_names(path, recursive=recursive, base_package=base_package,
                                                                 include_paths=include_paths)]
-
-if __name__ == '__main__':
-    print(__get_module_names('/Users/diego/Documents/workspace/ClimateChangeApp_DataGatheringSubsystem/data_modules', 'data_modules'))
