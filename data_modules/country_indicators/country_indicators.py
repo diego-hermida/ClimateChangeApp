@@ -95,7 +95,6 @@ class __CountryIndicatorsDataCollector(DataCollector):
             self.__state['end_date'] += 1
             self.__state['update_frequency'] = self.__config['MAX_UPDATE_FREQUENCY']
         self.__state['last_request'] = datetime.datetime.now()
-        print(self.__data.__len__())
 
     def save_data(self):
         """

@@ -138,8 +138,3 @@ class __OceanMassDataCollector(DataCollector):
             '\n\t(*) data: ' + self.__data.__repr__() + \
             '\n\t(*) module_name: ' + self.__module_name.__repr__() + \
             '\n\t(*) state: ' + self.__state.__repr__() + ']'
-
-if __name__ == '__main__':
-    obj = instance()
-    obj.restore_state()
-    obj.collect_data()
