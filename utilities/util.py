@@ -3,6 +3,8 @@ import json
 import yaml
 
 from abc import ABC, abstractmethod
+from os import remove
+from shutil import copyfile
 from utilities.relativedelta import relativedelta
 
 
@@ -57,6 +59,15 @@ def deserialize_date(date: str, date_format='%Y-%m-%dT%H:%M:%S.%f'):
 
 def get_module_name(path):
     return path.split('/')[-1].replace('.py', '')
+
+
+def backup_state(path: str):
+    path = path.replace('.py', '.state')
+    copyfile(path, path + '.backup')
+
+
+def remove_state_backup(path: str):
+    remove(path.replace('.py', '.state.backup'))
 
 
 TimeUnits = enum('s', 'm', 'h', 'day', 'week', 'month', 'year', 'NEVER')
@@ -127,3 +138,7 @@ class DataCollector(ABC):
     @abstractmethod
     def save_state(self):
         pass
+
+    @abstractmethod
+    def auto_validate_state(self):
+        raise NotImplemented()
