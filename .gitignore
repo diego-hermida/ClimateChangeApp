@@ -14,5 +14,5 @@ data_modules/locations/__pycache__/
 data_modules/ocean_mass/__pycache__/
 data_modules/sea_level_rise/__pycache__/
 data_modules/weather_forecast/__pycache__/
-main_component/__pycache__/
+main/__pycache__/
 utilities/__pycache__/
