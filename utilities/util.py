@@ -2,7 +2,6 @@ import datetime
 import json
 import yaml
 
-from abc import ABC, abstractmethod
 from os import remove
 from shutil import copyfile
 from utilities.relativedelta import relativedelta
@@ -29,8 +28,9 @@ def get_config(path):
     return config
 
 
-def read_state(path, repair_struct={}):
+def read_state(path, repair_struct={}, is_backup_file=False):
     path = path.replace('.py', '.state')
+    path += '.backup' if is_backup_file else ''
     with open(path, 'r') as f:
         try:
             state = json.load(f)
@@ -70,14 +70,18 @@ def remove_state_backup(path: str):
     remove(path.replace('.py', '.state.backup'))
 
 
+def get_state_and_backup(path, repair_struct={}) -> tuple:
+    return read_state(path, repair_struct), read_state(path, repair_struct, is_backup_file=True)
+
+
 TimeUnits = enum('s', 'm', 'h', 'day', 'week', 'month', 'year', 'NEVER')
 MeasureUnits = enum('mm', 'm', 'km', 'Gt')
 MassType = enum('antarctica', 'greenland', 'ocean')
 
 
-def worktime(date: datetime, frequency: dict) -> bool:
+def date_plus_timedelta_gt_now(date: datetime, frequency: dict) -> bool:
     """
-    Given a date, adds a relative time measure (derived from "frequency" object)
+        Given a date, adds a relative time measure (derived from "frequency")
         :param date: Base date object. If "date" is None, True will always be returned.
         :param frequency: A dict object ({value: int, units: TimeUnits}) to be added to "date".
         :return: True if current timestamp is later than datetime plus timedelta.
@@ -113,32 +117,3 @@ class Reader:
     def __call__(self, s):
         if not s.startswith('HDR'):
             self.data.append(s)
-
-
-class DataCollector(ABC):
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def restore_state(self):
-        pass
-
-    @abstractmethod
-    def worktime(self) -> bool:
-        pass
-
-    @abstractmethod
-    def collect_data(self):
-        pass
-
-    @abstractmethod
-    def save_data(self):
-        pass
-
-    @abstractmethod
-    def save_state(self):
-        pass
-
-    @abstractmethod
-    def auto_validate_state(self):
-        raise NotImplemented()
