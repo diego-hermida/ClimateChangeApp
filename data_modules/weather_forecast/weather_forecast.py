@@ -2,9 +2,9 @@ import datetime
 import json
 import requests
 
-from utilities.db_util import connect, find
-from utilities.util import DataCollector, get_config, get_module_name, worktime, read_state, write_state, \
-    serialize_date, deserialize_date
+from data_collector.data_collector import DataCollector
+from pymongo import UpdateOne
+from utilities.db_util import MongoDBCollection
 
 __singleton = None
 
@@ -17,74 +17,70 @@ def instance() -> DataCollector:
 
 
 class __WeatherForecastDataCollector(DataCollector):
+
     def __init__(self):
-        super().__init__()
-        self.__data = None
-        self.__state = None
-        self.__config = get_config(__file__)
-        self.__module_name = get_module_name(__file__)
+        super().__init__(file_path=__file__)
 
-    def restore_state(self):
+    def _collect_data(self):
         """
-            Restores previous saved state (.state) if valid. Otherwise, creates a valid structure
-            for .state file from the STATE_STRUCT key in .config file.
-        """
-        self.__state = read_state(__file__, repair_struct=self.__config['STATE_STRUCT'])
-        self.__state['last_request'] = deserialize_date(self.__state['last_request'])
-
-    def worktime(self) -> bool:
-        """
-            Determines whether this module is ready or not to perform new work, according to update policy and
-            last request's timestamp.
-            :return: True if it's work time, False otherwise.
-            :rtype: bool
-        """
-        return worktime(self.__state['last_request'], self.__state['update_frequency'])
-
-    def collect_data(self):
-        """
-            Obtains weather forecast data from the Open Weather Map via HTTP requests.
-            M requests are made each time this function is called (M = max queries/min)
+            Collects weather forecast data from the Open Weather Map via HTTP requests.
+            M requests are made (where M is the maximum amount of requests per minute)
             Parameters are read from configuration file (weather_forecast.config)
         """
-        locations = find(self.__config['LOCATIONS_MODULE_NAME'], last_id=self.__state['last_id'],
-                         count=self.__config['MAX_REQUESTS_PER_MINUTE'],
-                         fields={'_id': 1, 'name': 1, 'country_code': 1})
-        self.__data = []
-        for location in locations['data']:
-            url = self.__config['BASE_URL'].replace('{TOKEN}', self.__config['TOKEN']).replace('{LOC}',
-                location['name']).replace('{COUNTRY}', location['country_code'])
+        super()._collect_data()
+        # Retrieves all locations with OpenWeatherMap Station IDs from database
+        self.collection = MongoDBCollection(self.config['LOCATIONS_MODULE_NAME'])
+        locations = self.collection.find(last_id=self.state['last_id'], count=self.config['MAX_REQUESTS_PER_MINUTE'],
+                fields={'_id': 1, 'name': 1, 'owm_station_id': 1}, conditions={'owm_station_id': {'$ne': None}},
+                sort='_id')
+        self.collection.close()
+        self.data = []
+        unmatched = []
+        locations_length = len(locations['data'])
+        for index, location in enumerate(locations['data']):
+            url = self.config['BASE_URL'].replace('{TOKEN}', self.config['TOKEN']).replace('{LOC_ID}',
+                    location['owm_station_id'])
             r = requests.get(url)
             temp = json.loads(r.content.decode('utf-8'))
-            temp['location_id'] = location['_id']
-            self.__data.append(temp)
-        self.__state['last_id'] = locations['data'][-1]['_id'] if locations['more'] else None
-        self.__state['last_request'] = datetime.datetime.now()
-        self.__state['update_frequency'] = self.__config['MIN_UPDATE_FREQUENCY'] if locations['more'] \
-            else self.__config['MAX_UPDATE_FREQUENCY']
-        self.__data = self.__data if self.__data else None
+            if temp.get('cnt', 0) > 0 and temp.get('list', None):
+                temp['location_id'] = location['_id']
+                temp['_id'] = {'station_id': temp['city']['id']}
+                self.data.append(temp)
+            else:
+                unmatched.append(location['name'])
+            if index > 0 and index % 10 is 0:
+                self.logger.debug('Collected data: %0.2f%%'%((((index + 1) / locations_length) * 100)))
+        if unmatched:
+            self.logger.warning('Current weather conditions data is unavailable for %d locations: %s'%(len(unmatched),
+                    sorted(unmatched)))
+        self.state['last_request'] = datetime.datetime.now()
+        self.state['last_id'] = locations['data'][-1]['_id'] if locations['more'] else None
+        self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY'] if locations['more'] else self.config[
+                'MAX_UPDATE_FREQUENCY']
+        self.state['data_elements'] = len(self.data)
+        self.data = self.data if self.data else None
 
-    def save_data(self):
+    def _save_data(self):
         """
-            Saves data into a persistent storage system (Currently, a MongoDB instance).
-            Data is saved in a collection with the same name as the module.
+            Saves collected data (stored in 'self.data' variable), into a MongoDB collection called 'locations'.
+            Existent records are updated with new values, and new ones are inserted as new ones.
+            Postcondition: 'self.data' variable is dereferenced to allow GC to free up memory.
         """
-        if self.__data is None:
-            pass
+        super()._save_data()
+        if self.data:
+            operations = []
+            for value in self.data:
+                operations.append(UpdateOne({'_id': value['_id']}, update={'$set': value}, upsert=True))
+            result = self.collection.collection.bulk_write(operations)
+            self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
+                    + result.bulk_api_result['nUpserted']
+            if self.state['inserted_elements'] == len(self.data):
+                self.logger.debug('Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+            else:
+                self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
+                        self.state['data_elements']))
+            self.collection.close()
+            self.data = None  # Allowing GC to collect data object's memory
         else:
-            connection = connect(self.__module_name)
-            connection.insert_many(self.__data)
-
-    def save_state(self):
-        """
-            Serializes state to .state file in such a way that can be deserialized later.
-        """
-        self.__state['last_request'] = serialize_date(self.__state['last_request'])
-        write_state(self.__state, __file__)
-
-    def __repr__(self):
-        return str(__class__.__name__) + ' [' \
-            '\n\t(*) config: ' + self.__config.__repr__() + \
-            '\n\t(*) data: ' + self.__data.__repr__() + \
-            '\n\t(*) module_name: ' + self.__module_name.__repr__() + \
-            '\n\t(*) state: ' + self.__state.__repr__() + ']'
+            self.logger.info('No elements were saved because no elements have been collected.')
+            self.state['inserted_elements'] = 0

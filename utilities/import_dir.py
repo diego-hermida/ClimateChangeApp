@@ -6,10 +6,15 @@
 #   - Return paths as list (optional)
 # ---------------------------------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------------------------------
-# Interface
-# ---------------------------------------------------------------------------------------------------
+import os
+import re
 
+from importlib import import_module
+
+# Regular expression of a module:
+__module_file_regexp = "(.+)\.py(c?)$"
+__dirs = []
+__mock_packages_keyword = 'mock'
 
 def import_modules(path, recursive=False, base_package=None, include_paths=False):
     """ Imports all modules residing in directory "path" into a alphabetically sorted list of callable <module> objects.
@@ -28,20 +33,6 @@ def import_modules(path, recursive=False, base_package=None, include_paths=False
     return {'modules': __import_modules(path, recursive, base_package, include_paths),
             'paths': sorted(__dirs)} if include_paths else __import_modules(path, recursive, base_package)
 
-
-# ---------------------------------------------------------------------------------------------------
-# Implementation
-# ---------------------------------------------------------------------------------------------------
-
-import os
-import re
-
-from importlib import import_module
-
-# Regular expression of a module:
-__module_file_regexp = "(.+)\.py(c?)$"
-__dirs = []
-__mock_packages_keyword = 'mock'
 
 def __get_module_names(path, recursive=False, base_package=None, include_paths=False):
     result = []
@@ -65,4 +56,4 @@ def __get_module_names(path, recursive=False, base_package=None, include_paths=F
 
 def __import_modules(path, recursive=False, base_package=None, include_paths=False):
     return [import_module(x) for x in __get_module_names(path, recursive=recursive, base_package=base_package,
-                                                                include_paths=include_paths)]
+                                                         include_paths=include_paths)]

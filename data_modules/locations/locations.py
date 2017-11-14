@@ -1,11 +1,13 @@
 import datetime
+import json
 import requests
 import zipfile
 
+from data_collector.data_collector import DataCollector
 from io import BytesIO
-from utilities.db_util import connect
-from utilities.util import DataCollector, get_config, get_module_name, MeasureUnits, \
-    read_state, serialize_date, deserialize_date, worktime, write_state
+from pymongo import UpdateOne
+from unidecode import unidecode
+from utilities.util import check_coordinates, date_to_millis_since_epoch, deserialize_date, MeasureUnits, serialize_date
 
 __singleton = None
 
@@ -18,108 +20,207 @@ def instance() -> DataCollector:
 
 
 class __LocationsDataCollector(DataCollector):
+
     def __init__(self):
-        super().__init__()
-        self.__data = None
-        self.__state = None
-        self.__config = get_config(__file__)
-        self.__module_name = get_module_name(__file__)
+        super().__init__(__file__)
 
-    def restore_state(self):
+    def _restore_state(self):
         """
-           Restores previous saved state (.state) if valid. Otherwise, creates a valid structure
-           for .state file from the STATE_STRUCT key in .config file.
+            Deserializes GeoNames file's 'last-modified' date.
         """
-        self.__state = read_state(__file__, repair_struct=self.__config['STATE_STRUCT'])
-        self.__state['last_request'] = deserialize_date(self.__state['last_request'])
-        self.__state['last_modified'] = deserialize_date(self.__state['last_modified'])
+        super()._restore_state()
+        self.state['last_modified'] = deserialize_date(self.state['last_modified'])
 
-    def worktime(self) -> bool:
+    def _collect_data(self):
         """
-            Determines whether this module is ready or not to perform new work, according to update policy and
-            last request's timestamp.
-            :return: True if it's work time, False otherwise.
-            :rtype: bool
+            Collects data from GeoNames.org via HTTP requests. A single request is performed, and a .zip file is
+            downloaded. Files are not written to disk, all operations are in-memory.
+            Locations are filtered according to the values of LOCATIONS (.config file)
         """
-        return worktime(self.__state['last_request'], self.__state['update_frequency'])
-
-    def collect_data(self):
-        """
-            Obtains data from GeoNames.org via HTTP requests. A single request is performed, and a .zip file is obtained.
-            Files are not written to disk, all operations are in-memory.
-            Parameters are read from configuration file (locations.config), and locations are filtered according to
-            values in LOCATIONS key (.config file)
-        """
-        url = self.__config['BASE_URL'] + self.__config['ZIP_FILE']
+        super()._collect_data()
+        url = self.config['BASE_URL'] + self.config['ZIP_FILE']
         r = requests.get(url)
-        zf = zipfile.ZipFile(BytesIO(r.content))  # Downloaded file is compressed in a .zip file.
+        last_modified = None
+        # Downloaded file is compressed in a .zip file, which contains a single .txt file.
+        zf = zipfile.ZipFile(BytesIO(r.content))
         for info in zf.infolist():
             last_modified = datetime.datetime(
-                *info.date_time + (1,))  # Adding 1 millisecond (date_format compatibility)
+                    *info.date_time + (1,))  # Adding 1 millisecond (date_format compatibility)
             break
-        if True if self.__state['last_modified'] is None else last_modified > self.__state[
-            'last_modified']:  # Collecting data only if file has been modified
-            self.__data = []
-            with zf.open(self.__config['FILE']) as f:
-                auto_increment_id = 1
+        self.data = []
+        unmatched = []
+        unmatched_waqi = []
+        multiple_waqi = []
+        multiple = []
+        # Collecting data only if file has been modified
+        if True if not self.state['last_modified'] or not last_modified else last_modified > self.state['last_modified']:
+            index = 1
+            locations_length = len(self.config['LOCATIONS'])
+            with zf.open(self.config['FILE']) as f:
                 for line in f:
                     fields = line.decode('utf-8').replace('\n', '').split('\t')
-                    # Converting date from "yyyy-mm-dd" to "dd-mm-yyyy"
-                    date = datetime.datetime.strptime(fields[18], "%Y-%m-%d").strftime("%d-%m-%Y")
-                    location = {'name': fields[1], 'latitude': float(fields[4]), 'longitude': float(fields[5]),
-                                'country_code': fields[8],
-                                'population': fields[14], 'elevation': {'value': fields[15], 'units': MeasureUnits.m},
-                                'timezone': fields[17], 'last_modified': date}
                     # Filtering locations to monitored locations
-                    loc = self.__config['LOCATIONS'].get(location['name'], None)
-                    if loc is not None:
+                    loc = self.config['LOCATIONS'].get(fields[1], None)
+                    if loc:
+                        date = date_to_millis_since_epoch(datetime.datetime.strptime(fields[18], "%Y-%m-%d"))
+                        location = {'name': fields[1], 'latitude': float(fields[4]), 'longitude': float(fields[5]),
+                                'country_code': fields[8], 'population': fields[14], 'elevation': {'value': fields[15],
+                                'units': MeasureUnits.m}, 'timezone': fields[17], 'last_modified': date, '_id':
+                                loc['_id']}
                         loc['name'] = location['name']
                         if self.__is_selected_location(loc['name'], loc['country_code'], loc['latitude'],
-                                                       loc['longitude'], location['name'], location['country_code'],
-                                                       location['latitude'], location['longitude']):
-                            loc['OK'] = True  # Debug-only
-                            location['_id'] = auto_increment_id
-                            auto_increment_id += 1
-                            self.__data.append(location)
-            self.__state['last_modified'] = last_modified
-        self.__state['last_request'] = datetime.datetime.now()
-        self.__data = self.__data if self.__data else None
-        # Debug info (Locations in location list but not added will be printed)
-        for name in self.__config['LOCATIONS']:
-            location = self.__config['LOCATIONS'][name]
-            if not location.get('OK', False):
-                print('[WARNING]\t' + name + ', ' + location['country_code'] + ' (' + str(location['latitude'])
-                      + ', ' + str(location['longitude']) + ') was not found at: ' + url + ' (last modified: '
-                      + serialize_date(last_modified) + ')')
+                                loc['longitude'], location['name'], location['country_code'], location['latitude'],
+                                location['longitude']):
+                            loc['missing'] = False
 
-    def save_data(self):
-        """
-           Saves data into a persistent storage system (Currently, a MongoDB instance).
-           Data is saved in a collection with the same name as the module.
-        """
-        if self.__data is None:
-            pass
+                            # Finding Station ID for Wunderground API requests
+                            r = requests.get(self.config['URL_WUNDERGROUND'] + unidecode(loc['name'].split(',')[0]) +
+                                    '&c=' + loc['country_code'])
+                            # Filtering results by proximity, to avoid saving false positives
+                            matches = [x for x in json.loads(r.content.decode('utf-8', errors='replace'))['RESULTS'] if
+                                    check_coordinates(float(loc['latitude']), float(loc['longitude']), float(x['lat']),
+                                    float(x['lon']), margin=0.35)]
+                            if len(matches) > 1:
+                                multiple.append(loc['name'])
+                            elif not matches:
+                                unmatched.append(loc['name'])
+                            location['wunderground_loc_id'] = matches[0]['l'] if matches else None
+
+                            # Finding Station ID for WAQI API requests
+                            r = requests.get(self.config['URL_WAQI'].replace('{LOC}', unidecode(loc['name'].split(',')[0])))
+                            temp = json.loads(r.content.decode('utf-8', errors='replace'))
+                            matches = None
+                            if temp['status'] == 'ok':
+                                # Filtering results by proximity, to avoid saving false positives
+                                matches = [x for x in json.loads(r.content.decode('utf-8', errors='replace'))['data'] if
+                                        check_coordinates(float(loc['latitude']), float(loc['longitude']),
+                                        float(x['station']['geo'][0]), float(x['station']['geo'][1]), margin=0.35)]
+                                if len(matches) > 1:
+                                    multiple_waqi.append(loc['name'])
+                                elif not matches:
+                                    unmatched_waqi.append(loc['name'])
+                            location['waqi_station_id'] = matches[0]['uid'] if matches else None
+
+                            self.data.append(location)
+                            if index > 0 and index % 10 is 0:
+                                self.logger.debug('Collected data: %.2f%%'%(((index / locations_length) * 100)))
+                            index += 1
+            if multiple:
+                self.logger.warning('%d locations have multiple matches at Wunderground API. As a result, API requests '
+                        'might not be accurate for the following locations: %s'%(len(multiple), sorted(multiple)))
+            if unmatched:
+                self.logger.warning('%d locations have no matches at Wunderground API. As a result, historical weather '
+                        'will not be available for the following locations: %s' % (len(unmatched), sorted(unmatched)))
+            if multiple_waqi:
+                self.logger.warning('%d locations have multiple matches at WAQI API. As a result, API requests might '
+                        'not be accurate for the following locations: %s'%(len(multiple_waqi), sorted(multiple_waqi)))
+            if unmatched_waqi:
+                self.logger.warning('%d locations have no matches at WAQI API. As a result, air pollution data will not'
+                        ' be available for the following locations: %s' % (len(unmatched_waqi), sorted(unmatched_waqi)))
+            unmatched.clear()
+            multiple.clear()
+
+            # Finding Station ID for Open Weather Map API requests
+            r = requests.get(self.config['URL_OPEN_WEATHER'])
+            open_weather_data = r.content.decode('utf-8', errors='replace').split('\n')
+            # Sorting locations by country code (as in 'open_weather_data')
+            locations = sorted(list(self.config['LOCATIONS'].values()), key=lambda k: k['country_code'])
+            for loc in locations:
+                loc['name'] = unidecode(loc['name'])
+            for line in open_weather_data[1:-1]:
+                values = line.split('\t')
+                loc = None
+                for location in locations:
+                    if location['name'].split()[0] in values[1]:
+                        loc = location
+                        break
+                # Filtering results by proximity and country, to avoid saving false positives
+                if loc is not None and check_coordinates(loc['latitude'], loc['longitude'], float(values[2]),
+                        float(values[3]), margin=0.35) and loc['country_code'] == values[4]:
+                    loc['owm_station_id'] = values[0]
+            for loc in self.data:
+                loc['owm_station_id'] = self.config['LOCATIONS'][loc['name']].get('owm_station_id', None)
+                if loc['owm_station_id'] is None:
+                    unmatched.append(loc['name'])
+            if unmatched:
+                self.logger.warning('%d locations have no matches at OpenWeatherMap API. As a result, current weather '
+                        'and weather forecast data will not be available for the following locations: %s'%
+                        (len(unmatched), sorted(unmatched)))
+
+            self.state['last_modified'] = last_modified
+            unmatched.clear()
+            # Debug info (Locations in location list but not added will be logged)
+            for name in self.config['LOCATIONS']:
+                loc = self.config['LOCATIONS'][name]
+                if loc.get('missing', True):
+                    unmatched.append(name)
+            if unmatched:
+                self.logger.warning('Unable to find %d locations: %s'%(len(unmatched), sorted(unmatched)))
+            self.logger.info('GeoNames file "%s" has been correctly parsed. %d locations (out of %d) were found.'%
+                    (self.config['FILE'], len(self.data), len(self.config['LOCATIONS'])))
+            # Restoring original update frequency
+            self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
         else:
-            connection = connect(self.__module_name)
-            connection.insert_many(self.__data)
+            self.logger.info('GeoNames file has not been updated since last data collection. The period '
+                             'between checks will be shortened, since data is expected to be updated soon.')
+            # Setting update frequency to a shorter time interval (file is near to be modified)
+            self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
+            self.advisedly_no_data_collected = True
+        self.state['last_request'] = datetime.datetime.now()
+        self.state['data_elements'] = len(self.data)
+        self.data = self.data if self.data else None
 
-    def save_state(self):
+    def _save_data(self):
         """
-            Serializes state to .state file in such a way that can be deserialized later.
+            Saves collected data (stored in 'self.data' variable), into a MongoDB collection called 'locations'.
+            Existent locations are updated with new values, and new ones are inserted as new ones.
+            Postcondition: 'self.data' variable is dereferenced to allow GC to free up memory.
         """
-        self.__state['last_request'] = serialize_date(self.__state['last_request'])
-        self.__state['last_modified'] = serialize_date(self.__state['last_modified'])
-        write_state(self.__state, __file__)
+        super()._save_data()
+        if self.data:
+            operations = []
+            for value in self.data:
+                operations.append(UpdateOne({'_id': value['_id']}, update={'$set': value}, upsert=True))
+            result = self.collection.collection.bulk_write(operations)
+            self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
+                    + result.bulk_api_result['nUpserted']
+            if self.state['inserted_elements'] == len(self.data):
+                self.logger.debug('Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+            else:
+                self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
+                        self.state['data_elements']))
+            self.collection.close()
+            self.data = None  # Allowing GC to collect data object's memory
+        else:
+            self.logger.info('No elements were saved because no elements have been collected.')
+            self.state['inserted_elements'] = 0
+
+    def _save_state(self):
+        """
+            Serializes GeoNames file's 'last-modified' date.
+        """
+        self.state['last_modified'] = serialize_date(self.state['last_modified'])
+        super()._save_state()
 
     @staticmethod
-    def __is_selected_location(loc_name: str, loc_cc: str, loc_lat: float, loc_long: float, data_name: str, data_cc: str,
-                             data_lat: float, data_long: float) -> bool:
-        return loc_name == data_name and loc_cc == data_cc and \
-               abs(loc_lat - data_lat) < 1 and abs(loc_long - data_long) < 1
-
-    def __repr__(self):
-        return str(__class__.__name__) + ' [' \
-            '\n\t(*) config: ' + self.__config.__repr__() + \
-            '\n\t(*) data: ' + self.__data.__repr__() + \
-            '\n\t(*) module_name: ' + self.__module_name.__repr__() + \
-            '\n\t(*) state: ' + self.__state.__repr__() + ']'
+    def __is_selected_location(loc_name: str, loc_cc: str, loc_lat: float, loc_long: float, data_name: str,
+                               data_cc: str, data_lat: float, data_long: float, margin=1.0) -> bool:
+        """
+            Compares location data, both from '.config' file and downloaded data, in order to determine if data refers
+            to the same location.
+            :param loc_name: Name of the location from '.config' file.
+            :param loc_cc: Country code of the location from '.config' file.
+            :param loc_lat: Latitude of the location from '.config' file.
+            :param loc_long: Longitude of the location from '.config' file.
+            :param data_name: Name of the location from '.config' file.
+            :param data_cc: Country code of the location from '.config' file.
+            :param data_lat: Latitude of the location from '.config' file.
+            :param data_long: Longitude of the location from '.config' file.
+            :param margin: Maximum accepted difference (in absolute value) between latitudes and longitudes (in both
+                           '.config' file and data).
+            :return: True, if location names and country codes are the same, and latitudes/longitudes doesn't exceed
+                     'margin' difference.
+            :rtype: bool
+        """
+        return loc_name == data_name and loc_cc == data_cc and check_coordinates(loc_lat, loc_long, data_lat, data_long,
+                margin=margin)

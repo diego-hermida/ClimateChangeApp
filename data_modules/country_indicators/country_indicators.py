@@ -3,9 +3,8 @@ import itertools
 import json
 import requests
 
-from utilities.db_util import connect
-from utilities.util import DataCollector, get_config, get_module_name, worktime, read_state, write_state, \
-    serialize_date, deserialize_date
+from data_collector.data_collector import DataCollector
+from pymongo import UpdateOne
 
 __singleton = None
 
@@ -18,105 +17,88 @@ def instance() -> DataCollector:
 
 
 class __CountryIndicatorsDataCollector(DataCollector):
+
     def __init__(self):
-        super().__init__()
-        self.__data = None
-        self.__state = None
-        self.__config = get_config(__file__)
-        self.__module_name = get_module_name(__file__)
+        super().__init__(file_path=__file__)
 
-    def restore_state(self):
-        """
-            Restores previous saved state (.state) if valid. Otherwise, creates a valid structure
-            for .state file from the STATE_STRUCT key in .config file.
-        """
-        self.__state = read_state(__file__, repair_struct=self.__config['STATE_STRUCT'])
-        self.__state['last_request'] = deserialize_date(self.__state['last_request'])
-        self.__state['begin_date'] = self.__state['begin_date'] if self.__state['begin_date'] else self.__config[
-            'MIN_DATE']
-        self.__state['end_date'] = self.__state['end_date'] if self.__state['end_date'] else datetime.date.today().year
-
-    def worktime(self) -> bool:
-        """
-            Determines whether this module is ready or not to perform new work, according to update policy and
-            last request's timestamp.
-            :return: True if it's work time, False otherwise.
-            :rtype: bool
-        """
-        return worktime(self.__state['last_request'], self.__state['update_frequency'])
-
-    def collect_data(self):
+    def _collect_data(self):
         """
             Obtains data from the World Bank API via HTTP requests.
-            N * P requests are made each time this function is called (N = number of indicators, P = number of pages in
-            which data has been splitted)
-            Indicators and countries are both read from configuration file (country_indicators.config)
+            N * P requests are made (being N the number of indicators, and P the number of pages in which requests have
+            been split)
+            Indicators are read from configuration file (country_indicators.config)
         """
-        self.__data = []
-        try:
-            for indicator in self.__config['INDICATORS']:
+        super()._collect_data()
+        self.data = []
+        url = self.config['VALIDATION_QUERY'].replace('{BEGIN_DATE}', str(self.state['begin_date'])).replace(
+                '{END_DATE}', str(self.state['end_date']))
+        r = requests.get(url)
+        validation_data = json.loads(r.content.decode('utf-8'))[1][0]
+        self.advisedly_no_data_collected = validation_data['value'] is None
+        if not self.advisedly_no_data_collected:
+            self.logger.info('Validation query succeeded and found suitable data to be collected.')
+            self.logger.info('Collecting data from %d indicators.'%(len(self.config['INDICATORS'])))
+            indicators_length = len(self.config['INDICATORS'])
+            for index, indicator in enumerate(self.config['INDICATORS']):
                 # Data is processed by paging requests (lighter, leading to less probability of failure)
                 remaining_data = True
                 page = 1
                 while remaining_data:
-                    url = self.__config['BASE_URL'].replace('{LANG}', self.__config['LANG']). \
-                        replace('{INDICATOR}', indicator).replace('{BEGIN_DATE}', str(self.__state['begin_date'])). \
-                        replace('{END_DATE}', str(self.__state['end_date'])).replace('{PAGE}', str(page)). \
-                        replace('{ITEMS_PER_PAGE}', str(self.__config['ITEMS_PER_PAGE']))
+                    url = self.config['BASE_URL'].replace('{LANG}', self.config['LANG']).replace('{INDICATOR}',
+                            indicator).replace('{BEGIN_DATE}', str(self.state['begin_date'])).replace('{END_DATE}',
+                            str(self.state['end_date'])).replace('{PAGE}', str(page)).replace('{ITEMS_PER_PAGE}',
+                            str(self.config['ITEMS_PER_PAGE']))
                     r = requests.get(url)
-                    temp = json.loads(r.content.decode('utf-8'))
-                    remaining_data = not temp[0]['page'] == temp[0]['pages']  # True if this page is last page
+                    metadata = json.loads(r.content.decode('utf-8'))[0]
+                    temp_data = json.loads(r.content.decode('utf-8'))[1]
+                    remaining_data = not metadata['page'] == metadata['pages']  # True if this page is last page
                     page += 1
-                    self.__data.append(temp[1])
-                # TODO: Think about using a 'verification request', lighter, for one country -->
-                # TODO: Verifying correct dates with less data (instead of retrieving all countries' info per indicator)
-                # The World Bank API returns all indicator's data if 'begin_date' and 'end_date' are higher than API
-                # values. Thus, self.__data would contain a huge list of useless information. So, a check operation
-                # must be performed with first country's data: if dates are not between 'begin_date' and 'end_date',
-                # StopIteration will be raised, and data won't be added (avoiding processing N-1 countries).
-                # Ideally, only one comparison is performed, since API returns data ordered by descending date.
-                # for value in temp:
-                #     if self.__state['begin_date'] > int(value['date']):
-                #         raise StopIteration  # Bad dates
-                # self.__data.append(temp)
-                # TODO: End previous TODO
-        except StopIteration:
-            self.__data = None
-            # Setting update frequency to a shorter time interval (data will be updated soon)
-            self.__state['update_frequency'] = self.__config['TEMP_UPDATE_FREQUENCY']
-        else:
+                    self.logger.debug('Collected %d elements for indicator "%s". Current page is %d (out of %d).'%
+                            (len(temp_data), indicator, metadata['page'], metadata['pages']))
+                    self.data.append(temp_data)
+                self.logger.debug('Data collected: %0.2f%%'%(((index + 1) / indicators_length) * 100))
             # Flattens list of lists
-            self.__data = list(itertools.chain.from_iterable(self.__data)) if self.__data else None
-            if self.__data:
-                for value in self.__data:  # Creates '_id' attribute and removes non-utilities fields
-                    value['_id'] = value['indicator']['id'] + '_' + value['country']['id'] + '_' + value['date']
-                    del value['decimal']
-            self.__state['begin_date'] = self.__state['end_date']
-            self.__state['end_date'] += 1
-            self.__state['update_frequency'] = self.__config['MAX_UPDATE_FREQUENCY']
-        self.__state['last_request'] = datetime.datetime.now()
-
-    def save_data(self):
-        """
-            Saves data into a persistent storage system (Currently, a MongoDB instance).
-            Data is saved in a collection with the same name as the module.
-        """
-        if self.__data is None:
-            pass
+            self.data = list(itertools.chain.from_iterable(self.data)) if self.data else None
+            for value in self.data:
+                value['_id'] = {'indicator': value['indicator']['id'], 'country': value['country']['id'],
+                                'year': value['date']}
+                value['description'] = value['indicator']['value']
+                del value['decimal']
+                del value['indicator']
+                del value['country']
+                del value['date']
+            self.state['begin_date'] = self.state['end_date']
+            self.state['end_date'] += 1
+            self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
         else:
-            connection = connect(self.__module_name)
-            connection.insert_many(self.__data)
+            self.logger.info('Country indicators have not been updated since last data collection. The period '
+                    'between checks will be shortened, since data is expected to be updated soon.')
+            # Setting update frequency to a shorter time interval (data will be updated soon)
+            self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
+        self.state['data_elements'] = len(self.data)
+        self.state['last_request'] = datetime.datetime.now()
 
-    def save_state(self):
+    def _save_data(self):
         """
-            Serializes state to .state file in such a way that can be deserialized later.
+            Saves collected data (stored in 'self.data' variable), into a MongoDB collection called 'country_indicators'.
+            Existent records are not updated, and new ones are inserted as new ones.
+            Postcondition: 'self.data' variable is dereferenced to allow GC to free up memory.
         """
-        self.__state['last_request'] = serialize_date(self.__state['last_request'])
-        write_state(self.__state, __file__)
-
-    def __repr__(self):
-        return str(__class__.__name__) + ' [' \
-            '\n\t(*) config: ' + self.__config.__repr__() + \
-            '\n\t(*) data: ' + self.__data.__repr__() + \
-            '\n\t(*) module_name: ' + self.__module_name.__repr__() + \
-            '\n\t(*) state: ' + self.__state.__repr__() + ']'
+        super()._save_data()
+        if self.data:
+            operations = []
+            for value in self.data:
+                operations.append(UpdateOne({'_id': value['_id']}, update={'$setOnInsert': value}, upsert=True))
+            result = self.collection.collection.bulk_write(operations)
+            self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
+                    + result.bulk_api_result['nUpserted']
+            if self.state['inserted_elements'] == len(self.data):
+                self.logger.debug('Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+            else:
+                self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
+                        self.state['data_elements']))
+            self.collection.close()
+            self.data = None  # Allowing GC to collect data object's memory
+        else:
+            self.logger.info('No elements were saved because no elements have been collected.')
+            self.state['inserted_elements'] = 0

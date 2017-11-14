@@ -1,10 +1,10 @@
 import datetime
 import itertools
 
+from data_collector.data_collector import DataCollector, Reader
 from ftplib import FTP
-from utilities.db_util import connect
-from utilities.util import MassType, DataCollector, decimal_date_to_string, get_config, get_module_name, Reader, \
-    MeasureUnits, read_state, serialize_date, deserialize_date, worktime, write_state
+from pymongo import UpdateOne
+from utilities.util import deserialize_date, serialize_date, decimal_date_to_millis_since_epoch, MassType, MeasureUnits
 
 __singleton = None
 
@@ -17,107 +17,129 @@ def instance() -> DataCollector:
 
 
 class __OceanMassDataCollector(DataCollector):
+
     def __init__(self):
-        super().__init__()
-        self.__data = None
-        self.__state = None
-        self.__config = get_config(__file__)
-        self.__module_name = get_module_name(__file__)
+        super().__init__(file_path=__file__)
 
-    def restore_state(self):
+    def _restore_state(self):
         """
-           Restores previous saved state (.state) if valid. Otherwise, creates a valid structure
-           for .state file from the STATE_STRUCT key in .config file.
+            Deserializes 'last-modified' dates, one for each file.
         """
-        self.__state = read_state(__file__, repair_struct=self.__config['STATE_STRUCT'])
-        self.__state['last_request'] = deserialize_date(self.__state['last_request'])
-        self.__state['antarctica']['last_modified'] = deserialize_date(self.__state['antarctica']['last_modified'])
-        self.__state['greenland']['last_modified'] = deserialize_date(self.__state['greenland']['last_modified'])
-        self.__state['ocean']['last_modified'] = deserialize_date(self.__state['ocean']['last_modified'])
+        super()._restore_state()
+        self.state['antarctica']['last_modified'] = deserialize_date(self.state['antarctica']['last_modified'])
+        self.state['greenland']['last_modified'] = deserialize_date(self.state['greenland']['last_modified'])
+        self.state['ocean']['last_modified'] = deserialize_date(self.state['ocean']['last_modified'])
 
-    def worktime(self) -> bool:
+    def _collect_data(self):
         """
-            Determines whether this module is ready or not to perform new work, according to update policy and
-            last request's timestamp.
-            :return: True if it's work time, False otherwise.
-            :rtype: bool
-        """
-        return worktime(self.__state['last_request'], self.__state['antarctica']['update_frequency']) or \
-               worktime(self.__state['last_request'], self.__state['greenland']['update_frequency']) or \
-               worktime(self.__state['last_request'], self.__state['ocean']['update_frequency'])
-
-    def collect_data(self):
-        """
-            Obtains data from the NASA servers via FTP:
+            Collects data from the NASA servers via FTP requests. Original files are available at:
+            ftp://podaac.jpl.nasa.gov/allData/tellus/L3/mascon/RL05/JPL/CRI/mass_variability_time_series/
+            This data collector gathers data from:
                 - Antarctica ice mass.
                 - Greenland ice mass.
-                - Ocean mass height.
-            Parameters are read from configuration file (ocean_mass.config)
+                - Ocean sea mass.
         """
-        ftp = FTP(self.__config['URL'])
+        super()._collect_data()
+        ftp = FTP(self.config['URL'])
         ftp.login()
-        ftp.cwd(self.__config['DATA_DIR'])  # Accessing directory
-        file_names = sorted([x for x in ftp.nlst() if x.endswith(self.__config['FILE_EXT'])])
-        self.__data = []
+        ftp.cwd(self.config['DATA_DIR'])  # Accessing FTP directory
+
+        file_names = sorted([x for x in ftp.nlst() if x.endswith(self.config['FILE_EXT'])])
+        self.logger.info('%d file(s) were found under NASA FTP directory: %s'%(len(file_names), file_names))
+
+        self.data = []
+        not_modified = []
         for name in file_names:
+            # Getting file's date modified
             last_modified = ftp.sendcmd('MDTM ' + name)
-            last_modified = deserialize_date(last_modified[4:] + '.' + last_modified[0:3],
-                                             date_format=self.__config['FTP_DATE_FORMAT'])
-            type_name = self.__get_type(name)
-            if True if self.__state[type_name]['last_modified'] is None else last_modified > \
-                    self.__state[type_name]['last_modified']:  # Collecting data only if file has been modified
+            last_modified = deserialize_date(
+                    last_modified[4:] + '.' + last_modified[0:3],
+                    date_format=self.config['FTP_DATE_FORMAT'])
+            try:
+                type_name = self.__get_type(name)
+            except ValueError:
+                self.logger.debug('Omitting unnecessary file: %s'%(name))
+                continue
+            # Collecting data only if file has been modified
+            if True if not self.state[type_name]['last_modified'] or not last_modified else \
+                    last_modified > self.state[type_name]['last_modified']:
+                self.__data_modified = True
                 r = Reader()
                 ftp.retrlines('RETR ' + name, r)
-                self.__data.append(self.__to_json(r.data, type_name))
-                self.__state[type_name]['last_modified'] = last_modified
+                temp_data = self.__to_json(r.data, type_name)
+                self.data.append(temp_data)
+                self.state[type_name]['last_modified'] = last_modified
+                self.logger.debug('NASA file "%s" has been correctly parsed. %d measures have been collected.'%(name,
+                        len(temp_data)))
+
                 # Restoring original update frequency
-                self.__state[type_name]['update_frequency'] = self.__config['STATE_STRUCT'][type_name]['update_frequency']
+                self.state[type_name]['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
             else:
                 # Setting update frequency to a shorter time interval (file is near to be modified)
-                self.__state[type_name]['update_frequency'] = self.__config['MIN_UPDATE_FREQUENCY']
-        self.__state['last_request'] = datetime.datetime.now()
+                self.state[type_name]['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
+                not_modified.append(type_name)
+        if not_modified:
+            self.advisedly_no_data_collected = True
+            self.logger.info('Some NASA file(s) have not been updated since last data collection: %s. The period '
+                    'between checks will be shortened, since data is expected to be updated soon.'%(not_modified))
         ftp.quit()
-        self.__data = list(itertools.chain.from_iterable(self.__data)) if self.__data else None  # Flattens list of lists
+        self.state['last_request'] = datetime.datetime.now()
+        self.data = list(itertools.chain.from_iterable(self.data))  # Flattens list of lists
+        self.state['data_elements'] = len(self.data)
+        if len(not_modified) < 3:
+            self.logger.info('NASA files have been correctly parsed. %d measures have been collected.'%(len(self.data)))
+        self.data = self.data if self.data else None
 
-    def save_data(self):
+    def _save_data(self):
         """
-           Saves data into a persistent storage system (Currently, a MongoDB instance).
-           Data is saved in a collection with the same name as the module.
+            Saves collected data (stored in 'self.data' variable), into a MongoDB collection called 'ocean_mass'.
+            Existent records are not updated, and new ones are inserted as new ones.
+            Postcondition: 'self.data' variable is dereferenced to allow GC to free up memory.
         """
-        if self.__data is None:
-            pass
+        super()._save_data()
+        if self.data:
+            operations = []
+            for value in self.data:
+                operations.append(UpdateOne({'_id': value['_id']}, update={'$setOnInsert': value}, upsert=True))
+            result = self.collection.collection.bulk_write(operations)
+            self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
+                    + result.bulk_api_result['nUpserted']
+            if self.state['inserted_elements'] == len(self.data):
+                self.logger.debug(
+                        'Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+            else:
+                self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
+                        self.state['data_elements']))
+            self.collection.close()
+            self.data = None  # Allowing GC to collect data object's memory
         else:
-            connection = connect(self.__module_name)
-            connection.insert_many(self.__data)
+            self.logger.info('No elements were saved because no elements have been collected.')
+            self.state['inserted_elements'] = 0
 
-    def save_state(self):
+    def _save_state(self):
         """
-            Serializes state to .state file in such a way that can be deserialized later.
+            Serializes 'last-modified' dates, one for each file.
         """
-        self.__state['last_request'] = serialize_date(self.__state['last_request'])
-        self.__state['antarctica']['last_modified'] = serialize_date(self.__state['antarctica']['last_modified'])
-        self.__state['greenland']['last_modified'] = serialize_date(self.__state['greenland']['last_modified'])
-        self.__state['ocean']['last_modified'] = serialize_date(self.__state['ocean']['last_modified'])
-        write_state(self.__state, __file__)
+        self.state['antarctica']['last_modified'] = serialize_date(self.state['antarctica']['last_modified'])
+        self.state['greenland']['last_modified'] = serialize_date(self.state['greenland']['last_modified'])
+        self.state['ocean']['last_modified'] = serialize_date(self.state['ocean']['last_modified'])
+        super()._save_state()
 
     @staticmethod
-    def __get_type(file_name):
-        if MassType.antarctica in file_name:
-            return MassType.antarctica
-        elif MassType.greenland in file_name:
-            return MassType.greenland
-        elif MassType.ocean in file_name:
-            return MassType.ocean
-        else:
-            raise ValueError('No MassType matched with file name: ' + file_name)
-
-    def __to_json(self, data, data_type):
+    def __to_json(data: list, data_type: MassType):
+        """
+            Converts all lines split from a NASA file into a valid JSON document.
+            :param data: List of String values
+            :param data_type: Each file has a different structure. This parameter ensures that JSON document is generated
+                              with accuracy, referring to the true file.
+            :return: A list, containing all data formatted as a JSON document.
+        """
         json_data = []
         if data_type is MassType.ocean:
             for line in data:
                 fields = line.split()
-                date = decimal_date_to_string(float(fields[0]), self.__config['DATE_FORMAT'])
-                measure = {'_id': data_type + '_' + date, 'date': date, 'type': data_type, 'measures': []}
+                date = decimal_date_to_millis_since_epoch(float(fields[0]))
+                measure = {'_id': {'type': data_type, 'utc_date': date}, 'measures': []}
                 measure['measures'].append({'height': fields[1], 'units': MeasureUnits.mm})
                 measure['measures'].append({'uncertainty': fields[2], 'units': MeasureUnits.mm})
                 measure['measures'].append({'height_deseasoned': fields[3], 'units': MeasureUnits.mm})
@@ -125,16 +147,23 @@ class __OceanMassDataCollector(DataCollector):
         else:
             for line in data:
                 fields = line.split()
-                date = decimal_date_to_string(float(fields[0]), self.__config['DATE_FORMAT'])
-                measure = {'_id': data_type + '_' + date, 'date': date, 'type': data_type, 'measures': []}
+                date = decimal_date_to_millis_since_epoch(float(fields[0]))
+                measure = {'_id': {'type': data_type, 'utc_date': date}, 'measures': []}
                 measure['measures'].append({'mass': fields[1], 'units': MeasureUnits.Gt})
                 measure['measures'].append({'uncertainty': fields[2], 'units': MeasureUnits.Gt})
                 json_data.append(measure)
         return json_data
 
-    def __repr__(self):
-        return str(__class__.__name__) + ' [' \
-            '\n\t(*) config: ' + self.__config.__repr__() + \
-            '\n\t(*) data: ' + self.__data.__repr__() + \
-            '\n\t(*) module_name: ' + self.__module_name.__repr__() + \
-            '\n\t(*) state: ' + self.__state.__repr__() + ']'
+    @staticmethod
+    def __get_type(file_name) -> MassType:
+        """
+            Given a file name, gets its MassType.
+        """
+        if MassType.antarctica in file_name:
+            return MassType.antarctica
+        elif MassType.greenland in file_name:
+            return MassType.greenland
+        elif MassType.ocean in file_name:
+            return MassType.ocean
+        else:
+            raise ValueError('No MassType matched with file name: %s'%(file_name))

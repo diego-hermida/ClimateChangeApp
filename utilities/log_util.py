@@ -10,7 +10,7 @@ from utilities.util import get_config
 __config = get_config(__file__)
 
 
-def get_logger(path, name='RootLogger', level=logging.INFO, date_format=__config['LOG_DATE_FORMAT'],
+def get_logger(path, name='DefaultLogger', level=logging.INFO, date_format=__config['LOG_DATE_FORMAT'],
                line_format=__config['LOG_RECORD_FORMAT'], to_stdout=False,
                stdout_level=logging.DEBUG) -> logging.Logger:
     """
@@ -31,22 +31,24 @@ def get_logger(path, name='RootLogger', level=logging.INFO, date_format=__config
     :rtype: logging.Logger
     """
     logger = logging.getLogger(name)
-    formatter = logging.Formatter(line_format, datefmt=date_format)
-    if to_stdout:
-        stream_handler = logging.StreamHandler(stdout)
-        stream_handler.setFormatter(formatter)
-        stream_handler.setLevel(stdout_level)
-        logger.addHandler(stream_handler)
+    if not logger.handlers:
+        formatter = logging.Formatter(line_format, datefmt=date_format)
+        if to_stdout:
+            stream_handler = logging.StreamHandler(stdout)
+            stream_handler.setFormatter(formatter)
+            stream_handler.setLevel(stdout_level)
+            logger.addHandler(stream_handler)
 
-    path = __get_log_filepath(path)
-    __recursive_makedir(path[:path.rfind(os_file_separator)])
+        path = __get_log_filepath(path)
+        __recursive_makedir(path[:path.rfind(os_file_separator)])
 
-    file_handler = RotatingFileHandler(filename=path, maxBytes=__config['MAX_LOG_FILE_SIZE'],
-                                       encoding=__config['LOG_FILE_ENCODING'], backupCount=__config['MAX_BACKUP_FILES'])
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(level)
-    logger.addHandler(file_handler)
-
+        file_handler = RotatingFileHandler(filename=path, maxBytes=__config['MAX_LOG_FILE_SIZE'],
+                                           encoding=__config['LOG_FILE_ENCODING'],
+                                           backupCount=__config['MAX_BACKUP_FILES'])
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(level)
+        logger.addHandler(file_handler)
+        logger.setLevel(level if level <= stdout_level else stdout_level)  # Logger must have the minimum level
     return logger
 
 
