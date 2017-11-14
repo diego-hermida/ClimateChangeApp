@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from functools import wraps
+
 from utilities.db_util import MongoDBCollection
 from utilities.log_util import get_logger
 from utilities.util import get_config, get_module_name, read_state, write_state, date_plus_timedelta_gt_now, \
-    serialize_date, deserialize_date
+    serialize_date, deserialize_date, get_exception_info
 
 
 # ---------------------------- Utilities ----------------------------
@@ -146,6 +147,12 @@ class TransitionState:
     def __lt__(self, other):
         return isinstance(other, TransitionState) and self.code < other.code
 
+    def __ge__(self, other):
+        return isinstance(other, TransitionState) and self.code >= other.code
+
+    def __le__(self, other):
+        return isinstance(other, TransitionState) and self.code <= other.code
+
     def __str__(self):
         return self.name
 
@@ -164,12 +171,14 @@ class DataCollector(ABC):
            - Automatic flow control (by invoking the 'run' method, all operations will also be invoked, in proper order).
            - Error handling: Any raised error is automatically handled, either by aborting the module execution, or
                              invoking a "cleaning" method (depending on the method it's currently being executed).
+       To define a DataCollector that inherits from this class, it's strongly recommended to read this page in the
+       repository Wiki: https://github.com/diego-hermida/DataGatheringSubsystem/wiki/Adding-a-DataCollector-module
     """
 
     def __initialize_states(self):
         """
-        Private method that creates the TransitionState instances that will represent the module valid states and their
-        interactions.
+            Private method that creates the TransitionState instances that will represent the module valid states and
+            their interactions.
         """
         self.__ABORTED = TransitionState('ABORTED', ABORTED, None, None, None)
         self.__FINISHED = TransitionState('FINISHED', FINISHED, None, None)
@@ -193,8 +202,9 @@ class DataCollector(ABC):
 
     def run(self):
         """
-
-        :return:
+            Public method that runs the internal State Machine. By invoking this method, no further actions are needed,
+            the DataCollector will reach a consistent state, regardless of the error occurred.
+            Further info available at: https://github.com/diego-hermida/DataGatheringSubsystem/wiki/Subsystem-Structure
         """
         try:
             assert self.__transition_state == self.__INITIALIZED
@@ -210,46 +220,55 @@ class DataCollector(ABC):
                     self.__transition_state.next_state = state_transition_info.next_state
                     self.__transition_state.actions = state_transition_info.actions
                 except Exception as actions_error:
+                    aborted_state_error = AbortedStateReachedError()
                     try:
-                        self.__transition_state.clean_actions()
-                        self.logger.info('Clean actions (' + self.__transition_state.clean_actions.__name__ +
-                                         ') successfully performed. Next state: ' +
-                                         self.__transition_state.next_state.__str__())
-                        self.__transition_state = self.__transition_state.next_state
+                        if self.__transition_state > self.__STATE_RESTORED:  # Adding error info to 'state'
+                            self.state['error'] = get_exception_info(actions_error)
+                        if self.__transition_state.clean_actions:
+                            self.__transition_state.clean_actions()
+                            self.logger.debug('Clean actions (' + self.__transition_state.clean_actions.__name__ +
+                                              ') successfully performed. Next state: ' +
+                                              self.__transition_state.next_state.__str__())
+                            self.__transition_state = self.__transition_state.next_state
+                            continue
+                        else:
+                            aborted_state_error.__cause__ = actions_error
+                            self.logger.exception(aborted_state_error)
+                            self.__transition_state = self.__ABORTED
+                            break
                     except CleanActionsError as clean_actions_error:
                         # Error: AbortedStateReachedError (caused by) CleanActionsError (caused by) Exception, raised
                         # while performing clean actions, (caused by) Exception, raised while performing main actions.
                         clean_actions_error.__cause__.__cause__ = actions_error
-                        aborted_state_error = AbortedStateReachedError()
                         aborted_state_error.__cause__ = clean_actions_error
                         self.logger.exception(aborted_state_error)
                         self.__transition_state = self.__ABORTED
                         break
         self.__state_transitions.append(self.__transition_state.name)
-        self.logger.info('States (' + self.__class__.__name__.replace('__', '') + '): ' + str(self.__state_transitions))
+        self.logger.info('States (' + str(self) + '): ' + str(self.__state_transitions))
 
     def __init__(self, file_path):
         """
-        This method can be overridden, and must invoke super().__init__ before performing further actions.
-        Any DataCollector which inherits from this class has the following (public) attributes:
-            - collection: An abstraction to a MongoDB Collection, with a valid connection to the database, which will
-                          be initialized the first time it's used.
-            - config: Stores the module configuration (deserializes the '.config' file).
-            - data: Stores the collected data (in-memory).
-            - logger: A custom logging.logger instance.
-            - module_name: The name of the current module (got from 'file_path').
-            - pending_work: True if module needs to download data, False otherwise. This
-                            attribute will be initialized later, in '_has_pending_work'.
-            - state: Stores the module conditions (deserializes the '.state' file).  This attribute will be initialized
-                     later, in '_restore_state'.
-        :param file_path: File path to '.py' file. '__file__' should always be passed as the 'file_path' parameter.
-                          Example:
-                              # Previous actions
-                              data_collector = MyDataCollector(file_path=__file__)
-                              # Following actions
+            This method can be overridden, and must invoke super().__init__ before performing further actions.
+            Any DataCollector which inherits from this class has the following (public) attributes:
+                - collection: An abstraction to a MongoDB Collection, with a valid connection to the database, which will
+                              be initialized the first time it's used.
+                - config: Stores the module configuration (deserializes the '.config' file).
+                - data: Stores the collected data (in-memory).
+                - logger: A custom logging.logger instance.
+                - module_name: The name of the current module (got from 'file_path').
+                - pending_work: True if module needs to download data, False otherwise. This
+                                attribute will be initialized later, in '_has_pending_work'.
+                - state: Stores the module conditions (deserializes the '.state' file).  This attribute will be
+                         initialized later, in '_restore_state'.
+            :param file_path: File path to '.py' file. '__file__' should always be passed as the 'file_path' parameter.
+                              Example:
+                                  # Previous actions
+                                  data_collector = MyDataCollector(file_path=__file__)
+                                  # Following actions
         """
         self.__initialize_states()
-        self.logger = get_logger(file_path, to_stdout=True)  # Needs to be initialized to log any error.
+        self.logger = get_logger(file_path, to_stdout=True)  # Needs to be initialized to log errors.
         self.__transition_state = self.__CREATED
         try:
             self.__file_path = file_path
@@ -264,7 +283,7 @@ class DataCollector(ABC):
             self.__transition_state = self.__INITIALIZED
         except Exception:
             self.__transition_state = self.__ABORTED
-            self.logger.exception('Module "' + self.__str__() + '" could not be initialized.')
+            self.logger.exception('Module "' + str(self) + '" could not be initialized.')
 
     def _restore_state(self):
         """
@@ -389,10 +408,10 @@ class DataCollector(ABC):
         return self.__class__.__name__.replace('__', '')
 
     def __repr__(self):
-        return str(__class__.__name__) + ' [' \
-            '\n\t(*) config: ' + self.config.__repr__() + \
-            '\n\t(*) data: ' + self.data.__repr__() + \
-            '\n\t(*) file path: ' + self.__file_path.__repr__() + \
-            '\n\t(*) transition_state: ' + self.__transition_state.__str__() + \
-            '\n\t(*) module_name: ' + self.module_name.__repr__() + \
-            '\n\t(*) state: ' + self.state.__repr__() + ']\n'
+        return str(self) + ' [' + \
+               '\n\t(*) config: ' + self.config.__repr__() + \
+               '\n\t(*) data: ' + self.data.__repr__() + \
+               '\n\t(*) file path: ' + self.__file_path.__repr__() + \
+               '\n\t(*) transition_state: ' + self.__transition_state.__str__() + \
+               '\n\t(*) module_name: ' + self.module_name.__repr__() + \
+               '\n\t(*) state: ' + self.state.__repr__() + ']\n'
