@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from functools import wraps
-
 from utilities.db_util import MongoDBCollection
 from utilities.log_util import get_logger
 from utilities.util import get_config, get_module_name, read_state, write_state, date_plus_timedelta_gt_now, \
@@ -8,39 +7,6 @@ from utilities.util import get_config, get_module_name, read_state, write_state,
 
 
 # ---------------------------- Utilities ----------------------------
-
-class CatchAndRaise:
-    """
-    Uses Aspect Oriented Programming (AOP) to decouple a __transition_state's logic from exception handling. By decorating
-    a method with this code, any exception raised by the callee is wrapped to the exception passed by argument. Example:
-
-        @CatchAndRaise(MyError('Error!'))          (w/o decorator)      def divide(a: int, b: int) -> float
-        def divide(a: int, b: int) -> float:              ->                  try:
-            return a/b                                                          return a/b
-                                                                            except ZeroDivisionError as ex:
-                                                                                raise MyError('Error') from ex
-
-        Explanation: If b=0, an ZeroDivisionError will be raised. If we want such method to raise a custom exception
-        (like a MyError) without explicitly catching ZeroDivisionError and raising the custom exception, this
-        decorator automatically does that job for us.
-    :param exception: A Exception (or any subclass) instance, which will wrap any raised exception.
-    :return: Whatever callee returns (if no exception is raised).
-    :raises: Exception (or any subclass), if original __transition_state raises an exception.
-    """
-
-    def __init__(self, exception: Exception):
-        self.__exception = exception
-
-    def __call__(self, callee):
-        @wraps(callee)
-        def __catcher(*args, **kwargs):
-            try:
-                return callee(*args, **kwargs)
-            except Exception as callee_exception:
-                raise self.__exception from callee_exception
-
-        return __catcher
-
 
 class Before:
     """
@@ -93,16 +59,6 @@ class StateChanged(BaseException):
         super(StateChanged, self).__init__(self.message)
 
 
-class CleanActionsError(RuntimeError):
-    """
-        This Exception is used to encapsulate any error that might be caused during the execution of a <clean actions>
-        method.
-    """
-
-    def __init__(self, message='An error occurred while performing clean actions.'):
-        super(CleanActionsError, self).__init__(message)
-
-
 # ---------------------------- Constants ----------------------------
 
 CREATED = 0
@@ -110,9 +66,13 @@ INITIALIZED = 10
 STATE_RESTORED = 20
 PENDING_WORK_CHECKED = 30
 DATA_COLLECTED = 40
+CLEAN_ACTIONS_ON_COLLECT_DATA = 41
 DATA_SAVED = 50
+CLEAN_ACTIONS_ON_SAVE_DATA = 51
 STATE_SAVED = 60
+CLEAN_ACTIONS_ON_SAVE_STATE = 61
 EXECUTION_CHECKED = 70
+CLEAN_ACTIONS_ON_CHECK_EXECUTION = 71
 FINISHED = 80
 ABORTED = -1
 
@@ -139,19 +99,29 @@ class TransitionState:
         self.clean_actions = clean_actions
 
     def __eq__(self, other):
-        return isinstance(other, TransitionState) and self.code == other.code
+        if not isinstance(other, TransitionState):
+            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
+        return self.code == other.code
 
     def __gt__(self, other):
-        return isinstance(other, TransitionState) and self.code > other.code
+        if not isinstance(other, TransitionState):
+            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
+        return self.code > other.code
 
     def __lt__(self, other):
-        return isinstance(other, TransitionState) and self.code < other.code
+        if not isinstance(other, TransitionState):
+            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
+        return self.code < other.code
 
     def __ge__(self, other):
-        return isinstance(other, TransitionState) and self.code >= other.code
+        if not isinstance(other, TransitionState):
+            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
+        return self.code >= other.code
 
     def __le__(self, other):
-        return isinstance(other, TransitionState) and self.code <= other.code
+        if not isinstance(other, TransitionState):
+            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
+        return self.code <= other.code
 
     def __str__(self):
         return self.name
@@ -180,70 +150,82 @@ class DataCollector(ABC):
             Private method that creates the TransitionState instances that will represent the module valid states and
             their interactions.
         """
-        self.__ABORTED = TransitionState('ABORTED', ABORTED, None, None, None)
-        self.__FINISHED = TransitionState('FINISHED', FINISHED, None, None)
-        self.__EXECUTION_CHECKED = TransitionState('EXECUTION_CHECKED', EXECUTION_CHECKED, self.__FINISHED,
-                                                   self.__finish_execution, self.__FINISHED)
-        self.__STATE_SAVED = TransitionState('STATE_SAVED', STATE_SAVED, self.__EXECUTION_CHECKED,
-                                             self._check_execution, self.__EXECUTION_CHECKED,
-                                             self._clean_actions_on_check_execution)
-        self.__DATA_SAVED = TransitionState('DATA_SAVED', DATA_SAVED, self.__STATE_SAVED, self._save_state,
-                                            self.__STATE_SAVED, self._clean_actions_on_save_state)
-        self.__DATA_COLLECTED = TransitionState('DATA_COLLECTED', DATA_COLLECTED, self.__DATA_SAVED, self._save_data,
-                                                self.__STATE_SAVED, self._clean_actions_on_save_data)
-        self.__PENDING_WORK_CHECKED = TransitionState('PENDING_WORK_CHECKED', PENDING_WORK_CHECKED,
-                                                      self.__DATA_COLLECTED, self._collect_data, self.__STATE_SAVED,
-                                                      self._clean_actions_on_collect_data)
-        self.__STATE_RESTORED = TransitionState('STATE_RESTORED', STATE_RESTORED, self.__PENDING_WORK_CHECKED,
-                                                self._has_pending_work, self.__ABORTED)
-        self.__INITIALIZED = TransitionState('INITIALIZED', INITIALIZED, self.__STATE_RESTORED, self._restore_state,
-                                             self.__ABORTED)
-        self.__CREATED = TransitionState('CREATED', CREATED, self.__INITIALIZED, None, self.__ABORTED)
+        self.__ABORTED = TransitionState(name='ABORTED', code=ABORTED, next_state=None, actions=None)
+        self.__FINISHED = TransitionState(name='FINISHED', code=FINISHED, next_state=None, actions=None)
+        self.__EXECUTION_CHECKED = \
+            TransitionState(name='EXECUTION_CHECKED', code=EXECUTION_CHECKED, next_state=self.__FINISHED,
+                            actions=self.__finish_execution, on_error_state=self.__FINISHED)
+        self.__CLEAN_ACTIONS_ON_CHECK_EXECUTION = \
+            TransitionState(name='CLEAN_ACTIONS_ON_CHECK_EXECUTION', code=CLEAN_ACTIONS_ON_CHECK_EXECUTION,
+                            next_state=self.__FINISHED, actions=self.__EXECUTION_CHECKED, on_error_state=self.__ABORTED,
+                            clean_actions=self._clean_actions_on_check_execution)
+        self.__STATE_SAVED = \
+            TransitionState(name='STATE_SAVED', code=STATE_SAVED, next_state=self.__EXECUTION_CHECKED,
+                            actions=self._check_execution, on_error_state=self.__CLEAN_ACTIONS_ON_CHECK_EXECUTION)
+        self.__CLEAN_ACTIONS_ON_SAVE_STATE = \
+            TransitionState(name='CLEAN_ACTIONS_ON_SAVE_STATE', code=CLEAN_ACTIONS_ON_SAVE_STATE,
+                            next_state=self.__EXECUTION_CHECKED, actions=self._check_execution,
+                            on_error_state=self.__ABORTED, clean_actions=self._clean_actions_on_save_state)
+        self.__DATA_SAVED = \
+            TransitionState(name='DATA_SAVED', code=DATA_SAVED, next_state=self.__STATE_SAVED, actions=self._save_state,
+                            on_error_state=self.__CLEAN_ACTIONS_ON_SAVE_STATE)
+        self.__CLEAN_ACTIONS_ON_SAVE_DATA = \
+            TransitionState(name='CLEAN_ACTIONS_ON_SAVE_DATA', code=CLEAN_ACTIONS_ON_SAVE_DATA,
+                            next_state=self.__STATE_SAVED, actions=self._save_state, on_error_state=self.__ABORTED,
+                            clean_actions=self._clean_actions_on_save_data)
+        self.__DATA_COLLECTED = \
+            TransitionState(name='DATA_COLLECTED', code=DATA_COLLECTED, next_state=self.__DATA_SAVED,
+                            actions=self._save_data, on_error_state=self.__CLEAN_ACTIONS_ON_SAVE_DATA)
+        self.__CLEAN_ACTIONS_ON_COLLECT_DATA = \
+            TransitionState(name='CLEAN_ACTIONS_ON_COLLECT_DATA', code=CLEAN_ACTIONS_ON_COLLECT_DATA,
+                            next_state=self.__STATE_SAVED, actions=self._save_state, on_error_state=self.__ABORTED,
+                            clean_actions=self._clean_actions_on_collect_data)
+        self.__PENDING_WORK_CHECKED = \
+            TransitionState(name='PENDING_WORK_CHECKED', code=PENDING_WORK_CHECKED, next_state=self.__DATA_COLLECTED,
+                            actions=self._collect_data, on_error_state=self.__CLEAN_ACTIONS_ON_COLLECT_DATA)
+        self.__STATE_RESTORED = \
+            TransitionState(name='STATE_RESTORED', code=STATE_RESTORED, next_state=self.__PENDING_WORK_CHECKED,
+                            actions=self._has_pending_work, on_error_state=self.__ABORTED)
+        self.__INITIALIZED = TransitionState(name='INITIALIZED', code=INITIALIZED, next_state=self.__STATE_RESTORED,
+                                             actions=self._restore_state, on_error_state=self.__ABORTED)
+        self.__CREATED = TransitionState(name='CREATED', code=CREATED, next_state=self.__INITIALIZED, actions=None,
+                                         on_error_state=self.__ABORTED)
 
     def run(self):
         """
-            Public method that runs the internal State Machine. By invoking this method, no further actions are needed,
-            the DataCollector will reach a consistent state, regardless of the error occurred.
+            This method must NOT be overridden. Once a DataCollector instance is created, simply invoke this method to
+            perform all operations. By inheriting from DataCollector, flow control and unexpected error handling are
+            automatically provided.
             Further info available at: https://github.com/diego-hermida/DataGatheringSubsystem/wiki/Subsystem-Structure
         """
-        try:
-            assert self.__transition_state == self.__INITIALIZED
-        except AssertionError:
-            self.logger.error('Aborting execution due to bad initialization.')
-        if self.__transition_state != self.__ABORTED:
-            while self.__transition_state != self.__FINISHED:
-                try:
-                    self.__transition_state.actions()
-                    self.__state_transitions.append(self.__transition_state.name)
-                    self.__transition_state = self.__transition_state.next_state
-                except StateChanged as state_transition_info:
-                    self.__transition_state.next_state = state_transition_info.next_state
-                    self.__transition_state.actions = state_transition_info.actions
-                except Exception as actions_error:
-                    aborted_state_error = AbortedStateReachedError()
-                    try:
-                        if self.__transition_state > self.__STATE_RESTORED:  # Adding error info to 'state'
-                            self.state['error'] = get_exception_info(actions_error)
-                        if self.__transition_state.clean_actions:
+        while self.__transition_state > self.__CREATED and self.__transition_state != self.__FINISHED:
+            try:
+                self.__transition_state.actions()
+                self.__state_transitions.append(self.__transition_state.name)
+                self.__transition_state = self.__transition_state.next_state
+            except StateChanged as state_transition_info:
+                self.__transition_state.next_state = state_transition_info.next_state
+                self.__transition_state.actions = state_transition_info.actions
+            except Exception as actions_error:
+                error = AbortedStateReachedError()
+                self.__transition_state = self.__transition_state.on_error_state
+                if self.__transition_state > self.__STATE_RESTORED:  # Adding error info to 'state'
+                    self.state['error'] = get_exception_info(actions_error)
+                    if self.__transition_state.clean_actions:
+                        try:
                             self.__transition_state.clean_actions()
-                            self.logger.debug('Clean actions (' + self.__transition_state.clean_actions.__name__ +
-                                              ') successfully performed. Next state: ' +
-                                              self.__transition_state.next_state.__str__())
-                            self.__transition_state = self.__transition_state.next_state
+                            self.logger.debug('Clean actions successfully performed: ' + str(self.__transition_state))
                             continue
-                        else:
-                            aborted_state_error.__cause__ = actions_error
-                            self.logger.exception(aborted_state_error)
-                            self.__transition_state = self.__ABORTED
-                            break
-                    except CleanActionsError as clean_actions_error:
-                        # Error: AbortedStateReachedError (caused by) CleanActionsError (caused by) Exception, raised
-                        # while performing clean actions, (caused by) Exception, raised while performing main actions.
-                        clean_actions_error.__cause__.__cause__ = actions_error
-                        aborted_state_error.__cause__ = clean_actions_error
-                        self.logger.exception(aborted_state_error)
-                        self.__transition_state = self.__ABORTED
-                        break
+                        except Exception as clean_actions_error:
+                            self.__state_transitions.append(self.__transition_state.name)
+                            clean_actions_error.__cause__ = actions_error
+                            error.__cause__ = clean_actions_error
+                            self.logger.exception('Clean actions failed: ' + str(self.__transition_state))
+                    else:
+                        error.__cause__ = actions_error
+                        self.logger.exception(error)
+                self.__transition_state = self.__transition_state.on_error_state
+                break
         self.__state_transitions.append(self.__transition_state.name)
         self.logger.info('States (' + str(self) + '): ' + str(self.__state_transitions))
 
@@ -251,8 +233,8 @@ class DataCollector(ABC):
         """
             This method can be overridden, and must invoke super().__init__ before performing further actions.
             Any DataCollector which inherits from this class has the following (public) attributes:
-                - collection: An abstraction to a MongoDB Collection, with a valid connection to the database, which will
-                              be initialized the first time it's used.
+                - collection: An abstraction to a MongoDB Collection, with a valid connection to the database, which
+                              will be initialized the first time it's used.
                 - config: Stores the module configuration (deserializes the '.config' file).
                 - data: Stores the collected data (in-memory).
                 - logger: A custom logging.logger instance.
@@ -354,49 +336,46 @@ class DataCollector(ABC):
         """
         pass
 
-    @CatchAndRaise(exception=CleanActionsError())
     def _clean_actions_on_collect_data(self):
         """
-            This method MUST be overridden, and must invoke super()._clean_actions_on_collect_data before performing
-            further actions.
+            This method can be overridden, and must NOT invoke the super() call.
             If overridden, allows the data module to establish cleaning actions if an error occurs during the execution
-            of '_collect_data'. If an error occurs during the execution of this method, it will be encapsulated and
-            re-raised as a CleanActionsError, and automatically handled.
+            of '_collect_data'. If an error occurs during the execution of this method, it will be automatically handled.
+            Further info available at the repository Wiki:
+                https://github.com/diego-hermida/DataGatheringSubsystem/wiki/Adding-a-DataCollector-module#clean-actions
         """
-        pass
+        raise NotImplementedError('Clean actions have not been implemented.')
 
-    @CatchAndRaise(exception=CleanActionsError())
     def _clean_actions_on_save_data(self):
         """
-            This method MUST be overridden, and must invoke super()._clean_actions_on_save_data before performing
-            further actions.
+            This method can be overridden, and must NOT invoke the super() call.
             If overridden, allows the data module to establish cleaning actions if an error occurs during the execution
-            of '_save_data'. If an error occurs during the execution of this method, it will be encapsulated and
-            re-raised as a CleanActionsError, and automatically handled.
+            of '_save_data'. If an error occurs during the execution of this method, it will be automatically handled.
+            Further info available at the repository Wiki:
+                https://github.com/diego-hermida/DataGatheringSubsystem/wiki/Adding-a-DataCollector-module#clean-actions
         """
-        pass
+        raise NotImplementedError('Clean actions have not been implemented.')
 
-    @CatchAndRaise(exception=CleanActionsError())
     def _clean_actions_on_save_state(self):
         """
-            This method MUST be overridden, and must invoke super()._clean_actions_on_save_state before performing
-            further actions.
+            This method can be overridden, and must NOT invoke the super() call.
             If overridden, allows the data module to establish cleaning actions if an error occurs during the execution
-            of '_save_state'. If an error occurs during the execution of this method, it will be encapsulated and
-            re-raised as a CleanActionsError, and automatically handled.
+            of '_save_state'. If an error occurs during the execution of this method, it will be automatically handled.
+            Further info available at the repository Wiki:
+                https://github.com/diego-hermida/DataGatheringSubsystem/wiki/Adding-a-DataCollector-module#clean-actions
         """
-        pass
+        raise NotImplementedError('Clean actions have not been implemented.')
 
-    @CatchAndRaise(exception=CleanActionsError())
     def _clean_actions_on_check_execution(self):
         """
-            This method MUST be overridden, and must invoke super()._clean_actions_on_check_execution before performing
-            further actions.
+            This method can be overridden, and must NOT invoke the super() call.
             If overridden, allows the data module to establish cleaning actions if an error occurs during the execution
-            of '_check_execution'. If an error occurs during the execution of this method, it will be encapsulated and
-            re-raised as a CleanActionsError, and automatically handled.
+            of '_check_execution'. If an error occurs during the execution of this method, it will be automatically
+            handled.
+            Further info available at the repository Wiki:
+                https://github.com/diego-hermida/DataGatheringSubsystem/wiki/Adding-a-DataCollector-module#clean-actions
         """
-        pass
+        raise NotImplementedError('Clean actions have not been implemented.')
 
     def __finish_execution(self):
         """
