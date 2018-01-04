@@ -1,6 +1,36 @@
+from os import environ
 from pymongo import MongoClient
 
 from utilities.util import get_config
+
+
+def drop_application_database():
+    """
+        Deletes all contents from the Subsystem database.
+    """
+    config = get_config(__file__)
+    MongoClient(host=environ.get(config['DB_SERVER'], 'localhost'),
+                port=config['DB_PORT'],
+                authSource=config['DB_ADMIN'],
+                serverSelectionTimeoutMS=config['DB_MAX_MILLISECONDS_WAIT'],
+                username=config['DB_ROOT'],
+                password=config['DB_ROOT_PASSWORD'],
+                authMechanism=config['DB_AUTH_MECHANISM']).drop_database(config['DATABASE'])
+
+
+def create_application_user():
+    """
+        Creates an admin user, who owns the Subsystem database on MongoDB.
+        If the database does not exist, it will also be created.
+    """
+    config = get_config(__file__)
+    MongoClient(host=environ.get(config['DB_SERVER'], 'localhost'),
+                port=config['DB_PORT'],
+                authSource=config['DB_ADMIN'],
+                serverSelectionTimeoutMS=config['DB_MAX_MILLISECONDS_WAIT'],
+                username=config['DB_ROOT'], password=config['DB_ROOT_PASSWORD'],
+                authMechanism=config['DB_AUTH_MECHANISM']).get_database(config['DATABASE']).command('createUser',
+        config['DB_USERNAME'], pwd=config['DB_PASSWORD'], roles=[{"role" : "dbOwner", "db" : "climatechange"}])
 
 
 class MongoDBCollection:
@@ -19,15 +49,15 @@ class MongoDBCollection:
         self.__collection_name = collection_name
         self.__config = get_config(__file__)
         self.__client = MongoClient(
-            host=self.__config['DB_SERVER'],
+            host=environ.get(self.__config['DB_SERVER'], 'localhost'),
             port=self.__config['DB_PORT'],
-            authSource=self.__config['DB_DATABASE'],
+            authSource=self.__config['DATABASE'],
             serverSelectionTimeoutMS=self.__config['DB_MAX_MILLISECONDS_WAIT'],
             username=self.__config['DB_USERNAME'],
             password=self.__config['DB_PASSWORD'],
             authMechanism=self.__config['DB_AUTH_MECHANISM'])
         self.__client.server_info()  # Checks valid connection.
-        self.collection = self.__client.get_database(self.__config['DB_DATABASE']).get_collection(collection_name)
+        self.collection = self.__client.get_database(self.__config['DATABASE']).get_collection(collection_name)
 
     def is_closed(self) -> bool:
         """
@@ -56,7 +86,7 @@ class MongoDBCollection:
             return
         if not self.is_closed():
             self.close()
-        self.collection = self.__client.get_database(self.__config['DB_DATABASE']).get_collection(
+        self.collection = self.__client.get_database(self.__config['DATABASE']).get_collection(
             collection_name if collection_name else self.__collection_name)
 
     def find(self, fields=None, conditions=None, last_id=None, count=None, sort=None) -> dict:

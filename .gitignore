@@ -1,7 +1,9 @@
 .idea
 *.pyc
-.DS_Store
-file.txt
+*.DS_Store
+*.state
+*~
+*.csproj
 
 data_modules/__pycache__/
 data_modules/air_pollution/__pycache__/
@@ -14,5 +16,6 @@ data_modules/locations/__pycache__/
 data_modules/ocean_mass/__pycache__/
 data_modules/sea_level_rise/__pycache__/
 data_modules/weather_forecast/__pycache__/
-main/__pycache__/
+exec/__pycache__/
 utilities/__pycache__/
+data_collector/__pycache__/

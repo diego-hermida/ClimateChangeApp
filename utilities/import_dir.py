@@ -45,6 +45,8 @@ def __get_module_names(path, recursive=False, base_package=None, include_paths=F
         elif os.path.isfile(full_entry):
             regexp_result = re.search(__module_file_regexp, full_entry)  # Verifies file is module
             if regexp_result:
+                if '__init__' in full_entry:
+                    continue
                 # Replaces path separator ('/' or '\') by Python's package separator
                 if include_paths:
                     __dirs.append(full_entry.replace('.py', ''))
@@ -55,5 +57,6 @@ def __get_module_names(path, recursive=False, base_package=None, include_paths=F
 
 
 def __import_modules(path, recursive=False, base_package=None, include_paths=False):
-    return [import_module(x) for x in __get_module_names(path, recursive=recursive, base_package=base_package,
-                                                         include_paths=include_paths)]
+    names =  __get_module_names(path, recursive=recursive, base_package=base_package,
+                                                         include_paths=include_paths)
+    return [import_module(x) for x in names]

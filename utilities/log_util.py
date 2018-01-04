@@ -1,34 +1,35 @@
-import errno
 import logging
 
+from global_config.global_config import CONFIG
 from logging.handlers import RotatingFileHandler
-from os import makedirs, sep as os_file_separator
+from os import sep as os_file_separator
 from sys import stdout
 
-from utilities.util import get_config
+from utilities.util import get_config, recursive_makedir
 
 __config = get_config(__file__)
 
 
-def get_logger(path, name='DefaultLogger', level=logging.INFO, date_format=__config['LOG_DATE_FORMAT'],
+def get_logger(path: str, name: str, level=logging.INFO, date_format=__config['LOG_DATE_FORMAT'],
                line_format=__config['LOG_RECORD_FORMAT'], to_stdout=False,
-               stdout_level=logging.DEBUG) -> logging.Logger:
+               stdout_level=logging.DEBUG, to_file=True) -> logging.Logger:
     """
-    Configures a logging.Logger object.
-    Log file maximum size is limited to MAX_LOG_FILE_SIZE. If max size is reached, current log file is closed and
-    renamed to '{log file name}.1'. Next time MAX_LOG_FILE_SIZE is reached, a '{log file name}.2' will be created;
-    and so on, until MAX_BACKUP_FILES are created. Oldest log file is deleted when MAX_BACKUP_FILES have been filled,
-    and a new backup file is created.
-    To see where log files are saved, read __get_log_filepath() documentation (log_util.py:54).
-    :param path: Path of the calling module (expected: __file__ ).
-    :param name: Logger's name.
-    :param level: Minimum issue level to include log records into log file.
-    :param date_format: Date format. Default format is 'dd-MM-yyyy hh:mm:ss.fff'
-    :param line_format: Line format. Default format is '[<level>] <timestamp> <file:line @ threadName>: <message>'
-    :param to_stdout: If True, prints log records to stdout.
-    :param stdout_level: Stdout's issue level.
-    :return: A logging.Logger object, configured and initialized with arguments.
-    :rtype: logging.Logger
+        Configures a logging.Logger object.
+        Log file maximum size is limited to MAX_LOG_FILE_SIZE. If max size is reached, current log file is closed and
+        renamed to '{log file name}.1'. Next time MAX_LOG_FILE_SIZE is reached, a '{log file name}.2' will be created;
+        and so on, until MAX_BACKUP_FILES are created. Oldest log file is deleted when MAX_BACKUP_FILES have been filled,
+        and a new backup file is created.
+        To see where log files are saved, read __get_log_filepath() documentation (log_util.py:54).
+        :param path: Path of the calling module (expected: __file__ ).
+        :param name: Logger's name.
+        :param level: Minimum issue level to include log records into log file.
+        :param date_format: Date format. Default format is 'dd-MM-yyyy hh:mm:ss.fff'
+        :param line_format: Line format. Default format is '[<level>] <timestamp> <file:line @ threadName>: <message>'
+        :param to_stdout: If True, prints log records to stdout.
+        :param stdout_level: Stdout's issue level.
+        :param to_file: If True, saves log records to a log file.
+        :return: A logging.Logger object, configured and initialized with arguments.
+        :rtype: logging.Logger
     """
     logger = logging.getLogger(name)
     if not logger.handlers:
@@ -39,31 +40,27 @@ def get_logger(path, name='DefaultLogger', level=logging.INFO, date_format=__con
             stream_handler.setLevel(stdout_level)
             logger.addHandler(stream_handler)
 
-        path = __get_log_filepath(path)
-        __recursive_makedir(path[:path.rfind(os_file_separator)])
-
-        file_handler = RotatingFileHandler(filename=path, maxBytes=__config['MAX_LOG_FILE_SIZE'],
-                                           encoding=__config['LOG_FILE_ENCODING'],
-                                           backupCount=__config['MAX_BACKUP_FILES'])
-        file_handler.setFormatter(formatter)
-        file_handler.setLevel(level)
-        logger.addHandler(file_handler)
+        if to_file:
+            path = __get_log_filepath(path)
+            recursive_makedir(path[:path.rfind(os_file_separator)])
+            file_handler = RotatingFileHandler(filename=path, maxBytes=__config['MAX_LOG_FILE_SIZE'],
+                                               encoding=__config['LOG_FILE_ENCODING'],
+                                               backupCount=__config['MAX_BACKUP_FILES'])
+            file_handler.setFormatter(formatter)
+            file_handler.setLevel(level)
+            logger.addHandler(file_handler)
         logger.setLevel(level if level <= stdout_level else stdout_level)  # Logger must have the minimum level
     return logger
 
 
-def __recursive_makedir(path: str):
+def remove_log_file(path: str):
     """
-    Recursively creates all directories under a base directory. If a directory does already exist, silently performs
-    the operation (FileExistsError is handled).
-    :param path: A valid directory path. Example: /var/log/DataGatheringSubsystem/data_modules, where 'data_modules' is
-                 a directory (can be non-existent).
-    :raise PermissionError: If an attempt to create a directory without the necessary privileges is made.
+        Given the file path to a '.py' file (DataCollector module), deletes the log file attached to it.
+        :param path: File path to the DataCollector module. '__file__' is the expected value for this parameter.
     """
-    try:
-        makedirs(path)
-    except FileExistsError as ex:
-        assert ex.errno == errno.EEXIST
+    from os import remove
+
+    remove(__get_log_filepath(path))
 
 
 def __get_log_filepath(path: str) -> str:
@@ -78,5 +75,5 @@ def __get_log_filepath(path: str) -> str:
     :param path: A <str> containing a valid path (see the example above).
     :return: The log file path of a file.
     """
-    base = __config['ROOT_PROJECT_FOLDER'].split(os_file_separator)[-2]
-    return __config['ROOT_LOG_FOLDER'] + path.split(base)[-1].replace('.py', '.log')
+    base = CONFIG['ROOT_PROJECT_FOLDER'].split(os_file_separator)[-2]
+    return CONFIG['ROOT_LOG_FOLDER'] + path.split(base)[-1].replace('.py', '.log')
