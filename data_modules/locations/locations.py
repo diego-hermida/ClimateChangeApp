@@ -6,6 +6,7 @@ import zipfile
 from data_collector.data_collector import DataCollector
 from io import BytesIO
 from pymongo import UpdateOne
+from pytz import UTC
 from unidecode import unidecode
 from utilities.util import check_coordinates, date_to_millis_since_epoch, deserialize_date, MeasureUnits, serialize_date
 
@@ -14,7 +15,7 @@ __singleton = None
 
 def instance() -> DataCollector:
     global __singleton
-    if __singleton is None:
+    if not __singleton or __singleton and __singleton.finished_execution():
         __singleton = __LocationsDataCollector()
     return __singleton
 
@@ -45,7 +46,7 @@ class __LocationsDataCollector(DataCollector):
         zf = zipfile.ZipFile(BytesIO(r.content))
         for info in zf.infolist():
             last_modified = datetime.datetime(
-                    *info.date_time + (1,))  # Adding 1 millisecond (date_format compatibility)
+                    *info.date_time + (1,), tzinfo=UTC)  # Adding 1 millisecond (date_format compatibility)
             break
         self.data = []
         unmatched = []
@@ -56,13 +57,16 @@ class __LocationsDataCollector(DataCollector):
         if True if not self.state['last_modified'] or not last_modified else last_modified > self.state['last_modified']:
             index = 1
             locations_length = len(self.config['LOCATIONS'])
+            for location in self.config['LOCATIONS']:
+                loc = self.config['LOCATIONS'][location]
+                loc['missing'] = True
             with zf.open(self.config['FILE']) as f:
                 for line in f:
                     fields = line.decode('utf-8').replace('\n', '').split('\t')
                     # Filtering locations to monitored locations
                     loc = self.config['LOCATIONS'].get(fields[1], None)
                     if loc:
-                        date = date_to_millis_since_epoch(datetime.datetime.strptime(fields[18], "%Y-%m-%d"))
+                        date = date_to_millis_since_epoch(datetime.datetime.strptime(fields[18], "%Y-%m-%d").replace(tzinfo=UTC))
                         location = {'name': fields[1], 'latitude': float(fields[4]), 'longitude': float(fields[5]),
                                 'country_code': fields[8], 'population': fields[14], 'elevation': {'value': fields[15],
                                 'units': MeasureUnits.m}, 'timezone': fields[17], 'last_modified': date, '_id':
@@ -77,28 +81,35 @@ class __LocationsDataCollector(DataCollector):
                             r = requests.get(self.config['URL_WUNDERGROUND'] + unidecode(loc['name'].split(',')[0]) +
                                     '&c=' + loc['country_code'])
                             # Filtering results by proximity, to avoid saving false positives
-                            matches = [x for x in json.loads(r.content.decode('utf-8', errors='replace'))['RESULTS'] if
-                                    check_coordinates(float(loc['latitude']), float(loc['longitude']), float(x['lat']),
-                                    float(x['lon']), margin=0.35)]
-                            if len(matches) > 1:
-                                multiple.append(loc['name'])
-                            elif not matches:
-                                unmatched.append(loc['name'])
+                            matches = None
+                            try:
+                                matches = [x for x in json.loads(r.content.decode('utf-8', errors='replace'))[
+                                        'RESULTS'] if check_coordinates(float(loc['latitude']), float(loc['longitude']),
+                                        float(x['lat']), float(x['lon']), margin=0.35)]
+                                if len(matches) > 1:
+                                    multiple.append(loc['name'])
+                                elif not matches:
+                                    unmatched.append(loc['name'])
+                            except (AttributeError, KeyError, TypeError, ValueError):
+                                unmatched.append(location['name'])
                             location['wunderground_loc_id'] = matches[0]['l'] if matches else None
 
                             # Finding Station ID for WAQI API requests
                             r = requests.get(self.config['URL_WAQI'].replace('{LOC}', unidecode(loc['name'].split(',')[0])))
                             temp = json.loads(r.content.decode('utf-8', errors='replace'))
                             matches = None
-                            if temp['status'] == 'ok':
-                                # Filtering results by proximity, to avoid saving false positives
-                                matches = [x for x in json.loads(r.content.decode('utf-8', errors='replace'))['data'] if
-                                        check_coordinates(float(loc['latitude']), float(loc['longitude']),
-                                        float(x['station']['geo'][0]), float(x['station']['geo'][1]), margin=0.35)]
-                                if len(matches) > 1:
-                                    multiple_waqi.append(loc['name'])
-                                elif not matches:
-                                    unmatched_waqi.append(loc['name'])
+                            try:
+                                if temp['status'] == 'ok':
+                                    # Filtering results by proximity, to avoid saving false positives
+                                    matches = [x for x in temp['data'] if check_coordinates(float(loc['latitude']),
+                                            float(loc['longitude']), float(x['station']['geo'][0]), float(x['station']
+                                            ['geo'][1]), margin=0.35)]
+                                    if len(matches) > 1:
+                                        multiple_waqi.append(loc['name'])
+                                    elif not matches:
+                                        unmatched_waqi.append(loc['name'])
+                            except (AttributeError, KeyError, TypeError, ValueError):
+                                unmatched.append(location['name'])
                             location['waqi_station_id'] = matches[0]['uid'] if matches else None
 
                             self.data.append(location)
@@ -106,17 +117,17 @@ class __LocationsDataCollector(DataCollector):
                                 self.logger.debug('Collected data: %.2f%%'%(((index / locations_length) * 100)))
                             index += 1
             if multiple:
-                self.logger.warning('%d locations have multiple matches at Wunderground API. As a result, API requests '
-                        'might not be accurate for the following locations: %s'%(len(multiple), sorted(multiple)))
+                self.logger.warning('%d location(s) have multiple matches at Wunderground API. As a result, API requests '
+                        'might not be accurate for the following location(s): %s'%(len(multiple), sorted(multiple)))
             if unmatched:
-                self.logger.warning('%d locations have no matches at Wunderground API. As a result, historical weather '
-                        'will not be available for the following locations: %s' % (len(unmatched), sorted(unmatched)))
+                self.logger.warning('%d location(s) have no matches at Wunderground API. As a result, historical weather '
+                        'will not be available for the following location(s): %s' % (len(unmatched), sorted(unmatched)))
             if multiple_waqi:
-                self.logger.warning('%d locations have multiple matches at WAQI API. As a result, API requests might '
-                        'not be accurate for the following locations: %s'%(len(multiple_waqi), sorted(multiple_waqi)))
+                self.logger.warning('%d location(s) have multiple matches at WAQI API. As a result, API requests might '
+                        'not be accurate for the following location(s): %s'%(len(multiple_waqi), sorted(multiple_waqi)))
             if unmatched_waqi:
-                self.logger.warning('%d locations have no matches at WAQI API. As a result, air pollution data will not'
-                        ' be available for the following locations: %s' % (len(unmatched_waqi), sorted(unmatched_waqi)))
+                self.logger.warning('%d location(s) have no matches at WAQI API. As a result, air pollution data will not'
+                        ' be available for the following location(s): %s' % (len(unmatched_waqi), sorted(unmatched_waqi)))
             unmatched.clear()
             multiple.clear()
 
@@ -124,7 +135,7 @@ class __LocationsDataCollector(DataCollector):
             r = requests.get(self.config['URL_OPEN_WEATHER'])
             open_weather_data = r.content.decode('utf-8', errors='replace').split('\n')
             # Sorting locations by country code (as in 'open_weather_data')
-            locations = sorted(list(self.config['LOCATIONS'].values()), key=lambda k: k['country_code'])
+            locations = sorted([x for x in list(self.config['LOCATIONS'].values()) if not x.get('missing', True)], key=lambda k: k['country_code'])
             for loc in locations:
                 loc['name'] = unidecode(loc['name'])
             for line in open_weather_data[1:-1]:
@@ -134,39 +145,42 @@ class __LocationsDataCollector(DataCollector):
                     if location['name'].split()[0] in values[1]:
                         loc = location
                         break
+                if loc is None:
+                    continue
                 # Filtering results by proximity and country, to avoid saving false positives
-                if loc is not None and check_coordinates(loc['latitude'], loc['longitude'], float(values[2]),
-                        float(values[3]), margin=0.35) and loc['country_code'] == values[4]:
-                    loc['owm_station_id'] = values[0]
+                loc['owm_station_id'] = values[0] if check_coordinates(loc['latitude'], loc['longitude'], float(
+                        values[2]), float(values[3]), margin=0.35) and loc['country_code'] == values[4] else None
+                if loc['owm_station_id']:
+                    locations.remove(loc) # Removing found location (so that false positives cannot overwrite the ID)
             for loc in self.data:
                 loc['owm_station_id'] = self.config['LOCATIONS'][loc['name']].get('owm_station_id', None)
                 if loc['owm_station_id'] is None:
                     unmatched.append(loc['name'])
             if unmatched:
-                self.logger.warning('%d locations have no matches at OpenWeatherMap API. As a result, current weather '
-                        'and weather forecast data will not be available for the following locations: %s'%
+                self.logger.warning('%d location(s) have no matches at OpenWeatherMap API. As a result, current weather '
+                        'and weather forecast data will not be available for the following location(s): %s'%
                         (len(unmatched), sorted(unmatched)))
 
-            self.state['last_modified'] = last_modified
             unmatched.clear()
             # Debug info (Locations in location list but not added will be logged)
             for name in self.config['LOCATIONS']:
                 loc = self.config['LOCATIONS'][name]
-                if loc.get('missing', True):
+                if loc['missing']:
                     unmatched.append(name)
             if unmatched:
-                self.logger.warning('Unable to find %d locations: %s'%(len(unmatched), sorted(unmatched)))
-            self.logger.info('GeoNames file "%s" has been correctly parsed. %d locations (out of %d) were found.'%
+                self.logger.warning('Unable to find %d location(s): %s'%(len(unmatched), sorted(unmatched)))
+            self.logger.info('GeoNames file "%s" has been correctly parsed. %d location(s) (out of %d) were found.'%
                     (self.config['FILE'], len(self.data), len(self.config['LOCATIONS'])))
             # Restoring original update frequency
             self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
+            self.state['last_modified'] = last_modified
         else:
             self.logger.info('GeoNames file has not been updated since last data collection. The period '
                              'between checks will be shortened, since data is expected to be updated soon.')
             # Setting update frequency to a shorter time interval (file is near to be modified)
             self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
             self.advisedly_no_data_collected = True
-        self.state['last_request'] = datetime.datetime.now()
+        self.state['last_request'] = datetime.datetime.now(tz=UTC)
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
 
@@ -185,9 +199,9 @@ class __LocationsDataCollector(DataCollector):
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] == len(self.data):
-                self.logger.debug('Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+                self.logger.debug('Successfully inserted %d element(s) into database.'%(self.state['inserted_elements']))
             else:
-                self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
+                self.logger.warning('Some element(s) were not inserted (%d out of %d)'%(self.state['inserted_elements'],
                         self.state['data_elements']))
             self.collection.close()
             self.data = None  # Allowing GC to collect data object's memory
@@ -224,3 +238,6 @@ class __LocationsDataCollector(DataCollector):
         """
         return loc_name == data_name and loc_cc == data_cc and check_coordinates(loc_lat, loc_long, data_lat, data_long,
                 margin=margin)
+
+if __name__ == '__main__':
+    instance().run()

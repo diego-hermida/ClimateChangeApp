@@ -4,6 +4,7 @@ import requests
 
 from data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
+from pytz import UTC
 from utilities.db_util import MongoDBCollection
 
 __singleton = None
@@ -11,7 +12,7 @@ __singleton = None
 
 def instance() -> DataCollector:
     global __singleton
-    if __singleton is None:
+    if not __singleton or __singleton and __singleton.finished_execution():
         __singleton = __WeatherForecastDataCollector()
     return __singleton
 
@@ -39,24 +40,29 @@ class __WeatherForecastDataCollector(DataCollector):
         locations_length = len(locations['data'])
         for index, location in enumerate(locations['data']):
             url = self.config['BASE_URL'].replace('{TOKEN}', self.config['TOKEN']).replace('{LOC_ID}',
-                    location['owm_station_id'])
+                    str(location['owm_station_id']))
             r = requests.get(url)
-            temp = json.loads(r.content.decode('utf-8'))
-            if temp.get('cnt', 0) > 0 and temp.get('list', None):
-                temp['location_id'] = location['_id']
-                temp['_id'] = {'station_id': temp['city']['id']}
-                self.data.append(temp)
-            else:
+            temp = json.loads(r.content.decode('utf-8', errors='replace'))
+            try:
+                if temp['cnt'] > 0 and temp['list']:
+                    temp['location_id'] = location['_id']
+                    temp['_id'] = {'station_id': temp['city']['id']}
+                    self.data.append(temp)
+            except (AttributeError, KeyError, TypeError, ValueError):
                 unmatched.append(location['name'])
             if index > 0 and index % 10 is 0:
                 self.logger.debug('Collected data: %0.2f%%'%((((index + 1) / locations_length) * 100)))
         if unmatched:
-            self.logger.warning('Current weather conditions data is unavailable for %d locations: %s'%(len(unmatched),
+            self.logger.warning('Weather forecast data is unavailable for %d location(s): %s'%(len(unmatched),
                     sorted(unmatched)))
-        self.state['last_request'] = datetime.datetime.now()
+        self.state['last_request'] = datetime.datetime.now(UTC)
+        # No available locations is not an error
+        if not locations['data']:
+            self.logger.info('No locations are available. Data collection will be stopped.')
+            self.advisedly_no_data_collected = True
         self.state['last_id'] = locations['data'][-1]['_id'] if locations['more'] else None
-        self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY'] if locations['more'] else self.config[
-                'MAX_UPDATE_FREQUENCY']
+        self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY'] if locations['more'] or not locations[
+            'data'] else self.config['MAX_UPDATE_FREQUENCY']
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
 
@@ -75,9 +81,9 @@ class __WeatherForecastDataCollector(DataCollector):
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] == len(self.data):
-                self.logger.debug('Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+                self.logger.debug('Successfully inserted %d element(s) into database.'%(self.state['inserted_elements']))
             else:
-                self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
+                self.logger.warning('Some element(s) were not inserted (%d out of %d)'%(self.state['inserted_elements'],
                         self.state['data_elements']))
             self.collection.close()
             self.data = None  # Allowing GC to collect data object's memory

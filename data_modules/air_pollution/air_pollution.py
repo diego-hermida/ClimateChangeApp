@@ -4,6 +4,7 @@ import requests
 
 from data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
+from pytz import UTC
 from utilities.db_util import MongoDBCollection
 
 __singleton = None
@@ -11,7 +12,7 @@ __singleton = None
 
 def instance() -> DataCollector:
     global __singleton
-    if __singleton is None:
+    if not __singleton or __singleton and __singleton.finished_execution():
         __singleton = __AirPollutionDataCollector()
     return __singleton
 
@@ -23,7 +24,7 @@ class __AirPollutionDataCollector(DataCollector):
 
     def _collect_data(self):
         """
-            Obtains data from the WAQI API via HTTP requests. L requests are made, where L is the number of locations.
+            Collects data from the WAQI API via HTTP requests. L requests are made, where L is the number of locations.
         """
         super()._collect_data()
         # Retrieves locations with WAQI Station ID from database
@@ -39,23 +40,30 @@ class __AirPollutionDataCollector(DataCollector):
             url = self.config['BASE_URL'].replace('{STATION_ID}', str(location['waqi_station_id'])).replace('{TOKEN}',
                     self.config['TOKEN'])
             r = requests.get(url)
-            temp = json.loads(r.content.decode('utf-8'))
+            temp = json.loads(r.content.decode('utf-8', errors='replace'))
             # Adding only verified data
-            if temp['status'] == 'ok':
-                temp['location_id'] = location['_id']
-                temp['_id'] = {'station_id': location['waqi_station_id'], 'time_utc': int(temp['data']['time']['v']) * 1000}
-                self.data.append(temp)
-            else:
+            try:
+                if temp['status'] == 'ok':
+                    temp['location_id'] = location['_id']
+                    temp['_id'] = {'station_id': location['waqi_station_id'], 'time_utc': int(temp['data']['time']['v']) * 1000}
+                    self.data.append(temp)
+                else:
+                    unmatched.append(location['name'])
+            except (AttributeError, KeyError, TypeError, ValueError):
                 unmatched.append(location['name'])
             if index > 0 and index % 10 is 0:
                 self.logger.debug('Collected data: %.2f%%' % (((index / locations_length) * 100)))
         if unmatched:
             self.logger.warning('%d location(s) do not have recent air pollution data: %s'%(len(unmatched),
                     sorted(unmatched)))
+        # No available locations is not an error
+        if not locations['data']:
+            self.logger.info('No locations are available. Data collection will be stopped.')
+            self.advisedly_no_data_collected = True
         self.state['last_id'] = locations['data'][-1]['_id'] if locations['more'] else None
-        self.state['last_request'] = datetime.datetime.now()
-        self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY'] if locations['more'] else self.config[
-            'MAX_UPDATE_FREQUENCY']
+        self.state['last_request'] = datetime.datetime.now(UTC)
+        self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY'] if locations['more'] or not locations[
+                'data'] else self.config['MAX_UPDATE_FREQUENCY']
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
 
@@ -74,9 +82,9 @@ class __AirPollutionDataCollector(DataCollector):
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] == len(self.data):
-                self.logger.debug('Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+                self.logger.debug('Successfully inserted %d element(s) into database.'%(self.state['inserted_elements']))
             else:
-                self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
+                self.logger.warning('Some element(s) were not inserted (%d out of %d)'%(self.state['inserted_elements'],
                         self.state['data_elements']))
             self.collection.close()
             self.data = None  # Allowing GC to collect data object's memory

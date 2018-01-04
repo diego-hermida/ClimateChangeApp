@@ -3,6 +3,7 @@ import datetime
 from data_collector.data_collector import DataCollector, Reader
 from ftplib import FTP
 from pymongo import UpdateOne
+from pytz import UTC
 from utilities.util import decimal_date_to_millis_since_epoch, serialize_date, deserialize_date, MeasureUnits
 
 __singleton = None
@@ -10,7 +11,7 @@ __singleton = None
 
 def instance() -> DataCollector:
     global __singleton
-    if __singleton is None:
+    if not __singleton or __singleton and __singleton.finished_execution():
         __singleton = __SeaLevelDataCollector()
     return __singleton
 
@@ -40,7 +41,7 @@ class __SeaLevelDataCollector(DataCollector):
         ftp.cwd(self.config['DATA_DIR'])  # Accessing directory
 
         # File name changes every month, but it always starts with GMSL
-        file_names = [x for x in ftp.nlst() if x.startswith('GMSL') and x.endswith(self.config['FILE_EXT'])]
+        file_names = [x for x in ftp.nlst() if x.startswith('GMSL_TPJAOS') and x.endswith(self.config['FILE_EXT'])]
         self.logger.info('%d file(s) were found under NASA FTP directory: %s'%(len(file_names), file_names))
 
         # Getting file's date modified
@@ -56,7 +57,7 @@ class __SeaLevelDataCollector(DataCollector):
             self.__data_modified = True
             r = Reader()
             ftp.retrlines('RETR ' + file_names[0], r)
-            self.data = self.__to_json(r.data)
+            self.data = self.__to_json(r.get_data())
             self.state['last_modified'] = last_modified
             self.logger.debug('NASA file "%s" has been correctly parsed. %d measures have been collected.'%
                     (self.config['FILE_NAME'], len(self.data)))
@@ -69,7 +70,7 @@ class __SeaLevelDataCollector(DataCollector):
             self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
             self.advisedly_no_data_collected = True
         ftp.quit()
-        self.state['last_request'] = datetime.datetime.now()
+        self.state['last_request'] = datetime.datetime.now(tz=UTC)
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
 
@@ -89,6 +90,11 @@ class __SeaLevelDataCollector(DataCollector):
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] == len(self.data):
                 self.logger.debug('Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+            elif (self.state['data_elements'] - self.state['inserted_elements']) * 10 > self.state['data_elements']:
+                self.logger.error('Since uninserted elements(s) > 10%% (%d out of %d), data collection will be '
+                        'aborted.'%((self.state['data_elements'] - self.state['inserted_elements']),
+                        self.state['data_elements']))
+                raise Exception('Data collection has been aborted. Insufficient saved values.')
             else:
                 self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
                         self.state['data_elements']))

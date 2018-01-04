@@ -4,6 +4,7 @@ import itertools
 from data_collector.data_collector import DataCollector, Reader
 from ftplib import FTP
 from pymongo import UpdateOne
+from pytz import UTC
 from utilities.util import deserialize_date, serialize_date, decimal_date_to_millis_since_epoch, MassType, MeasureUnits
 
 __singleton = None
@@ -11,7 +12,7 @@ __singleton = None
 
 def instance() -> DataCollector:
     global __singleton
-    if __singleton is None:
+    if not __singleton or __singleton and __singleton.finished_execution():
         __singleton = __OceanMassDataCollector()
     return __singleton
 
@@ -59,6 +60,7 @@ class __OceanMassDataCollector(DataCollector):
                 type_name = self.__get_type(name)
             except ValueError:
                 self.logger.debug('Omitting unnecessary file: %s'%(name))
+                file_names.remove(name)
                 continue
             # Collecting data only if file has been modified
             if True if not self.state[type_name]['last_modified'] or not last_modified else \
@@ -66,7 +68,7 @@ class __OceanMassDataCollector(DataCollector):
                 self.__data_modified = True
                 r = Reader()
                 ftp.retrlines('RETR ' + name, r)
-                temp_data = self.__to_json(r.data, type_name)
+                temp_data = self.__to_json(r.get_data(), type_name)
                 self.data.append(temp_data)
                 self.state[type_name]['last_modified'] = last_modified
                 self.logger.debug('NASA file "%s" has been correctly parsed. %d measures have been collected.'%(name,
@@ -79,15 +81,17 @@ class __OceanMassDataCollector(DataCollector):
                 self.state[type_name]['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
                 not_modified.append(type_name)
         if not_modified:
-            self.advisedly_no_data_collected = True
-            self.logger.info('Some NASA file(s) have not been updated since last data collection: %s. The period '
-                    'between checks will be shortened, since data is expected to be updated soon.'%(not_modified))
+            self.logger.info(('Some ' if len(not_modified) < len(file_names) else '') + 'NASA file(s) have not been '
+                    'updated since last data collection: %s. The period between checks will be shortened, since data is'
+                    ' expected to be updated soon.'%(not_modified))
         ftp.quit()
-        self.state['last_request'] = datetime.datetime.now()
+        self.state['last_request'] = datetime.datetime.now(UTC)
         self.data = list(itertools.chain.from_iterable(self.data))  # Flattens list of lists
         self.state['data_elements'] = len(self.data)
-        if len(not_modified) < 3:
+        if len(not_modified) < len(file_names):
             self.logger.info('NASA files have been correctly parsed. %d measures have been collected.'%(len(self.data)))
+        else:
+            self.advisedly_no_data_collected = True
         self.data = self.data if self.data else None
 
     def _save_data(self):
@@ -105,8 +109,12 @@ class __OceanMassDataCollector(DataCollector):
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] == len(self.data):
-                self.logger.debug(
-                        'Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+                self.logger.debug('Successfully inserted %d elements into database.'%(self.state['inserted_elements']))
+            elif (self.state['data_elements'] - self.state['inserted_elements']) * 10 > self.state['data_elements']:
+                self.logger.error('Since uninserted elements(s) > 10%% (%d out of %d), data collection will be '
+                        'aborted.'%((self.state['data_elements'] - self.state['inserted_elements']),
+                        self.state['data_elements']))
+                raise Exception('Data collection has been aborted. Insufficient saved values.')
             else:
                 self.logger.warning('Some elements were not inserted (%d out of %d)'%(self.state['inserted_elements'],
                         self.state['data_elements']))
