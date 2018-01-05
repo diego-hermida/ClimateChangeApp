@@ -1,9 +1,9 @@
-from data_collector.data_collector import CONFIG, Message, MessageType
-from test.data_collector.test_data_collector import SimpleDataCollector
-from unittest import TestCase, main, mock
+from unittest import TestCase, mock
 from unittest.mock import Mock
 
 import supervisor.supervisor as supervisor
+from data_collector.data_collector import CONFIG, Message, MessageType
+from test.data_collector.test_data_collector import SimpleDataCollector
 
 
 class TestSupervisor(TestCase):
@@ -71,7 +71,9 @@ class TestSupervisor(TestCase):
         self.assertFalse(s.state['last_execution']['execution_succeeded'])
         self.assertEqual(1, s.state['aggregated']['total_executions'])
         self.assertEqual(time1, s.state['aggregated']['total_execution_time'])
+        self.assertEqual(time1, s.state['aggregated']['max_duration'])
         self.assertEqual(time1, s.state['aggregated']['mean_duration'])
+        self.assertEqual(time1, s.state['aggregated']['min_duration'])
         self.assertEqual(0, s.state['aggregated']['total_succeeded_executions'])
         self.assertEqual(1, s.state['aggregated']['total_failed_executions'])
         self.assertEqual(1, s.state['aggregated']['total_collected_elements'])
@@ -102,7 +104,9 @@ class TestSupervisor(TestCase):
         self.assertEqual(1237, s.state['last_execution']['inserted_elements'])
         self.assertTrue(s.state['last_execution']['execution_succeeded'])
         self.assertEqual(2, s.state['aggregated']['total_executions'])
+        self.assertEqual(time2, s.state['aggregated']['max_duration'])
         self.assertAlmostEqual(((time1 + time2) / 2), s.state['aggregated']['mean_duration'], places=3)
+        self.assertEqual(time1, s.state['aggregated']['min_duration'])
         self.assertEqual(time1 + time2, s.state['aggregated']['total_execution_time'])
         self.assertEqual(1, s.state['aggregated']['total_succeeded_executions'])
         self.assertEqual(1, s.state['aggregated']['total_failed_executions'])

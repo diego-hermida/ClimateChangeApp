@@ -137,8 +137,12 @@ class Supervisor:
         self.state['last_execution']['timestamp'] = serialize_date(datetime.datetime.now(tz=UTC))
         self.state['aggregated']['total_executions'] = self.state['aggregated']['total_executions'] + 1
         self.state['aggregated']['total_execution_time'] = self.state['aggregated']['total_execution_time'] + duration
+        self.state['aggregated']['max_duration'] = self.state['aggregated']['max_duration'] if self.state['aggregated'][
+                'max_duration'] and duration < self.state['aggregated']['max_duration'] else duration
         self.state['aggregated']['mean_duration'] = (self.state['aggregated']['mean_duration'] * (self.state[
                 'aggregated']['total_executions'] - 1) + duration) / (self.state['aggregated']['total_executions'])
+        self.state['aggregated']['min_duration'] = self.state['aggregated']['min_duration'] if self.state['aggregated'][
+                'min_duration'] and duration > self.state['aggregated']['min_duration'] else duration
         self.state['aggregated']['total_succeeded_executions'] = self.state['aggregated'][
                 'total_succeeded_executions'] + 1 if execution_succeeded else self.state['aggregated'][
                 'total_succeeded_executions']
