@@ -2,8 +2,10 @@ import datetime
 import errno
 import json
 import pytz
+import signal
 import yaml
 
+from contextlib import contextmanager
 from os import makedirs, sep as os_file_separator
 from os.path import exists
 from random import randint
@@ -278,3 +280,25 @@ def remove_all_under_directory(path: str):
             os.unlink(os.path.join(root, f))
         for d in dirs:
             shutil.rmtree(os.path.join(root, d))
+
+
+@contextmanager
+def time_limit(seconds):
+    """
+    Uses the signal module to timeout a function. This function implements contextmanager, so it can be used as follows:
+                                try:
+                                    with time_limit(N):
+                                        long_function()
+                                except TimeoutError:
+                                    pass
+    :param seconds:
+    :raise TimeoutError: If the execution time is greater than the time limit.
+    """
+    def signal_handler(signum, frame):
+        raise TimeoutError('Execution has been timed out.')
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)

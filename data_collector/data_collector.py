@@ -34,6 +34,7 @@ class DataCollectorThread(Thread):
         """
             Creates a Thread instance. Name is set as <DataCollector>Thread, being <DataCollector> the name of the
             DataCollector class.
+            The thread is set as a Daemon thread, as we want the thread to be stopped when Main component exits.
             :param data_module: DataCollector module object.
             :param channel: A synchronized queue, which allows passing messages between threads and the Supervisor.
         """
@@ -41,6 +42,7 @@ class DataCollectorThread(Thread):
         self.__condition = condition
         self.__data_collector = data_module.instance()
         Thread.__init__(self)
+        self.setDaemon(True)
         self.setName(self.__data_collector.__str__() + 'Thread')
 
     def run(self):

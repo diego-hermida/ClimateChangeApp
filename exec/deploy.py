@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
             loader = TestLoader()
             suite = loader.discover(CONFIG['ROOT_PROJECT_FOLDER'])
-            runner = TextTestRunner(failfast=True)
+            runner = TextTestRunner(failfast=True, verbosity=2)
             runner.run(suite)
 
         if args.all or args.remove_files:
@@ -87,15 +87,11 @@ if __name__ == '__main__':
                 remove_all_under_directory(CONFIG['ROOT_LOG_FOLDER'])
             except FileNotFoundError:
                 logger.info('Log base directory does not exist, so it cannot be removed.')
-            except OSError:
-                logger.warning('Log base directory could not be deleted, since it\'s busy.')
             try:
                 logger.info('Removing .state files\' base directory: %s' % (CONFIG['STATE_FILES_ROOT_FOLDER']))
                 remove_all_under_directory(CONFIG['STATE_FILES_ROOT_FOLDER'])
             except FileNotFoundError:
                 logger.info('.state files\' base directory does not exist, so it cannot be removed.')
-            except OSError:
-                logger.warning('Log base directory could not be deleted, since it\'s busy.')
 
     except Exception:
         from sys import exit

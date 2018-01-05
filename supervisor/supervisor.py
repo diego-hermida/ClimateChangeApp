@@ -10,27 +10,22 @@ from utilities.util import get_config, read_state, serialize_date, write_state
 __singleton = None
 
 
-def instance(queue: Queue, condition: Condition):
-    global __singleton
-    if __singleton is None:
-        __singleton = Supervisor(queue, condition)
-    return __singleton
-
-
 class SupervisorThread(Thread):
     """
         This class allows a Supervisor instance to be executed in its own thread.
+        The thread is set as a Daemon thread, as we want the thread to be stopped when Main component exits.
     """
     def __init__(self, queue: Queue, condition: Condition):
-        self.__supervisor = instance(queue, condition)
+        self.supervisor = Supervisor(queue, condition)
         Thread.__init__(self)
+        self.setDaemon(True)
         self.setName('SupervisorThread')
 
     def run(self):
         try:
-            self.__supervisor.supervise()
+            self.supervisor.supervise()
         except Exception:
-            self.__supervisor.logger.exception('Supervisor execution has been aborted due to an error.')
+            self.supervisor.logger.exception('Supervisor execution has been aborted due to an error.')
 
 
 class Supervisor:
