@@ -15,10 +15,9 @@ class TestSupervisor(TestCase):
         from threading import Condition
         channel = Queue(maxsize=5)
         condition = Condition()
-        s = supervisor.instance(channel, condition)
-        s.state = s.config['STATE_STRUCT']
         # Creating supervisor and DataCollectors
         thread = supervisor.SupervisorThread(channel, condition)
+        thread.supervisor.state = thread.supervisor.config['STATE_STRUCT']
         d1 = SimpleDataCollector(data_collected=1, data_inserted=1)
         d2 = SimpleDataCollector(fail_on='_save_data')
         # Starting supervisor
@@ -35,26 +34,26 @@ class TestSupervisor(TestCase):
         # Make Supervisor exit, and waiting until it has finished
         Message(MessageType.exit).send(channel, condition)
         thread.join()
-        self.assertEqual(2, s.registered)
-        self.assertEqual(2, s.unregistered)
-        self.assertListEqual([d1, d2], s.registered_data_collectors)
-        self.assertListEqual([str(d1)], s.successful_executions)
-        self.assertListEqual([str(d2)], s.unsuccessful_executions)
+        self.assertEqual(2, thread.supervisor.registered)
+        self.assertEqual(2, thread.supervisor.unregistered)
+        self.assertListEqual([d1, d2], thread.supervisor.registered_data_collectors)
+        self.assertListEqual([str(d1)], thread.supervisor.successful_executions)
+        self.assertListEqual([str(d2)], thread.supervisor.unsuccessful_executions)
         # Checking that failed modules have serialized errors and a restart is scheduled
         self.assertTrue(d2.state['restart_required'])
         self.assertIsNotNone(d2.state['error'])
 
     @mock.patch('data_collector.data_collector.get_config', Mock(return_value=CONFIG))
     @mock.patch('supervisor.supervisor.write_state', Mock())
-    @mock.patch('supervisor.supervisor.read_state', Mock(return_value='/foo/bar/baz/supervisor.state'))
+    @mock.patch('supervisor.supervisor.read_state', Mock())
     def test_generate_report(self):
         s = supervisor.Supervisor(None, None)
-        s.state = s.config['STATE_STRUCT']
         # First execution
         d1 = SimpleDataCollector(data_collected=1, data_inserted=1)
         d2 = SimpleDataCollector(fail_on='_save_data')
         d1.run()
         d2.run()
+        s.state = s.config['STATE_STRUCT']
         s.registered_data_collectors = [d1, d2]
         s.registered = 2
         s.unregistered = 2

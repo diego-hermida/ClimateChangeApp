@@ -307,7 +307,3 @@ class TestOceanMass(TestCase):
         self.assertEqual(12, self.data_collector.state['data_elements'])
         self.assertEqual(0, self.data_collector.state['inserted_elements'])
         self.assertIsNotNone(self.data_collector.state['error'])
-
-
-if __name__ == '__main__':
-    main()

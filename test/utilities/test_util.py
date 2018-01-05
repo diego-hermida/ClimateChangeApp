@@ -259,6 +259,9 @@ class TestUtil(TestCase):
         with self.assertRaises(AttributeError):
             utilities.util.date_plus_timedelta_gt_now(date, {'value': 1, 'units': TimeUnits.FOO})
 
+    def test_time_limit(self):
+        from time import sleep
 
-if __name__ == '__main__':
-    main()
+        with self.assertRaises(TimeoutError):
+            with utilities.util.time_limit(3):
+                sleep(5)

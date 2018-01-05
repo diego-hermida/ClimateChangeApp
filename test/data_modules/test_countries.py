@@ -226,7 +226,3 @@ class TestCountries(TestCase):
         self.assertIsNotNone(self.data_collector.state['error'])
         self.assertEqual(self.data_collector.config['STATE_STRUCT']['update_frequency'],
                          self.data_collector.state['update_frequency'])
-
-
-if __name__ == '__main__':
-    main()

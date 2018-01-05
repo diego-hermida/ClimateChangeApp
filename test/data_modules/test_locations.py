@@ -470,7 +470,3 @@ class TestLocations(TestCase):
         self.assertEqual(0, self.data_collector.state['inserted_elements'])
         self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
-
-
-if __name__ == '__main__':
-    main()

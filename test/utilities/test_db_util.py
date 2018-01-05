@@ -133,7 +133,3 @@ class TestDbUtil(TestCase):
         self.assertFalse(last_page['more'])
         self.assertListEqual(expected[:4], first_page['data'])
         self.assertListEqual(expected[4:], last_page['data'])
-
-
-if __name__ == '__main__':
-    main()

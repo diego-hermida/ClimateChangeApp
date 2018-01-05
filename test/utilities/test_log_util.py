@@ -27,6 +27,3 @@ class TestLogUtil(TestCase):
         # Testing log file removal
         utilities.log_util.remove_log_file(file)
         self.assertFalse(exists(file))
-
-if __name__ == '__main__':
-    main()

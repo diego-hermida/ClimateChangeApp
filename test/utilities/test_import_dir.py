@@ -37,9 +37,4 @@ class TestImportDir(TestCase):
         # Case modules
         result = utilities.import_dir.import_modules('./foo', recursive=True, base_package='foo')
         self.assertListEqual(modules, result)
-
         rmtree('./foo')
-
-
-if __name__ == '__main__':
-    main()

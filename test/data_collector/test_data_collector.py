@@ -456,7 +456,3 @@ class TestDataCollector(TestCase):
             self.assertGreaterEqual(transitions[0], 'foo')
         with self.assertRaises(TypeError):
             self.assertNotEqual(transitions[0], 'foo')
-
-
-if __name__ == '__main__':
-    main()
