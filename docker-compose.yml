@@ -6,14 +6,8 @@ services:
         container_name: data_gathering_subsystem
         image: diegohermida/data_gathering_subsystem:1.0
         volumes:
-            - type: volume
-              source: ~/DataGatheringSubsystem/log
-              target: /DataGatheringSubsystem/log
-              nocopy: true
-            - type: volume
-              source: ~/DataGatheringSubsystem/state
-              target: /DataGatheringSubsystem/state
-              nocopy: true
+            - ~/DataGatheringSubsystem/log:/DataGatheringSubsystem/log
+            - ~/DataGatheringSubsystem/state:/DataGatheringSubsystem/state
         environment:
             - PYTHONUNBUFFERED=1
         links:
@@ -28,9 +22,7 @@ services:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=root
         volumes:
-            - type: volume
-              source: ~/DataGatheringSubsystem/data/db
-              target: /data/db
+            - ~/DataGatheringSubsystem/data/db:/data/db
         ports:
             - 27017:27017
         command: mongod --smallfiles
