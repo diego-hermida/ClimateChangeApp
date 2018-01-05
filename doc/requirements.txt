@@ -1,0 +1,8 @@
+argparse
+pymongo
+python-dateutil
+pytz
+pyYAML
+requests
+six
+unidecode
