@@ -5,6 +5,11 @@ FROM pypy:latest
 ARG LOCALHOST_IP
 ENV LOCALHOST_IP=$LOCALHOST_IP
 
+# Allows skipping deploy operations by setting an environment variable. Use --build-arg SKIP_DEPLOY=true when building
+# the Subsystem service with docker-compose.
+ARG SKIP_DEPLOY=false
+ENV SKIP_DEPLOY=$SKIP_DEPLOY
+
 # Getting the last package updates.
 RUN apt-get update
 RUN pip install --upgrade pip setuptools

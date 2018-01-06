@@ -1,6 +1,7 @@
 import argparse
 
 from global_config.global_config import CONFIG
+from os import environ
 from pymongo.errors import DuplicateKeyError
 from sys import exit
 from unittest import TestLoader, TextTestRunner
@@ -29,7 +30,12 @@ def deploy():
         group.add_argument('-r', '--remove-files', help='removes all .log and .state files (and its directories)',
                 required=False, action='store_true')
         parser.add_argument('-t', '--with-tests', help='executes all the Subsystem tests', required=False, action='store_true')
+        parser.add_argument('-s', '--skip-all', help='does not execute any deploy step', required=False,
+                            action='store_true')
         args = parser.parse_args()
+        if args.skip_all or environ.get('SKIP_DEPLOY', False):
+            logger.info('Deploy operations have been skipped.')
+            exit(0)
         if args.all and (args.db_user or args.drop_database or args.verify_modules or args.remove_files):
             logger.info('Since "--all" option has been passed, any other option is excluded.')
         elif not (args.all or args.db_user or args.drop_database or args.verify_modules or args.remove_files or args.with_tests):

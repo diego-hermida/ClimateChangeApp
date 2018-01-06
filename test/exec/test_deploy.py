@@ -17,6 +17,7 @@ class TestDeploy(TestCase):
     def test_all_with_tests_everything_ok(self, mock_args, mock_modules, mock_test_runner):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.all = True
+        args.skip_all = False
         args.db_user = False
         args.drop_database = False
         args.verify_modules = False
@@ -38,6 +39,7 @@ class TestDeploy(TestCase):
     def test_create_user_duplicated_user(self, mock_args):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.all = False
+        args.skip_all = False
         args.db_user = True
         args.drop_database = False
         args.verify_modules = False
@@ -51,6 +53,7 @@ class TestDeploy(TestCase):
     def test_verify_modules_not_instantiable(self, mock_args, mock_modules):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.all = False
+        args.skip_all = False
         args.db_user = False
         args.drop_database = False
         args.verify_modules = True
@@ -72,12 +75,14 @@ class TestDeploy(TestCase):
     def test_tests_failed(self, mock_args, mock_namespace, mock_test_runner, mock_exit):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.all = False
+        args.skip_all = False
         args.db_user = False
         args.drop_database = False
         args.verify_modules = False
         args.with_tests = True
         args.remove_files = False
         mock_namespace.return_value.all = False
+        mock_namespace.return_value.skip_all = False
         mock_namespace.return_value.db_user = False
         mock_namespace.return_value.drop_database = False
         mock_namespace.return_value.verify_modules = False
@@ -95,6 +100,7 @@ class TestDeploy(TestCase):
     def test_remove_files_directories_not_found(self, mock_args):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.all = False
+        args.skip_all = False
         args.db_user = False
         args.drop_database = False
         args.verify_modules = False
@@ -108,3 +114,17 @@ class TestDeploy(TestCase):
     def test_anomalous_exit(self, mock_exit):
         deploy.deploy()
         self.assertTrue(mock_exit.called)
+
+    @mock.patch('argparse.ArgumentParser')
+    def test_skip_all(self, mock_args):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.all = False
+        args.skip_all = True
+        args.db_user = False
+        args.drop_database = False
+        args.verify_modules = False
+        args.with_tests = False
+        args.remove_files = False
+        with self.assertRaises(SystemExit):
+            deploy.deploy()
+            self.assertTrue(mock_args.called)
