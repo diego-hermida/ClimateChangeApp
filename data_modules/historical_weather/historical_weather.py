@@ -31,6 +31,14 @@ class __HistoricalWeatherDataCollector(DataCollector):
         """
         super()._restore_state()
         self.state['single_location_last_check'] = deserialize_date(self.state['single_location_last_check'])
+        if not self.state.get('tokens', False):
+            self.state['tokens'] = {}
+            for token in self.config['TOKENS']:
+                self.state['tokens'][token] = {'daily_requests': 0, 'usable': True, 'limit_request_timestamp': None}
+        else:
+            for token in self.config['TOKENS']:
+                self.state['tokens'][token]['limit_request_timestamp'] = deserialize_date(self.state['tokens'][token][
+                        'limit_request_timestamp'])
 
     def _has_pending_work(self):
         """
@@ -39,6 +47,11 @@ class __HistoricalWeatherDataCollector(DataCollector):
         super()._has_pending_work()
         self.__single_mode_check = date_plus_timedelta_gt_now(self.state['single_location_last_check'],
                                                               self.state['single_location_update_frequency'])
+        if self.pending_work:
+            # Determining token usability only if the DataCollector has pending work
+            for token in self.config['TOKENS']:
+                self.state['tokens'][token]['usable'] = date_plus_timedelta_gt_now(self.state['tokens'][token][
+                        'limit_request_timestamp'], {'value': 1, 'units': 'day'})
 
     def _collect_data(self):
         """
@@ -61,9 +74,22 @@ class __HistoricalWeatherDataCollector(DataCollector):
             location = self.collection.collection.find_one({'_id': self.state['single_location_ids'][0]})
             self.collection.connect(collection_name=self.module_name)
             try:
-                for token_index, token in enumerate(self.config['TOKENS']):
+                tokens = [x for x in self.config['TOKENS'] if self.state['tokens'][x]['usable']]
+                token_count = len(tokens)
+                while tokens:
+                    token = tokens[0]
                     current_request = 0
                     while current_request < self.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN']:
+                        current_request += 1
+                        self.state['tokens'][token]['daily_requests'] += 1
+                        self.state['tokens'][token]['usable'] = self.state['tokens'][token]['daily_requests'] <= \
+                                self.config['MAX_DAILY_REQUESTS_PER_TOKEN']
+                        if not self.state['tokens'][token]['usable']:
+                            self.logger.debug('API token "%s" has reached the maximum daily requests allowed.'%(token))
+                            tokens.remove(token)
+                            self.state['tokens'][token]['daily_requests'] -= 1
+                            self.state['tokens'][token]['limit_request_timestamp'] = datetime.datetime.now(tz=UTC)
+                            break
                         url = self.config['BASE_URL'].replace('{TOKEN}', token).replace('{YYYYMMDD}', self.state[
                                 'single_location_date']).replace('{LANG}', self.config['LANG']).replace('{LOC_ID}',
                                 str(location['wunderground_loc_id']))
@@ -88,9 +114,12 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                     self.__sum_days( self.state['single_location_date'], self.config['MAX_DAY_COUNT'] - 1,
                                     date_format_out='%d/%m/%Y')))
                             raise StopIteration()
-                        current_request += 1
                         self.state['single_location_date'] = self.__sum_days(self.state['single_location_date'], -1)
-                    self.logger.debug('Collected data: %0.2f%%'%((token_index + 1) * 100 / len(self.config['TOKENS'])))
+                    try:
+                        tokens.remove(token)
+                    except ValueError:
+                        pass  # Item has already been removed
+                    self.logger.debug('Collected data: %0.2f%%'%(((token_count - len(tokens)) / token_count) * 100))
             except StopIteration:  # No more historical data for such location
                 self.state['single_location_date'] = None
                 self.state['single_location_ids'] = self.state['single_location_ids'][1:] if self.state[
@@ -163,10 +192,26 @@ class __HistoricalWeatherDataCollector(DataCollector):
                 self.collection.connect(collection_name=self.module_name)
                 unmatched = []
                 try:
-                    for token_index, token in enumerate(self.config['TOKENS']):
+                    tokens = [x for x in self.config['TOKENS'] if self.state['tokens'][x]['usable']]
+                    token_count = len(tokens)
+                    while tokens:
+                        token = tokens[0]
                         current_request = 0
                         while current_request < self.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN']:
-                            location = next(locations_iter)
+
+                            current_request += 1
+                            self.state['tokens'][token]['daily_requests'] += 1
+                            self.state['tokens'][token]['usable'] = self.state['tokens'][token]['daily_requests'] <= \
+                                    self.config['MAX_DAILY_REQUESTS_PER_TOKEN']
+                            if not self.state['tokens'][token]['usable']:
+                                self.logger.debug(
+                                    'API token "%s" has reached the maximum daily requests allowed.' % (token))
+                                tokens.remove(token)
+                                self.state['tokens'][token]['daily_requests'] -= 1
+                                self.state['tokens'][token]['limit_request_timestamp'] = datetime.datetime.now(tz=UTC)
+                                break
+                            else:
+                                location = next(locations_iter)
                             url = self.config['BASE_URL'].replace('{TOKEN}', token).replace('{YYYYMMDD}',
                                     self.state['date']).replace('{LANG}', self.config['LANG']).replace('{LOC_ID}',
                                     str(location['wunderground_loc_id']))
@@ -184,9 +229,11 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                     unmatched.append(location['name'])
                             except (AttributeError, KeyError, TypeError, ValueError):
                                 unmatched.append(location['name'])
-                            current_request += 1
-                        self.logger.debug('Collected data: %0.2f%%'%((((token_index + 1) * self.config[
-                                'MAX_REQUESTS_PER_MINUTE_AND_TOKEN']) / locations_length) * 100))
+                        try:
+                            tokens.remove(token)
+                        except ValueError:
+                            pass  # Item has already been removed
+                        self.logger.debug('Collected data: %0.2f%%' % (((token_count - len(tokens)) / token_count) * 100))
                 except StopIteration:  # No more locations in locations_iter
                     pass
                 self.state['last_id'] = locations['data'][-1]['_id'] if locations['more'] else None
@@ -197,6 +244,10 @@ class __HistoricalWeatherDataCollector(DataCollector):
                 if unmatched:
                     self.logger.warning('No historical weather data available for %d location(s): %s'%(len(unmatched),
                             sorted(unmatched)))
+        if not [x for x in self.config['TOKENS'] if self.state['tokens'][x]['usable']]:
+            self.logger.info('All API token(s) have reached the maximum daily requests allowed.')
+            self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
+            self.advisedly_no_data_collected = len(self.data) == 0
         self.state['last_request'] = datetime.datetime.now(tz=UTC)
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
@@ -231,6 +282,9 @@ class __HistoricalWeatherDataCollector(DataCollector):
             Serializes the date of the last scheduled check.
         """
         self.state['single_location_last_check'] = serialize_date(self.state['single_location_last_check'])
+        for token in self.config['TOKENS']:
+            self.state['tokens'][token]['limit_request_timestamp'] = serialize_date(
+                    self.state['tokens'][token]['limit_request_timestamp'])
         super()._save_state()
 
     def __query_date(self, date_format='%Y%m%d') -> str:

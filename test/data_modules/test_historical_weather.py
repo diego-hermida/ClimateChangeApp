@@ -98,6 +98,103 @@ class TestHistoricalWeather(TestCase):
 
     @mock.patch('requests.get')
     @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
+    def test_correct_data_collection_normal_mode_not_last_date_with_max_daily_reached(self, mock_collection, mock_requests):
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.count.return_value = 10
+        mock_collection.return_value.find.return_value = {
+            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2},
+                     {'_id': 3, 'name': 'City 3', 'wunderground_loc_id': 3},
+                     {'_id': 4, 'name': 'City 4', 'wunderground_loc_id': 4},
+                     {'_id': 5, 'name': 'City 5', 'wunderground_loc_id': 5},
+                     {'_id': 6, 'name': 'City 6', 'wunderground_loc_id': 6},
+                     {'_id': 7, 'name': 'City 7', 'wunderground_loc_id': 7},
+                     {'_id': 8, 'name': 'City 8', 'wunderground_loc_id': 8},
+                     {'_id': 9, 'name': 'City 9', 'wunderground_loc_id': 9},
+                     {'_id': 10, 'name': 'City 10', 'wunderground_loc_id': 10}], 'more': False}
+        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        insert_result.bulk_api_result = {'nInserted': 10, 'nMatched': 0, 'nUpserted': 0}
+        # Mocking requests (get and response content)
+        mock_requests.return_value = response = Mock()
+        response.content = DATA
+        # Actual execution
+        self.data_collector = historical_weather.instance()
+        self.data_collector.config['STATE_STRUCT']['single_location_last_check'] = serialize_date(
+                datetime.datetime.now(tz=UTC))
+        self.data_collector.config['STATE_STRUCT'][
+            'date'] = self.data_collector._HistoricalWeatherDataCollector__sum_days(
+                self.data_collector._HistoricalWeatherDataCollector__query_date(), -1)
+        self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = 1
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_requests.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertIsNotNone(self.data_collector.state['data_elements'])
+        self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertEqual(10, self.data_collector.state['data_elements'])
+        self.assertEqual(10, self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['last_id'])
+        self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+        for token in self.data_collector.config['TOKENS']:
+            t = self.data_collector.state['tokens'][token]
+            self.assertFalse(t['usable'])
+            self.assertEqual(1, t['daily_requests'])
+            self.assertIsNotNone(t['limit_request_timestamp'])
+
+    @mock.patch('requests.get')
+    @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
+    def test_correct_data_collection_normal_mode_not_last_date_with_max_daily_reached_from_the_beginning(self,
+            mock_collection, mock_requests):
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.count.return_value = 10
+        mock_collection.return_value.find.return_value = {
+            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2},
+                     {'_id': 3, 'name': 'City 3', 'wunderground_loc_id': 3},
+                     {'_id': 4, 'name': 'City 4', 'wunderground_loc_id': 4},
+                     {'_id': 5, 'name': 'City 5', 'wunderground_loc_id': 5},
+                     {'_id': 6, 'name': 'City 6', 'wunderground_loc_id': 6},
+                     {'_id': 7, 'name': 'City 7', 'wunderground_loc_id': 7},
+                     {'_id': 8, 'name': 'City 8', 'wunderground_loc_id': 8},
+                     {'_id': 9, 'name': 'City 9', 'wunderground_loc_id': 9},
+                     {'_id': 10, 'name': 'City 10', 'wunderground_loc_id': 10}], 'more': False}
+        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
+        # Mocking requests (get and response content)
+        mock_requests.return_value = response = Mock()
+        response.content = DATA
+        # Actual execution
+        self.data_collector = historical_weather.instance()
+        self.data_collector.config['STATE_STRUCT']['single_location_last_check'] = serialize_date(
+                datetime.datetime.now(tz=UTC))
+        self.data_collector.config['STATE_STRUCT'][
+            'date'] = self.data_collector._HistoricalWeatherDataCollector__sum_days(
+                self.data_collector._HistoricalWeatherDataCollector__query_date(), -1)
+        self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = 0
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertFalse(mock_requests.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertIsNotNone(self.data_collector.state['data_elements'])
+        self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertEqual(0, self.data_collector.state['data_elements'])
+        self.assertEqual(0, self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['last_id'])
+        self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+        for token in self.data_collector.config['TOKENS']:
+            t = self.data_collector.state['tokens'][token]
+            self.assertFalse(t['usable'])
+            self.assertEqual(0, t['daily_requests'])
+            self.assertIsNotNone(t['limit_request_timestamp'])
+
+    @mock.patch('requests.get')
+    @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_correct_data_collection_normal_mode_not_last_date(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
@@ -274,6 +371,90 @@ class TestHistoricalWeather(TestCase):
             'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'], self.data_collector.state['inserted_elements'])
         self.assertEqual(self.data_collector.config['MIN_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
+
+    @mock.patch('requests.get')
+    @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
+    def test_correct_data_collection_single_mode_max_daily_reached(self, mock_collection, mock_requests):
+        self.data_collector = historical_weather.instance()
+        self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = self.data_collector.config[
+                'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] - 1
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+                                                                         'wunderground_loc_id': 1}
+        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        insert_result.bulk_api_result = {
+            'nInserted': len(self.data_collector.config['TOKENS']) * self.data_collector.config[
+                'MAX_DAILY_REQUESTS_PER_TOKEN'], 'nMatched': 0, 'nUpserted': 0}
+        # Mocking requests (get and response content)
+        mock_requests.return_value = response = Mock()
+        response.content = DATA
+        # Actual execution
+        self.data_collector.config['STATE_STRUCT']['single_location_mode'] = True
+        self.data_collector.config['STATE_STRUCT']['single_location_ids'] = [1]
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_requests.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertTrue(self.data_collector._HistoricalWeatherDataCollector__sum_days(
+                self.data_collector._HistoricalWeatherDataCollector__query_date(),
+                -(len(self.data_collector.config['TOKENS'])) * self.data_collector.config[
+                    'MAX_REQUESTS_PER_MINUTE_AND_TOKEN']), self.data_collector.state['single_location_date'])
+        self.assertIsNotNone(self.data_collector.state['data_elements'])
+        self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertEqual(
+            len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'],
+            self.data_collector.state['data_elements'])
+        self.assertEqual(
+            len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'],
+            self.data_collector.state['inserted_elements'])
+        self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+        for token in self.data_collector.config['TOKENS']:
+            t = self.data_collector.state['tokens'][token]
+            self.assertFalse(t['usable'])
+            self.assertEqual(self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'], t['daily_requests'])
+            self.assertIsNotNone(t['limit_request_timestamp'])
+
+    @mock.patch('requests.get')
+    @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
+    def test_correct_data_collection_single_mode_max_daily_reached_from_the_beginning(self, mock_collection,
+            mock_requests):
+        self.data_collector = historical_weather.instance()
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+                                                                         'wunderground_loc_id': 1}
+        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
+        # Mocking requests (get and response content)
+        mock_requests.return_value = response = Mock()
+        response.content = DATA
+        # Actual execution
+        self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = 0
+        self.data_collector.config['STATE_STRUCT']['single_location_mode'] = True
+        self.data_collector.config['STATE_STRUCT']['single_location_ids'] = [1]
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertFalse(mock_requests.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertTrue(self.data_collector._HistoricalWeatherDataCollector__sum_days(
+                self.data_collector._HistoricalWeatherDataCollector__query_date(),
+                -(len(self.data_collector.config['TOKENS'])) * self.data_collector.config[
+                    'MAX_REQUESTS_PER_MINUTE_AND_TOKEN']), self.data_collector.state['single_location_date'])
+        self.assertIsNotNone(self.data_collector.state['data_elements'])
+        self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertEqual(0, self.data_collector.state['data_elements'])
+        self.assertEqual(0, self.data_collector.state['inserted_elements'])
+        self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+        for token in self.data_collector.config['TOKENS']:
+            t = self.data_collector.state['tokens'][token]
+            self.assertFalse(t['usable'])
+            self.assertEqual(0, t['daily_requests'])
+            self.assertIsNotNone(t['limit_request_timestamp'])
 
     @mock.patch('requests.get')
     @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
