@@ -7,6 +7,13 @@ import exec.deploy as deploy
 
 class TestDeploy(TestCase):
 
+    def tearDown(self):
+        from os import environ
+        try:
+            del environ['SKIP_DEPLOY']
+        except KeyError:
+            pass
+
     @mock.patch('exec.deploy.remove_all_under_directory', Mock())
     @mock.patch('exec.deploy.TextTestRunner')
     @mock.patch('exec.deploy.TestLoader', Mock())
@@ -120,6 +127,38 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.all = False
         args.skip_all = True
+        args.db_user = False
+        args.drop_database = False
+        args.verify_modules = False
+        args.with_tests = False
+        args.remove_files = False
+        with self.assertRaises(SystemExit):
+            deploy.deploy()
+            self.assertTrue(mock_args.called)
+
+    @mock.patch('argparse.ArgumentParser')
+    def test_skip_all_with_environment_variable(self, mock_args):
+        from os import environ
+        environ['SKIP_DEPLOY'] = 'true'
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.all = False
+        args.skip_all = False
+        args.db_user = False
+        args.drop_database = False
+        args.verify_modules = False
+        args.with_tests = False
+        args.remove_files = False
+        with self.assertRaises(SystemExit):
+            deploy.deploy()
+            self.assertTrue(mock_args.called)
+
+    @mock.patch('argparse.ArgumentParser')
+    def test_skip_all_with_environment_variable_invalid_value(self, mock_args):
+        from os import environ
+        environ['SKIP_DEPLOY'] = 'foo'
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.all = False
+        args.skip_all = False
         args.db_user = False
         args.drop_database = False
         args.verify_modules = False

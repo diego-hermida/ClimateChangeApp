@@ -33,7 +33,8 @@ def deploy():
         parser.add_argument('-s', '--skip-all', help='does not execute any deploy step', required=False,
                             action='store_true')
         args = parser.parse_args()
-        if args.skip_all or environ.get('SKIP_DEPLOY', False):
+        # Fixes [BUG-019]
+        if args.skip_all or (bool(environ.get('SKIP_DEPLOY')) and environ.get('SKIP_DEPLOY').upper() == 'TRUE'):
             logger.info('Deploy operations have been skipped.')
             exit(0)
         if args.all and (args.db_user or args.drop_database or args.verify_modules or args.remove_files):
