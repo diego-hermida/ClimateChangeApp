@@ -34,7 +34,7 @@ def main():
         __logger.critical('LOCALHOST_IP must exist as an ENVIRONMENT VARIABLE at execution time. Aborting Subsystem.')
         exit(1)
     else:
-        __logger.info('Environment variable LOCALHOST_IP found, with value: "%s". To override it, use --env '
+        __logger.debug('Environment variable LOCALHOST_IP found, with value: "%s". To override it, use --env '
                 'LOCALHOST_IP=<IP> when invoking "docker run".'%(environ.get('LOCALHOST_IP')))
 
     # Dynamically, recursively imports all Python modules under base directory (and returns them in a list)
