@@ -42,13 +42,14 @@ class __WeatherForecastDataCollector(DataCollector):
             url = self.config['BASE_URL'].replace('{TOKEN}', self.config['TOKEN']).replace('{LOC_ID}',
                     str(location['owm_station_id']))
             r = requests.get(url)
-            temp = json.loads(r.content.decode('utf-8', errors='replace'))
             try:
+                temp = json.loads(r.content.decode('utf-8', errors='replace'))
                 if temp['cnt'] > 0 and temp['list']:
                     temp['location_id'] = location['_id']
                     temp['_id'] = {'station_id': temp['city']['id']}
                     self.data.append(temp)
-            except (AttributeError, KeyError, TypeError, ValueError):
+            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+            except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 unmatched.append(location['name'])
             if index > 0 and index % 10 is 0:
                 self.logger.debug('Collected data: %0.2f%%'%((((index + 1) / locations_length) * 100)))

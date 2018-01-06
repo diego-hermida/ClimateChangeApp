@@ -94,8 +94,8 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                 'single_location_date']).replace('{LANG}', self.config['LANG']).replace('{LOC_ID}',
                                 str(location['wunderground_loc_id']))
                         r = requests.get(url)
-                        temp = json.loads(r.content.decode('utf-8', errors='replace'))
                         try:
+                            temp = json.loads(r.content.decode('utf-8', errors='replace'))
                             if temp['history']['observations'] and temp['history']['dailysummary']:
                                 temp['location_id'] = location['_id']
                                 date = datetime.datetime(year=int(temp['history']['date']['year']),
@@ -107,7 +107,8 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                 self.state['consecutive_unmeasured_days'] = 0  # A new value resets unmeasured days
                             else:
                                 self.state['consecutive_unmeasured_days'] += 1
-                        except (AttributeError, KeyError, TypeError, ValueError):
+                        # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+                        except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                             # FIXES: [BUG-018]
                             self.state['consecutive_unmeasured_days'] += 1
                         # N days without measures indicate that no data is available before last successful date.
@@ -218,8 +219,8 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                     self.state['date']).replace('{LANG}', self.config['LANG']).replace('{LOC_ID}',
                                     str(location['wunderground_loc_id']))
                             r = requests.get(url)
-                            temp = json.loads(r.content.decode('utf-8', errors='replace'))
                             try:
+                                temp = json.loads(r.content.decode('utf-8', errors='replace'))
                                 if temp['history']['observations'] and temp['history']['dailysummary']:
                                     temp['location_id'] = location['_id']
                                     date = datetime.datetime(year=int(temp['history']['date']['year']),
@@ -229,7 +230,8 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                     self.data.append(temp)
                                 else:
                                     unmatched.append(location['name'])
-                            except (AttributeError, KeyError, TypeError, ValueError):
+                            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+                            except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                                 unmatched.append(location['name'])
                         try:
                             tokens.remove(token)

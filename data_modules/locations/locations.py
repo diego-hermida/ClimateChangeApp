@@ -90,7 +90,8 @@ class __LocationsDataCollector(DataCollector):
                                     multiple.append(loc['name'])
                                 elif not matches:
                                     unmatched.append(loc['name'])
-                            except (AttributeError, KeyError, TypeError, ValueError):
+                            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+                            except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                                 unmatched.append(location['name'])
                             location['wunderground_loc_id'] = matches[0]['l'] if matches else None
 
@@ -108,7 +109,8 @@ class __LocationsDataCollector(DataCollector):
                                         multiple_waqi.append(loc['name'])
                                     elif not matches:
                                         unmatched_waqi.append(loc['name'])
-                            except (AttributeError, KeyError, TypeError, ValueError):
+                            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+                            except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                                 unmatched.append(location['name'])
                             location['waqi_station_id'] = matches[0]['uid'] if matches else None
 

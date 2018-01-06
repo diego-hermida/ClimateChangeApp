@@ -40,16 +40,17 @@ class __AirPollutionDataCollector(DataCollector):
             url = self.config['BASE_URL'].replace('{STATION_ID}', str(location['waqi_station_id'])).replace('{TOKEN}',
                     self.config['TOKEN'])
             r = requests.get(url)
-            temp = json.loads(r.content.decode('utf-8', errors='replace'))
-            # Adding only verified data
             try:
+                temp = json.loads(r.content.decode('utf-8', errors='replace'))
+                # Adding only verified data
                 if temp['status'] == 'ok':
                     temp['location_id'] = location['_id']
                     temp['_id'] = {'station_id': location['waqi_station_id'], 'time_utc': int(temp['data']['time']['v']) * 1000}
                     self.data.append(temp)
                 else:
                     unmatched.append(location['name'])
-            except (AttributeError, KeyError, TypeError, ValueError):
+            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+            except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 unmatched.append(location['name'])
             if index > 0 and index % 10 is 0:
                 self.logger.debug('Collected data: %.2f%%' % (((index / locations_length) * 100)))
