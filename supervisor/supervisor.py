@@ -130,23 +130,20 @@ class Supervisor:
         self.state['last_execution']['inserted_elements'] = inserted_elements
         self.state['last_execution']['execution_succeeded'] = execution_succeeded
         self.state['last_execution']['timestamp'] = serialize_date(datetime.datetime.now(tz=UTC))
-        self.state['aggregated']['total_executions'] = self.state['aggregated']['total_executions'] + 1
-        self.state['aggregated']['total_execution_time'] = self.state['aggregated']['total_execution_time'] + duration
+        self.state['aggregated']['total_executions'] += 1
+        self.state['aggregated']['total_execution_time'] += duration
         self.state['aggregated']['max_duration'] = self.state['aggregated']['max_duration'] if self.state['aggregated'][
                 'max_duration'] and duration < self.state['aggregated']['max_duration'] else duration
-        self.state['aggregated']['mean_duration'] = (self.state['aggregated']['mean_duration'] * (self.state[
-                'aggregated']['total_executions'] - 1) + duration) / (self.state['aggregated']['total_executions'])
+        self.state['aggregated']['mean_duration'] = ((self.state['aggregated']['mean_duration'] * (self.state[
+                'aggregated']['total_executions'] - 1)) + duration) / self.state['aggregated']['total_executions']
         self.state['aggregated']['min_duration'] = self.state['aggregated']['min_duration'] if self.state['aggregated'][
                 'min_duration'] and duration > self.state['aggregated']['min_duration'] else duration
-        self.state['aggregated']['total_succeeded_executions'] = self.state['aggregated'][
-                'total_succeeded_executions'] + 1 if execution_succeeded else self.state['aggregated'][
-                'total_succeeded_executions']
-        self.state['aggregated']['total_failed_executions'] = self.state['aggregated']['total_failed_executions'] \
-                + 1 if not execution_succeeded else self.state['aggregated']['total_failed_executions']
-        self.state['aggregated']['total_collected_elements'] = self.state['aggregated']['total_collected_elements'] \
-                + collected_elements
-        self.state['aggregated']['total_inserted_elements'] = self.state['aggregated']['total_inserted_elements'] \
-                + inserted_elements
+        if execution_succeeded:
+            self.state['aggregated']['total_succeeded_executions'] += 1
+        else:
+            self.state['aggregated']['total_failed_executions'] += 1
+        self.state['aggregated']['total_collected_elements'] += collected_elements
+        self.state['aggregated']['total_inserted_elements'] += inserted_elements
         path = write_state(self.state, __file__)
         self.logger.info('An execution report has been saved to "%s".' % (path))
-        self.logger.debug('Execution results:\n%s'%(dumps(self.state, indent=4, separators=(',', ': '))))
+        self.logger.info('Execution results:\n%s'%(dumps(self.state, indent=4, separators=(',', ': '))))

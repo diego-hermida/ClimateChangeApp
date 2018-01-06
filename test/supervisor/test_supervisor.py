@@ -111,3 +111,37 @@ class TestSupervisor(TestCase):
         self.assertEqual(1, s.state['aggregated']['total_failed_executions'])
         self.assertEqual(1238, s.state['aggregated']['total_collected_elements'])
         self.assertEqual(1238, s.state['aggregated']['total_inserted_elements'])
+
+        # Third execution
+        state = s.state
+        s = supervisor.Supervisor(None, None)
+        s.state = state
+        d6 = SimpleDataCollector(data_collected=1, data_inserted=1)
+        d7 = SimpleDataCollector(fail_on='_restore_state')
+        d8 = SimpleDataCollector(data_collected=1, data_inserted=1)
+        d6.run()
+        d7.run()
+        d8.run()
+        s.registered_data_collectors = [d6, d7, d8]
+        s.registered = 3
+        s.unregistered = 3
+        s.successful_executions = [str(d6), str(8)]
+        s.unsuccessful_executions = [str(d7)]
+        time3 = 11.8219821
+        s.generate_report(time3)
+        self.assertEqual(time3, s.state['last_execution']['duration'])
+        self.assertEqual(3, s.state['last_execution']['modules_executed'])
+        self.assertEqual(2, s.state['last_execution']['modules_succeeded'])
+        self.assertEqual(1, s.state['last_execution']['modules_failed'])
+        self.assertEqual(2, s.state['last_execution']['collected_elements'])
+        self.assertEqual(2, s.state['last_execution']['inserted_elements'])
+        self.assertFalse(s.state['last_execution']['execution_succeeded'])
+        self.assertEqual(3, s.state['aggregated']['total_executions'])
+        self.assertEqual(time2, s.state['aggregated']['max_duration'])
+        self.assertAlmostEqual(((time1 + time2 + time3) / 3), s.state['aggregated']['mean_duration'], places=3)
+        self.assertEqual(time3, s.state['aggregated']['min_duration'])
+        self.assertEqual(time1 + time2 + time3, s.state['aggregated']['total_execution_time'])
+        self.assertEqual(1, s.state['aggregated']['total_succeeded_executions'])
+        self.assertEqual(2, s.state['aggregated']['total_failed_executions'])
+        self.assertEqual(1240, s.state['aggregated']['total_collected_elements'])
+        self.assertEqual(1240, s.state['aggregated']['total_inserted_elements'])
