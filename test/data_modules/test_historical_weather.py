@@ -1,6 +1,6 @@
 import datetime
 from json import dumps
-from unittest import TestCase, main, mock
+from unittest import TestCase, mock
 from unittest.mock import Mock
 
 from pytz import UTC
@@ -47,12 +47,13 @@ DATA = {"response": {"version": "0.1", "termsofService": "http://www.wundergroun
 DATA = dumps(DATA).encode()
 
 MISSING_DATA = {"response": {"version": "0.1", "termsofService": "http://www.wunderground.com/weather/api/d/terms.html",
-                     "features": {"history": 1}}, "history": {
+                             "features": {"history": 1}}, "history": {
     "date": {"pretty": "April 5, 2006", "year": "2006", "mon": "04", "mday": "05", "hour": "12", "min": "00",
              "tzname": "America/Los_Angeles"},
     "utcdate": {"pretty": "April 5, 2006", "year": "2006", "mon": "04", "mday": "05", "hour": "19", "min": "00",
                 "tzname": "UTC"}, "observations": [], "dailysummary": []}}
 MISSING_DATA = dumps(MISSING_DATA).encode()
+
 
 class TestHistoricalWeather(TestCase):
 
@@ -98,7 +99,8 @@ class TestHistoricalWeather(TestCase):
 
     @mock.patch('requests.get')
     @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
-    def test_correct_data_collection_normal_mode_not_last_date_with_max_daily_reached(self, mock_collection, mock_requests):
+    def test_correct_data_collection_normal_mode_not_last_date_with_max_daily_reached(self, mock_collection,
+                                                                                      mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 10
@@ -144,10 +146,90 @@ class TestHistoricalWeather(TestCase):
             self.assertEqual(1, t['daily_requests'])
             self.assertIsNotNone(t['limit_request_timestamp'])
 
+    @mock.patch('data_collector.data_collector.read_state')
+    @mock.patch('requests.get')
+    @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
+    def test_daily_requests_is_properly_reset(self, mock_collection, mock_requests, mock_state):
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.count.return_value = 10
+        mock_collection.return_value.find.return_value = {
+            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2},
+                     {'_id': 3, 'name': 'City 3', 'wunderground_loc_id': 3},
+                     {'_id': 4, 'name': 'City 4', 'wunderground_loc_id': 4},
+                     {'_id': 5, 'name': 'City 5', 'wunderground_loc_id': 5},
+                     {'_id': 6, 'name': 'City 6', 'wunderground_loc_id': 6},
+                     {'_id': 7, 'name': 'City 7', 'wunderground_loc_id': 7},
+                     {'_id': 8, 'name': 'City 8', 'wunderground_loc_id': 8},
+                     {'_id': 9, 'name': 'City 9', 'wunderground_loc_id': 9},
+                     {'_id': 10, 'name': 'City 10', 'wunderground_loc_id': 10}], 'more': False}
+        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        insert_result.bulk_api_result = {'nInserted': 10, 'nMatched': 0, 'nUpserted': 0}
+        # Mocking requests (get and response content)
+        mock_requests.return_value = response = Mock()
+        response.content = DATA
+        # Mocking read_state
+        mock_state.return_value = {'update_frequency': {'value': 1, 'units': 'day'},
+                                   'last_request': '2018-01-12T18:00:26.396822Z', 'data_elements': 10,
+                                   'inserted_elements': 10, 'restart_required': False, 'last_error': None,
+                                   'error': None, 'errors': {}, 'backoff_time': {'value': 1, 'units': 's'},
+                                   'last_id': None, 'date': '20171229', 'single_location_mode': False,
+                                   'single_location_update_frequency': {'value': 12, 'units': 'h'},
+                                   'single_location_last_check': '2018-01-13T18:00:26.313837Z',
+                                   'single_location_date': None, 'single_location_ids': None,
+                                   'consecutive_unmeasured_days': 0, 'tokens': {
+                '5f06ae04f7342abf': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.363173Z'},
+                'e63c2d687265be99': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.367882Z'},
+                '4ea749ef53da4c65': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.370846Z'},
+                '3d93ef701440b478': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.373662Z'},
+                'bb866b8bda7036f4': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.377297Z'},
+                '8649251baef91434': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.380347Z'},
+                '0e85d055e5337977': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.383417Z'},
+                '330521663b1024c9': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.386654Z'},
+                '9309f4166988f1e3': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.389727Z'},
+                '5e1dd9d990fef0f8': {'daily_requests': 1, 'usable': False,
+                                     'limit_request_timestamp': '2018-01-12T18:00:26.392286Z'}}}
+        self.data_collector = historical_weather.instance()
+        self.data_collector.config['STATE_STRUCT']['single_location_last_check'] = serialize_date(
+                datetime.datetime.now(tz=UTC))
+        self.data_collector.config['STATE_STRUCT'][
+            'date'] = self.data_collector._HistoricalWeatherDataCollector__sum_days(
+                self.data_collector._HistoricalWeatherDataCollector__query_date(), -1)
+        self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = 1
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_requests.called)
+        self.assertTrue(mock_state.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertIsNotNone(self.data_collector.state['data_elements'])
+        self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertEqual(10, self.data_collector.state['data_elements'])
+        self.assertEqual(10, self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['last_id'])
+        self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+        for token in self.data_collector.config['TOKENS']:
+            t = self.data_collector.state['tokens'][token]
+            self.assertFalse(t['usable'])
+            self.assertEqual(1, t['daily_requests'])
+            self.assertIsNotNone(t['limit_request_timestamp'])
+
     @mock.patch('requests.get')
     @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_correct_data_collection_normal_mode_not_last_date_with_max_daily_reached_from_the_beginning(self,
-            mock_collection, mock_requests):
+                                                                                                         mock_collection,
+                                                                                                         mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 10
@@ -242,8 +324,7 @@ class TestHistoricalWeather(TestCase):
         mock_requests.return_value = response = Mock()
         unparseable = dumps({'unparseable': True})
         data = DATA.decode('utf-8', errors='replace')
-        response.content.decode = Mock(
-                side_effect=[data, unparseable])
+        response.content.decode = Mock(side_effect=[data, unparseable])
         # Actual execution
         self.data_collector = historical_weather.instance()
         self.data_collector.config['STATE_STRUCT']['single_location_last_check'] = serialize_date(
@@ -365,10 +446,12 @@ class TestHistoricalWeather(TestCase):
                     'MAX_REQUESTS_PER_MINUTE_AND_TOKEN']), self.data_collector.state['single_location_date'])
         self.assertIsNotNone(self.data_collector.state['data_elements'])
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
-        self.assertEqual(len(self.data_collector.config['TOKENS']) * self.data_collector.config[
-            'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'], self.data_collector.state['data_elements'])
-        self.assertEqual(len(self.data_collector.config['TOKENS']) * self.data_collector.config[
-            'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'], self.data_collector.state['inserted_elements'])
+        self.assertEqual(
+            len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'],
+            self.data_collector.state['data_elements'])
+        self.assertEqual(
+            len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'],
+            self.data_collector.state['inserted_elements'])
         self.assertEqual(self.data_collector.config['MIN_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
 
@@ -377,7 +460,7 @@ class TestHistoricalWeather(TestCase):
     def test_correct_data_collection_single_mode_max_daily_reached(self, mock_collection, mock_requests):
         self.data_collector = historical_weather.instance()
         self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = self.data_collector.config[
-                'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] - 1
+                                                                         'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] - 1
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
@@ -404,11 +487,11 @@ class TestHistoricalWeather(TestCase):
         self.assertIsNotNone(self.data_collector.state['data_elements'])
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
         self.assertEqual(
-            len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'],
-            self.data_collector.state['data_elements'])
+                len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'],
+                self.data_collector.state['data_elements'])
         self.assertEqual(
-            len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'],
-            self.data_collector.state['inserted_elements'])
+                len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'],
+                self.data_collector.state['inserted_elements'])
         self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
         for token in self.data_collector.config['TOKENS']:
@@ -420,7 +503,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_correct_data_collection_single_mode_max_daily_reached_from_the_beginning(self, mock_collection,
-            mock_requests):
+                                                                                      mock_requests):
         self.data_collector = historical_weather.instance()
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
@@ -630,9 +713,8 @@ class TestHistoricalWeather(TestCase):
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
         self.assertTrue(self.data_collector.state['single_location_mode'])
-        self.assertEqual(
-            len(self.data_collector.config['TOKENS']) * self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'],
-            self.data_collector.state['consecutive_unmeasured_days'])
+        self.assertEqual(len(self.data_collector.config['TOKENS']) * self.data_collector.config[
+            'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'], self.data_collector.state['consecutive_unmeasured_days'])
         self.assertTrue(self.data_collector._HistoricalWeatherDataCollector__sum_days(
                 self.data_collector._HistoricalWeatherDataCollector__query_date(),
                 -(len(self.data_collector.config['TOKENS'])) * self.data_collector.config[
@@ -770,8 +852,7 @@ class TestHistoricalWeather(TestCase):
         mock_collection.return_value.collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
-        insert_result.bulk_api_result = {
-            'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
+        insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         response.content = MISSING_DATA

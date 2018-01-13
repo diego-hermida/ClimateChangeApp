@@ -50,8 +50,13 @@ class __HistoricalWeatherDataCollector(DataCollector):
         if self.pending_work:
             # Determining token usability only if the DataCollector has pending work
             for token in self.config['TOKENS']:
-                self.state['tokens'][token]['usable'] = date_plus_timedelta_gt_now(self.state['tokens'][token][
-                        'limit_request_timestamp'], {'value': 1, 'units': 'day'})
+                # FIXES: [BUG-022]
+                if not self.state['tokens'][token]['usable']:
+                    self.state['tokens'][token]['usable'] = date_plus_timedelta_gt_now(self.state['tokens'][token][
+                            'limit_request_timestamp'], {'value': 1, 'units': 'day'})
+                    if self.state['tokens'][token]['usable']:
+                        self.logger.info('Resetting daily requests for token "%s", since it is usable again.'%(token))
+                        self.state['tokens'][token]['daily_requests'] = 0
 
     def _collect_data(self):
         """
@@ -85,7 +90,7 @@ class __HistoricalWeatherDataCollector(DataCollector):
                         self.state['tokens'][token]['usable'] = self.state['tokens'][token]['daily_requests'] <= \
                                 self.config['MAX_DAILY_REQUESTS_PER_TOKEN']
                         if not self.state['tokens'][token]['usable']:
-                            self.logger.debug('API token "%s" has reached the maximum daily requests allowed.'%(token))
+                            self.logger.info('API token "%s" has reached the maximum daily requests allowed.'%(token))
                             tokens.remove(token)
                             self.state['tokens'][token]['daily_requests'] -= 1
                             self.state['tokens'][token]['limit_request_timestamp'] = datetime.datetime.now(tz=UTC)
@@ -104,7 +109,8 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                 temp['_id'] = {'loc_id': location['_id'],
                                                'date_utc': date_to_millis_since_epoch(date)}
                                 self.data.append(temp)
-                                self.state['consecutive_unmeasured_days'] = 0  # A new value resets unmeasured days
+                                # A new value resets unmeasured days. FIXES: [BUG-018]
+                                self.state['consecutive_unmeasured_days'] = 0
                             else:
                                 self.state['consecutive_unmeasured_days'] += 1
                         # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
@@ -207,8 +213,7 @@ class __HistoricalWeatherDataCollector(DataCollector):
                             self.state['tokens'][token]['usable'] = self.state['tokens'][token]['daily_requests'] <= \
                                     self.config['MAX_DAILY_REQUESTS_PER_TOKEN']
                             if not self.state['tokens'][token]['usable']:
-                                self.logger.debug(
-                                    'API token "%s" has reached the maximum daily requests allowed.' % (token))
+                                self.logger.info('API token "%s" has reached the maximum daily requests allowed.' % (token))
                                 tokens.remove(token)
                                 self.state['tokens'][token]['daily_requests'] -= 1
                                 self.state['tokens'][token]['limit_request_timestamp'] = datetime.datetime.now(tz=UTC)
