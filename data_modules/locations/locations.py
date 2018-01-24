@@ -8,22 +8,23 @@ from io import BytesIO
 from pymongo import UpdateOne
 from pytz import UTC
 from unidecode import unidecode
+from utilities.db_util import MongoDBCollection
 from utilities.util import check_coordinates, date_to_millis_since_epoch, deserialize_date, MeasureUnits, serialize_date
 
 __singleton = None
 
 
-def instance() -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
     global __singleton
     if not __singleton or __singleton and __singleton.finished_execution():
-        __singleton = __LocationsDataCollector()
+        __singleton = __LocationsDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
     return __singleton
 
 
 class __LocationsDataCollector(DataCollector):
 
-    def __init__(self):
-        super().__init__(__file__)
+    def __init__(self, log_to_file=True, log_to_stdout=True):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
 
     def _restore_state(self):
         """
@@ -55,6 +56,27 @@ class __LocationsDataCollector(DataCollector):
         multiple = []
         # Collecting data only if file has been modified
         if True if not self.state['last_modified'] or not last_modified else last_modified > self.state['last_modified']:
+            # Optimization: Only updating missing locations.
+            self.collection = MongoDBCollection(self.module_name)
+            missing_locations = self.collection.find(fields={'name': 1}, conditions={'$and': [{'waqi_station_id':
+                    {'$ne': None}}, {'wunderground_loc_id': {'$ne': None}}, {'owm_station_id': {'$ne': None}}]}, sort='_id')
+            self.collection.close()
+            omitted = 0
+            locations_length = len(self.config['LOCATIONS'])
+            for loc in missing_locations['data']:
+                try:
+                    del self.config['LOCATIONS'][loc['name']]
+                    omitted += 1
+                except KeyError:
+                    pass
+            if omitted and omitted == locations_length:
+                self.logger.info('Stopping data collection, since all locations are up to date.')
+                self.advisedly_no_data_collected = True
+                self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
+            elif omitted:
+                self.logger.info('%d locations were omitted, since they are up to date.' % (omitted))
+            else:
+                self.logger.info('Collecting data for all locations.')
             index = 1
             locations_length = len(self.config['LOCATIONS'])
             for location in self.config['LOCATIONS']:

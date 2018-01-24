@@ -19,9 +19,10 @@ class SimpleDataCollector(data_collector.DataCollector):
     """
 
     def __init__(self, fail_on='', pending_work=True, data_collected=None, data_inserted=None,
-                 update_frequency={'value': 0, 'units': 's'}, restart_required=False, backoff_time=None):
+                 update_frequency={'value': 0, 'units': 's'}, restart_required=False, backoff_time=None ,
+                 log_to_file=True, log_to_stdout=False):
         fake_file_path = GLOBAL_CONFIG['DATA_MODULES_PATH'] + 'test/simple_data_collector/simple_data_collector.py'
-        super().__init__(fake_file_path, log_to_file=True, log_to_stdout=True)
+        super().__init__(fake_file_path, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
         self.fail_on = fail_on
         self.__pending_work = pending_work
         self.__update_frequency = update_frequency

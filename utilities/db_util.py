@@ -33,6 +33,29 @@ def create_application_user():
         config['DB_USERNAME'], pwd=config['DB_PASSWORD'], roles=[{"role" : "dbOwner", "db" : "climatechange"}])
 
 
+def ping_database():
+    """
+        Performs a connection attempt, to ensure database is up. Regardless of the error, the client will be closed.
+        :raises EnvironmentError: If any error occurs during the process.
+    """
+    config = get_config(__file__)
+    client = None
+    try:
+        client = MongoClient(host=environ.get(config['DB_SERVER'], 'localhost'), port=config['DB_PORT'],
+                    authSource=config['DB_ADMIN'], serverSelectionTimeoutMS=config['DB_MAX_MILLISECONDS_WAIT'],
+                    username=config['DB_ROOT'], password=config['DB_ROOT_PASSWORD'],
+                    authMechanism=config['DB_AUTH_MECHANISM'])
+        client.server_info()
+    except Exception as exc:
+        raise EnvironmentError from exc
+    finally:
+        try:
+            if client is not None:
+                client.close()
+        except:
+            pass
+
+
 class MongoDBCollection:
     """
         This class acts as an abstraction to a MongoDB Collection. It provides a wrapper interface for some operations,
@@ -82,9 +105,9 @@ class MongoDBCollection:
             :param collection_name: Name of the collection to be connected to. If this name is the same as the current
                                     collection, this operation won't do anything.
         """
-        if self.__collection_name == collection_name:
+        if self.__collection_name == collection_name and not self.is_closed():
             return
-        if not self.is_closed():
+        elif self.__collection_name != collection_name:
             self.close()
         self.collection = self.__client.get_database(self.__config['DATABASE']).get_collection(
             collection_name if collection_name else self.__collection_name)
@@ -138,3 +161,11 @@ class MongoDBCollection:
         Removes all elements from the collection.
         """
         return self.collection.delete_many({})
+
+    def get_last_elements(self, amount=1):
+        count = self.collection.count()
+        if count == 0:
+            return None
+        else:
+            result = list(self.collection.find().skip(count - amount))
+            return result[0] if amount == 1 else result

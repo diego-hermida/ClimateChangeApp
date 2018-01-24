@@ -9,7 +9,7 @@ class TestCurrentConditions(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        current_conditions.instance().remove_files()
+        current_conditions.instance(log_to_stdout=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -32,7 +32,7 @@ class TestCurrentConditions(TestCase):
             "sys": {"type": 1, "id": 8166, "message": 0.2064, "country": "AU", "sunrise": 1485720272, "sunset":
             1485766550}, "id": 2172797, "name": "Cairns", "cod": 200}).encode()
         # Actual execution
-        self.data_collector = current_conditions.instance()
+        self.data_collector = current_conditions.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -64,7 +64,7 @@ class TestCurrentConditions(TestCase):
             "sys": {"type": 1, "id": 8166, "message": 0.2064, "country": "AU", "sunrise": 1485720272, "sunset":
             1485766550}, "id": 2172797, "name": "Cairns", "cod": 200}).encode()
         # Actual execution
-        self.data_collector = current_conditions.instance()
+        self.data_collector = current_conditions.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -87,7 +87,7 @@ class TestCurrentConditions(TestCase):
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
-        self.data_collector = current_conditions.instance()
+        self.data_collector = current_conditions.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -113,7 +113,7 @@ class TestCurrentConditions(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = dumps({'data': ['invalid', 'data', 'structure']}).encode()
         # Actual execution
-        self.data_collector = current_conditions.instance()
+        self.data_collector = current_conditions.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -140,7 +140,7 @@ class TestCurrentConditions(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = dumps({"status": "error", "message": "Over quota"}).encode()
         # Actual execution
-        self.data_collector = current_conditions.instance()
+        self.data_collector = current_conditions.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -171,7 +171,7 @@ class TestCurrentConditions(TestCase):
             "sys": {"type": 1, "id": 8166, "message": 0.2064, "country": "AU", "sunrise": 1485720272, "sunset":
             1485766550}, "id": 2172797, "name": "Cairns", "cod": 200}).encode()
         # Actual execution
-        self.data_collector = current_conditions.instance()
+        self.data_collector = current_conditions.instance(log_to_stdout=False)
         self.data_collector.run()
 
         self.assertTrue(mock_collection.called)
@@ -203,7 +203,7 @@ class TestCurrentConditions(TestCase):
             "sys": {"type": 1, "id": 8166, "message": 0.2064, "country": "AU", "sunrise": 1485720272, "sunset":
             1485766550}, "id": 2172797, "name": "Cairns", "cod": 200}).encode()
         # Actual execution
-        self.data_collector = current_conditions.instance()
+        self.data_collector = current_conditions.instance(log_to_stdout=False)
         self.data_collector.run()
 
         self.assertTrue(mock_collection.called)

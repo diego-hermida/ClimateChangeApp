@@ -12,19 +12,6 @@ def get_collection() -> utilities.db_util.MongoDBCollection:
     return collection
 
 
-def mock_remove_database(name: str):
-    return None
-
-
-def mock_create_user(*args, **kwargs):
-    return None
-
-def mock_create_existent_user(*args, **kwargs):
-    from pymongo.errors import DuplicateKeyError
-
-    raise DuplicateKeyError('User already exists')
-
-
 class TestDbUtil(TestCase):
 
     def tearDown(self):
@@ -34,21 +21,6 @@ class TestDbUtil(TestCase):
     def tearDownClass(cls):
         if get_collection():
             get_collection().collection.drop()
-
-    @mock.patch('pymongo.MongoClient.drop_database', side_effect=mock_remove_database)
-    def test_remove_database(self, function):
-        utilities.db_util.drop_application_database()
-
-    @mock.patch('pymongo.database.Database.command', side_effect=mock_create_user)
-    def test_add_user(self, function):
-        utilities.db_util.create_application_user()
-
-    @mock.patch('pymongo.database.Database.command', side_effect=mock_create_existent_user)
-    def test_add_existing_user(self, function):
-        from pymongo.errors import DuplicateKeyError
-
-        with self.assertRaises(DuplicateKeyError):
-            utilities.db_util.create_application_user()
 
     def test_close(self):
         self.assertFalse(get_collection().is_closed())
@@ -133,3 +105,13 @@ class TestDbUtil(TestCase):
         self.assertFalse(last_page['more'])
         self.assertListEqual(expected[:4], first_page['data'])
         self.assertListEqual(expected[4:], last_page['data'])
+
+    def test_get_last_elements(self):
+        for i in range(1, 6):
+            get_collection().collection.insert_one({'_id': i, 'data': 'DATA'})
+
+        result = get_collection().get_last_elements()
+        self.assertDictEqual({'_id': 5, 'data': 'DATA'}, result)
+
+        result = get_collection().get_last_elements(amount=5)
+        self.assertListEqual(get_collection().find()['data'], result)

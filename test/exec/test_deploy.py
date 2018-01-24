@@ -36,7 +36,7 @@ class TestDeploy(TestCase):
         mock_modules.return_value = [mock_module1]
         mock_test_runner.return_value.run = results = Mock()
         results.return_value.wasSuccessful.return_value = True
-        deploy.deploy()
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
         self.assertTrue(mock_modules.called)
         self.assertTrue(mock_test_runner.called)
@@ -52,7 +52,7 @@ class TestDeploy(TestCase):
         args.verify_modules = False
         args.with_tests = False
         args.remove_files = False
-        deploy.deploy()
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
 
     @mock.patch('exec.deploy.import_modules')
@@ -70,7 +70,7 @@ class TestDeploy(TestCase):
         mock_module1.instance.return_value = runnable = Mock()
         runnable.is_runnable.return_value = False
         mock_modules.return_value = [mock_module1]
-        deploy.deploy()
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
         self.assertTrue(mock_modules.called)
 
@@ -97,7 +97,7 @@ class TestDeploy(TestCase):
         mock_namespace.return_value.remove_files = False
         mock_test_runner.return_value.run = results = Mock()
         results.return_value.wasSuccessful.return_value = False
-        deploy.deploy()
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
         self.assertTrue(mock_test_runner.called)
         self.assertTrue(mock_exit.called)
@@ -113,13 +113,13 @@ class TestDeploy(TestCase):
         args.verify_modules = False
         args.with_tests = False
         args.remove_files = True
-        deploy.deploy()
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
 
     @mock.patch('exec.deploy.exit')
-    @mock.patch('argparse.ArgumentParser', Mock(side_effect=Exception('Unexpected error')))
+    @mock.patch('argparse.ArgumentParser', Mock(side_effect=Exception('Test error (to verify anomalous exit). This is OK.')))
     def test_anomalous_exit(self, mock_exit):
-        deploy.deploy()
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_exit.called)
 
     @mock.patch('argparse.ArgumentParser')
@@ -133,8 +133,8 @@ class TestDeploy(TestCase):
         args.with_tests = False
         args.remove_files = False
         with self.assertRaises(SystemExit):
-            deploy.deploy()
-            self.assertTrue(mock_args.called)
+            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        self.assertTrue(mock_args.called)
 
     @mock.patch('argparse.ArgumentParser')
     def test_skip_all_with_environment_variable(self, mock_args):
@@ -149,8 +149,8 @@ class TestDeploy(TestCase):
         args.with_tests = False
         args.remove_files = False
         with self.assertRaises(SystemExit):
-            deploy.deploy()
-            self.assertTrue(mock_args.called)
+            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        self.assertTrue(mock_args.called)
 
     @mock.patch('argparse.ArgumentParser')
     def test_skip_all_with_environment_variable_invalid_value(self, mock_args):
@@ -164,6 +164,6 @@ class TestDeploy(TestCase):
         args.verify_modules = False
         args.with_tests = False
         args.remove_files = False
-        with self.assertRaises(SystemExit):
-            deploy.deploy()
-            self.assertTrue(mock_args.called)
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
+        self.assertTrue(mock_args.called)
+

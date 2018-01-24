@@ -263,5 +263,5 @@ class TestUtil(TestCase):
         from time import sleep
 
         with self.assertRaises(TimeoutError):
-            with utilities.util.time_limit(3):
+            with utilities.util.time_limit(1):
                 sleep(5)

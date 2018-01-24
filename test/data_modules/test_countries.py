@@ -9,7 +9,7 @@ class TestCountries(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        countries.instance().remove_files()
+        countries.instance(log_to_stdout=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -52,7 +52,7 @@ class TestCountries(TestCase):
              "lendingType": {"id": "LNX", "value": "Not classified"}, "capitalCity": "Andorra la Vella",
              "longitude": "1.5218", "latitude": "42.5075"}]]).encode()
         # Actual execution
-        self.data_collector = countries.instance()
+        self.data_collector = countries.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -75,7 +75,7 @@ class TestCountries(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = dumps([{"page": 1, "pages": 1, "per_page": "10000", "total": 0}, []]).encode()
         # Actual execution
-        self.data_collector = countries.instance()
+        self.data_collector = countries.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertFalse(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -100,7 +100,7 @@ class TestCountries(TestCase):
                 "income"}, "lendingType": {"id": "LNX", "value": "Not classified"}, "capitalCity": "Oranjestad",
                 "longitude": "-70.0167", "latitude": "12.5167"}]]).encode()
         # Actual execution
-        self.data_collector = countries.instance()
+        self.data_collector = countries.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertFalse(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -124,7 +124,7 @@ class TestCountries(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = dumps({'error': 500, 'message': 'Server is unavailable.'}).encode()
         # Actual execution
-        self.data_collector = countries.instance()
+        self.data_collector = countries.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertFalse(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -183,7 +183,7 @@ class TestCountries(TestCase):
             "LIC", "value": "Low income"}, "lendingType": {"id": "IDX", "value": "IDA"}, "capitalCity": "Kabul",
             "longitude": "69.1761", "latitude": "34.5228"}]]).encode()
         # Actual execution
-        self.data_collector = countries.instance()
+        self.data_collector = countries.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -213,7 +213,7 @@ class TestCountries(TestCase):
             {"id": "HIC", "value": "High income"}, "lendingType": {"id": "LNX", "value": "Not classified"},
             "capitalCity": "Oranjestad", "longitude": "-70.0167", "latitude": "12.5167"}]]).encode()
         # Actual execution
-        self.data_collector = countries.instance()
+        self.data_collector = countries.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)

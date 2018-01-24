@@ -10,17 +10,17 @@ from utilities.db_util import MongoDBCollection
 __singleton = None
 
 
-def instance() -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
     global __singleton
     if not __singleton or __singleton and __singleton.finished_execution():
-        __singleton = __CurrentConditionsDataCollector()
+        __singleton = __CurrentConditionsDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
     return __singleton
 
 
 class __CurrentConditionsDataCollector(DataCollector):
 
-    def __init__(self):
-        super().__init__(file_path=__file__)
+    def __init__(self, log_to_file=True, log_to_stdout=True):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
 
     def _collect_data(self):
         """

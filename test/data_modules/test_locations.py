@@ -20,7 +20,7 @@ class TestLocations(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        locations.instance().remove_files()
+        locations.instance(log_to_stdout=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -28,7 +28,7 @@ class TestLocations(TestCase):
     @mock.patch('data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_collector.data_collector.MongoDBCollection')
+    @mock.patch('data_modules.locations.locations.MongoDBCollection')
     def test_correct_data_collection_all_found_no_unmatched_no_multiple(self, mock_collection, mock_requests,
                                                                         mock_zipfile, mock_bytes):
         # Mocking ZipFile
@@ -37,6 +37,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.find.return_value = {'data': [], 'more': False}
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -74,7 +75,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance()
+        self.data_collector = locations.instance(log_to_stdout=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -98,7 +99,7 @@ class TestLocations(TestCase):
     @mock.patch('data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_collector.data_collector.MongoDBCollection')
+    @mock.patch('data_modules.locations.locations.MongoDBCollection')
     def test_correct_data_collection_all_found_unmatched_multiple(self, mock_collection, mock_requests, mock_zipfile,
                                                                   mock_bytes):
         # Mocking ZipFile
@@ -106,6 +107,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.find.return_value = {'data': [], 'more': False}
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
@@ -149,7 +151,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	100.666668	75.216667	IN\n261481	New Delhi	25.612820	75.231140	IN\n530597	Mexico City	1.428471	-21.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance()
+        self.data_collector = locations.instance(log_to_stdout=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -173,7 +175,7 @@ class TestLocations(TestCase):
     @mock.patch('data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_collector.data_collector.MongoDBCollection')
+    @mock.patch('data_modules.locations.locations.MongoDBCollection')
     def test_correct_data_collection_some_locations_not_found(self, mock_collection, mock_requests, mock_zipfile,
                                                               mock_bytes):
         # Mocking ZipFile
@@ -184,6 +186,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(data)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.find.return_value = {'data': [], 'more': False}
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 4, 'nMatched': 0, 'nUpserted': 0}
@@ -216,7 +219,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance()
+        self.data_collector = locations.instance(log_to_stdout=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -248,7 +251,7 @@ class TestLocations(TestCase):
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         # Actual execution
-        self.data_collector = locations.instance()
+        self.data_collector = locations.instance(log_to_stdout=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.config['STATE_STRUCT']['last_modified'] = '2018-01-02T02:13:24.0001Z'
         self.data_collector.run()
@@ -267,13 +270,14 @@ class TestLocations(TestCase):
     @mock.patch('data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_collector.data_collector.MongoDBCollection')
+    @mock.patch('data_modules.locations.locations.MongoDBCollection')
     def test_correct_data_collection_not_all_collected(self, mock_collection, mock_requests, mock_zipfile, mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.find.return_value = {'data': [], 'more': False}
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 3, 'nMatched': 0, 'nUpserted': 0}
@@ -312,7 +316,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance()
+        self.data_collector = locations.instance(log_to_stdout=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -336,7 +340,7 @@ class TestLocations(TestCase):
     @mock.patch('data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_collector.data_collector.MongoDBCollection')
+    @mock.patch('data_modules.locations.locations.MongoDBCollection')
     def test_data_collection_with_invalid_data_from_server(self, mock_collection, mock_requests, mock_zipfile,
                                                            mock_bytes):
         # Mocking ZipFile
@@ -344,6 +348,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.find.return_value = {'data': [], 'more': False}
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
@@ -380,7 +385,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance()
+        self.data_collector = locations.instance(log_to_stdout=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -404,7 +409,7 @@ class TestLocations(TestCase):
     @mock.patch('data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_collector.data_collector.MongoDBCollection')
+    @mock.patch('data_modules.locations.locations.MongoDBCollection')
     def test_correct_data_collection_no_elements_collected(self, mock_collection, mock_requests, mock_zipfile,
                                                            mock_bytes):
         # Mocking ZipFile
@@ -412,6 +417,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.find.return_value = {'data': [], 'more': False}
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
@@ -450,7 +456,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance()
+        self.data_collector = locations.instance(log_to_stdout=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -468,5 +474,84 @@ class TestLocations(TestCase):
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
         self.assertEqual(5, self.data_collector.state['data_elements'])
         self.assertEqual(0, self.data_collector.state['inserted_elements'])
+        self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+
+    @mock.patch('data_modules.locations.locations.BytesIO')
+    @mock.patch('zipfile.ZipFile')
+    @mock.patch('requests.get')
+    @mock.patch('data_modules.locations.locations.MongoDBCollection')
+    def test_correct_data_collection_missing_locations_in_database(self, mock_collection, mock_requests, mock_zipfile,
+                                                           mock_bytes):
+        # Mocking ZipFile
+        mock_zipfile.return_value = Mock()
+        mock_zipfile.return_value.open.return_value = BytesIO(DATA)
+        mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.find.return_value = {'data': [{'name': 'Delhi'}, {'name': 'Mexico City'},
+                {'name': 'Guatemala City'}, {'name': 'Cairo'}], 'more': False}
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
+        # Mocking requests (get and response content)
+        mock_requests.return_value = response = Mock()
+        side_effect = [dumps(x) for x in [{"RESULTS": [
+            {"name": "Kabul, Afghanistan", "type": "city", "c": "AF", "zmw": "00000.551.40948", "tz": "Asia/Kabul",
+             "tzs": "+0430", "l": "/q/zmw:00000.551.40948", "ll": "34.529999 69.169998", "lat": "34.529999",
+             "lon": "69.169998"}]}, {"status": "ok", "data": [
+            {"uid": 1234, "aqi": "744", "time": {"tz": "+0530", "stime": "2018-01-02 21:00:00", "vtime": 1514907000},
+             "station": {"name": "Kabul, Afghanistan", "geo": [34.52813, 69.17233], "url": "kabul/afghanistan"}}]}]]
+        side_effect.append(
+                'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
+        response.content.decode = Mock(side_effect=side_effect)
+        # Actual execution
+        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector.config['LOCATIONS'] = dict(LOCATIONS)
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_requests.called)
+        self.assertTrue(mock_zipfile.called)
+        self.assertTrue(mock_bytes.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertFalse(self.data_collector.config['LOCATIONS']['Kabul']['missing'])
+        self.assertIsNotNone(self.data_collector.state['data_elements'])
+        self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertEqual(1, self.data_collector.state['data_elements'])
+        self.assertEqual(1, self.data_collector.state['inserted_elements'])
+        self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+
+    @mock.patch('data_modules.locations.locations.BytesIO')
+    @mock.patch('zipfile.ZipFile')
+    @mock.patch('requests.get')
+    @mock.patch('data_modules.locations.locations.MongoDBCollection')
+    def test_correct_data_collection_no_missing_locations_in_database(self, mock_collection, mock_requests,
+                mock_zipfile, mock_bytes):
+        # Mocking ZipFile
+        mock_zipfile.return_value = Mock()
+        mock_zipfile.return_value.open.return_value = BytesIO(DATA)
+        mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.find.return_value = {'data': [{'name': 'Delhi'}, {'name': 'Mexico City'},
+                {'name': 'Guatemala City'}, {'name': 'Cairo'}, {'name': 'Kabul'}], 'more': False}
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
+        # Actual execution
+        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector.config['LOCATIONS'] = dict(LOCATIONS)
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_requests.called)
+        self.assertTrue(mock_zipfile.called)
+        self.assertTrue(mock_bytes.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertIsNotNone(self.data_collector.state['data_elements'])
+        self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertEqual(0, self.data_collector.state['data_elements'])
+        self.assertEqual(0, self.data_collector.state['inserted_elements'])
+        self.assertTrue(self.data_collector.advisedly_no_data_collected)
         self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])

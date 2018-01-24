@@ -11,7 +11,7 @@ class TestCountryIndicators(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        country_indicators.instance().remove_files()
+        country_indicators.instance(log_to_stdout=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -19,7 +19,7 @@ class TestCountryIndicators(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_collector.data_collector.MongoDBCollection')
     def test_correct_data_collection(self, mock_collection, mock_requests):
-        self.data_collector = country_indicators.instance()
+        self.data_collector = country_indicators.instance(log_to_stdout=False)
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
@@ -55,7 +55,7 @@ class TestCountryIndicators(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_collector.data_collector.MongoDBCollection')
     def test_correct_data_collection_with_single_page(self, mock_collection, mock_requests):
-        self.data_collector = country_indicators.instance()
+        self.data_collector = country_indicators.instance(log_to_stdout=False)
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
@@ -93,7 +93,7 @@ class TestCountryIndicators(TestCase):
                 "country": {"id": "ES", "value": "Spain"}, "value": None, "decimal": "1", "date": "2016"}
         response.content.decode = Mock(return_value=dumps([None, [data]]))
         # Actual execution
-        self.data_collector = country_indicators.instance()
+        self.data_collector = country_indicators.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
@@ -111,7 +111,7 @@ class TestCountryIndicators(TestCase):
         data = {'invalid': 'data'}
         response.content.decode = Mock(return_value=dumps([None, [data]]))
         # Actual execution
-        self.data_collector = country_indicators.instance()
+        self.data_collector = country_indicators.instance(log_to_stdout=False)
         self.data_collector.run()
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -123,7 +123,7 @@ class TestCountryIndicators(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_collector.data_collector.MongoDBCollection')
     def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_requests):
-        self.data_collector = country_indicators.instance()
+        self.data_collector = country_indicators.instance(log_to_stdout=False)
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
@@ -159,7 +159,7 @@ class TestCountryIndicators(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_collector.data_collector.MongoDBCollection')
     def test_data_collection_with_too_much_items_not_saved(self, mock_collection, mock_requests):
-        self.data_collector = country_indicators.instance()
+        self.data_collector = country_indicators.instance(log_to_stdout=False)
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
@@ -196,7 +196,7 @@ class TestCountryIndicators(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_collector.data_collector.MongoDBCollection')
     def test_data_collection_with_no_items_saved(self, mock_collection, mock_requests):
-        self.data_collector = country_indicators.instance()
+        self.data_collector = country_indicators.instance(log_to_stdout=False)
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
