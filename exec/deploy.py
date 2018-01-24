@@ -11,10 +11,10 @@ from utilities.log_util import get_logger
 from utilities.util import remove_all_under_directory
 
 
-def deploy():
+def deploy(log_to_file=True, log_to_stdout=True):
 
     # Getting a logger instance
-    logger = get_logger(__file__, 'DeployLogger', to_stdout=True, to_file=False)
+    logger = get_logger(__file__, 'DeployLogger', to_file=log_to_file, to_stdout=log_to_stdout)
     try:
         # Parsing command line arguments
         parser = argparse.ArgumentParser()
@@ -41,7 +41,7 @@ def deploy():
             logger.info('Since "--all" option has been passed, any other option is excluded.')
         elif not (args.all or args.db_user or args.drop_database or args.verify_modules or args.remove_files or args.with_tests):
             logger.info('Since no option has been passed, using "--all" as the default option.')
-            args = argparse.Namespace(all=True)
+            args = argparse.Namespace(all=True, with_tests=False)
 
         # Dynamically, recursively imports all Python modules under base directory (and returns them in a list)
         modules = import_modules(CONFIG['DATA_MODULES_PATH'], recursive=True,
@@ -67,7 +67,7 @@ def deploy():
             logger.info('Verifying DataCollector(s) are instantiable.')
             failed = []
             for module in modules:
-                data_collector = module.instance()
+                data_collector = module.instance(log_to_stdout=False, log_to_file=False)
                 try:
                     assert data_collector.is_runnable()
                 except AssertionError:
@@ -85,6 +85,7 @@ def deploy():
             suite = loader.discover(CONFIG['ROOT_PROJECT_FOLDER'])
             runner = TextTestRunner(failfast=True, verbosity=2)
             results = runner.run(suite)
+            logger = get_logger(__file__, 'DeployLogger', to_file=log_to_file, to_stdout=log_to_stdout)
             if results.wasSuccessful():
                 logger.info('All tests passed.')
             else:
@@ -110,4 +111,4 @@ def deploy():
 
 
 if __name__ == '__main__':
-    deploy()
+    deploy(log_to_file=False, log_to_stdout=True)
