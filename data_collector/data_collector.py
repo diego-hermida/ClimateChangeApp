@@ -3,7 +3,6 @@ from functools import wraps
 from queue import Queue
 from threading import Condition, Thread
 from utilities.db_util import MongoDBCollection
-from utilities.log_util import get_logger, remove_log_file
 from utilities.util import date_plus_timedelta_gt_now, deserialize_date, enum, get_config, get_exception_info, \
     get_module_name, next_exponential_backoff, read_state, serialize_date, write_state, remove_state_file
 
@@ -30,17 +29,19 @@ class DataCollectorThread(Thread):
     """
         The purpose of this class is to run a DataCollector inside its own thread.
     """
-    def __init__(self, data_module, channel: Queue, condition: Condition):
+    def __init__(self, data_module, channel: Queue, condition: Condition, log_to_stdout=True, log_to_file=True):
         """
             Creates a Thread instance. Name is set as <DataCollector>Thread, being <DataCollector> the name of the
             DataCollector class.
             The thread is set as a Daemon thread, as we want the thread to be stopped when Main component exits.
             :param data_module: DataCollector module object.
             :param channel: A synchronized queue, which allows passing messages between threads and the Supervisor.
+            :param log_to_stdout: If True, the DataCollector will log its output to stdout.
+            :param log_to_file: If True, the DataCollector will log its output to a log file.
         """
         self.__channel = channel
         self.__condition = condition
-        self.__data_collector = data_module.instance()
+        self.__data_collector = data_module.instance(log_to_stdout=log_to_stdout, log_to_file=log_to_file)
         Thread.__init__(self)
         self.setDaemon(True)
         self.setName(self.__data_collector.__str__() + 'Thread')
@@ -275,6 +276,8 @@ class DataCollector(ABC):
         """
             Removes the files attached to this DataCollector: log file and '.state' file (if exist).
         """
+        from utilities.log_util import remove_log_file
+
         try:
             remove_state_file(self.__file_path)
         except FileNotFoundError:
@@ -333,6 +336,7 @@ class DataCollector(ABC):
             :param log_to_stdout: In True, DataCollector's logger will show log records by console.
             :param log_to_file: If True, DataCollector's logger will save log records to a file.
         """
+        from utilities.log_util import get_logger
         self.__initialize_states()
         self.__file_path = file_path
         self.module_name = get_module_name(self.__file_path)
