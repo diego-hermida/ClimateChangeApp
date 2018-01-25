@@ -114,7 +114,7 @@ class TestSupervisor(TestCase):
         self.assertEqual(3, s.execution_report['last_execution']['modules_executed'])
         self.assertEqual(3, s.execution_report['last_execution']['modules_succeeded'])
         self.assertEqual(0, s.execution_report['last_execution']['modules_failed']['amount'])
-        self.assertEqual(['simple_data_collector'], s.execution_report['last_execution']['modules_failed']['modules'])
+        self.assertIsNone(s.execution_report['last_execution']['modules_failed']['modules'])
         self.assertEqual(5, s.execution_report['aggregated']['per_module']['simple_data_collector'][
             'total_executions'])
         self.assertEqual(4, s.execution_report['aggregated']['per_module']['simple_data_collector'][

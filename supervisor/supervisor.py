@@ -170,6 +170,7 @@ class Supervisor:
         self.execution_report['aggregated']['inserted_elements'] += inserted_elements
         if execution_succeeded:
             self.execution_report['aggregated']['succeeded_executions'] += 1
+            self.execution_report['last_execution']['modules_failed']['modules'] = None
         else:
             self.execution_report['aggregated']['failed_executions'] += 1
             self.execution_report['last_execution']['modules_failed']['modules'] = failed_modules
