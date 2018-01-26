@@ -462,6 +462,8 @@ class DataCollector(ABC):
                 else:
                     self.logger.warning('No error was detected. All the same, there was pending work but no data '
                             'has been saved. This issue should be revised.')
+                    self.state['error'] = {'class': 'PendingWorkAndNoDataCollectedError', 'message': 'There is pending '
+                            'work but no data has been collected.'}
         else:
             self.logger.info('There is no pending work. Execution was successful.')
             self.check_result = True

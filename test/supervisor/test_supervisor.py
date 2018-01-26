@@ -59,21 +59,21 @@ class TestSupervisor(TestCase):
         d2 = SimpleDataCollector(fail_on='_save_data')
         d1.run()
         d2.run()
+        s.verify_module_execution(d1)
+        s.verify_module_execution(d2)
         s.registered_data_collectors = [d1, d2]
         s.registered = 2
         s.unregistered = 2
-        s.successful_executions = [str(d1)]
-        s.unsuccessful_executions = [str(d2)]
         time1 = 17.842170921
         s.generate_report(time1)
         self.assertTrue(mock_collection.called)
         self.assertEqual(time1, s.execution_report['last_execution']['duration'])
         self.assertEqual(2, s.execution_report['last_execution']['modules_executed'])
+        self.assertEqual(2, s.execution_report['last_execution']['modules_with_pending_work'])
         self.assertEqual(1, s.execution_report['last_execution']['modules_succeeded'])
         self.assertEqual(1, s.execution_report['last_execution']['modules_failed']['amount'])
         self.assertEqual(['simple_data_collector'], s.execution_report['last_execution']['modules_failed']['modules'])
-        self.assertEqual(2, s.execution_report['aggregated']['per_module']['simple_data_collector'][
-            'total_executions'])
+        self.assertEqual(2, s.execution_report['aggregated']['per_module']['simple_data_collector']['total_executions'])
         self.assertEqual(1, s.execution_report['aggregated']['per_module']['simple_data_collector'][
             'succeeded_executions'])
         self.assertEqual(1, s.execution_report['aggregated']['per_module']['simple_data_collector'][
@@ -90,23 +90,27 @@ class TestSupervisor(TestCase):
         self.assertEqual(1, s.execution_report['aggregated']['failed_executions'])
         self.assertEqual(1, s.execution_report['aggregated']['collected_elements'])
         self.assertEqual(1, s.execution_report['aggregated']['inserted_elements'])
+        self.assertEqual([1],
+                         s.execution_report['aggregated']['per_module']['simple_data_collector']['failure_details'][
+                             'Exception'])
 
         # Second execution
         supervisor.EXECUTION_ID += 1
         execution_report = s.execution_report
+        mock_collection.return_value.get_last_elements = Mock(return_value=execution_report['aggregated'])
         s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False)
-        s.execution_report = execution_report
         d3 = SimpleDataCollector(data_collected=1234, data_inserted=1234)
-        d4 = SimpleDataCollector(data_collected=2, data_inserted=2)
+        d4 = SimpleDataCollector(pending_work=False)
         d5 = SimpleDataCollector(data_collected=1, data_inserted=1)
         d3.run()
         d4.run()
         d5.run()
+        s.verify_module_execution(d3)
+        s.verify_module_execution(d4)
+        s.verify_module_execution(d5)
         s.registered_data_collectors = [d3, d4, d5]
         s.registered = 3
         s.unregistered = 3
-        s.successful_executions = [str(d3), str(d4), str(d5)]
-        s.unsuccessful_executions = []
         time2 = 89.8219821
         s.generate_report(time2)
         self.assertTrue(mock_collection.called)
@@ -115,14 +119,15 @@ class TestSupervisor(TestCase):
         self.assertEqual(3, s.execution_report['last_execution']['modules_succeeded'])
         self.assertEqual(0, s.execution_report['last_execution']['modules_failed']['amount'])
         self.assertIsNone(s.execution_report['last_execution']['modules_failed']['modules'])
-        self.assertEqual(5, s.execution_report['aggregated']['per_module']['simple_data_collector'][
-            'total_executions'])
+        self.assertEqual(5, s.execution_report['aggregated']['per_module']['simple_data_collector']['total_executions'])
+        self.assertEqual(4, s.execution_report['aggregated']['per_module']['simple_data_collector'][
+            'executions_with_pending_work'])
         self.assertEqual(4, s.execution_report['aggregated']['per_module']['simple_data_collector'][
             'succeeded_executions'])
-        self.assertEqual(1, s.execution_report['aggregated']['per_module']['simple_data_collector'][
-            'failed_executions'])
-        self.assertEqual(1237, s.execution_report['last_execution']['collected_elements'])
-        self.assertEqual(1237, s.execution_report['last_execution']['inserted_elements'])
+        self.assertEqual(1,
+                         s.execution_report['aggregated']['per_module']['simple_data_collector']['failed_executions'])
+        self.assertEqual(1235, s.execution_report['last_execution']['collected_elements'])
+        self.assertEqual(1235, s.execution_report['last_execution']['inserted_elements'])
         self.assertTrue(s.execution_report['last_execution']['execution_succeeded'])
         self.assertEqual(2, s.execution_report['aggregated']['executions'])
         self.assertEqual(time2, s.execution_report['aggregated']['max_duration'])
@@ -131,41 +136,44 @@ class TestSupervisor(TestCase):
         self.assertEqual(time1 + time2, s.execution_report['aggregated']['execution_time'])
         self.assertEqual(1, s.execution_report['aggregated']['succeeded_executions'])
         self.assertEqual(1, s.execution_report['aggregated']['failed_executions'])
-        self.assertEqual(1238, s.execution_report['aggregated']['collected_elements'])
-        self.assertEqual(1238, s.execution_report['aggregated']['inserted_elements'])
+        self.assertEqual(1236, s.execution_report['aggregated']['collected_elements'])
+        self.assertEqual(1236, s.execution_report['aggregated']['inserted_elements'])
 
         # Third execution
         supervisor.EXECUTION_ID += 1
         execution_report = s.execution_report
+        mock_collection.return_value.get_last_elements = Mock(return_value=execution_report['aggregated'])
         s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False)
-        s.execution_report = execution_report
         d6 = SimpleDataCollector(data_collected=1, data_inserted=1)
         d7 = SimpleDataCollector(fail_on='_restore_state')
-        d8 = SimpleDataCollector(data_collected=1, data_inserted=1)
+        d8 = SimpleDataCollector(data_collected=0, data_inserted=0, pending_work=True, log_to_stdout=False)
         d6.run()
         d7.run()
         d8.run()
+        s.verify_module_execution(d6)
+        s.verify_module_execution(d7)
+        s.verify_module_execution(d8)
         s.registered_data_collectors = [d6, d7, d8]
         s.registered = 3
         s.unregistered = 3
-        s.successful_executions = [str(d6), str(8)]
-        s.unsuccessful_executions = [str(d7)]
         time3 = 11.8219821
         s.generate_report(time3)
         self.assertTrue(mock_collection.called)
         self.assertEqual(time3, s.execution_report['last_execution']['duration'])
         self.assertEqual(3, s.execution_report['last_execution']['modules_executed'])
-        self.assertEqual(2, s.execution_report['last_execution']['modules_succeeded'])
-        self.assertEqual(1, s.execution_report['last_execution']['modules_failed']['amount'])
-        self.assertEqual(['simple_data_collector'], s.execution_report['last_execution']['modules_failed']['modules'])
-        self.assertEqual(8, s.execution_report['aggregated']['per_module']['simple_data_collector'][
-            'total_executions'])
+        self.assertEqual(1, s.execution_report['last_execution']['modules_succeeded'])
+        self.assertEqual(2, s.execution_report['last_execution']['modules_failed']['amount'])
+        self.assertEqual(['simple_data_collector', 'simple_data_collector'], s.execution_report['last_execution'][
+                'modules_failed']['modules'])
+        self.assertEqual(8, s.execution_report['aggregated']['per_module']['simple_data_collector']['total_executions'])
         self.assertEqual(6, s.execution_report['aggregated']['per_module']['simple_data_collector'][
+            'executions_with_pending_work'])
+        self.assertEqual(5, s.execution_report['aggregated']['per_module']['simple_data_collector'][
             'succeeded_executions'])
-        self.assertEqual(2, s.execution_report['aggregated']['per_module']['simple_data_collector'][
-            'failed_executions'])
-        self.assertEqual(2, s.execution_report['last_execution']['collected_elements'])
-        self.assertEqual(2, s.execution_report['last_execution']['inserted_elements'])
+        self.assertEqual(3,
+                         s.execution_report['aggregated']['per_module']['simple_data_collector']['failed_executions'])
+        self.assertEqual(1, s.execution_report['last_execution']['collected_elements'])
+        self.assertEqual(1, s.execution_report['last_execution']['inserted_elements'])
         self.assertFalse(s.execution_report['last_execution']['execution_succeeded'])
         self.assertEqual(3, s.execution_report['aggregated']['executions'])
         self.assertEqual(time2, s.execution_report['aggregated']['max_duration'])
@@ -175,5 +183,11 @@ class TestSupervisor(TestCase):
         self.assertEqual(time1 + time2 + time3, s.execution_report['aggregated']['execution_time'])
         self.assertEqual(1, s.execution_report['aggregated']['succeeded_executions'])
         self.assertEqual(2, s.execution_report['aggregated']['failed_executions'])
-        self.assertEqual(1240, s.execution_report['aggregated']['collected_elements'])
-        self.assertEqual(1240, s.execution_report['aggregated']['inserted_elements'])
+        self.assertEqual(1237, s.execution_report['aggregated']['collected_elements'])
+        self.assertEqual(1237, s.execution_report['aggregated']['inserted_elements'])
+        self.assertEqual([3],
+                         s.execution_report['aggregated']['per_module']['simple_data_collector']['failure_details'][
+                             'Unknown cause'])
+        self.assertEqual([3],
+                         s.execution_report['aggregated']['per_module']['simple_data_collector']['failure_details'][
+                             'PendingWorkAndNoDataCollectedError'])

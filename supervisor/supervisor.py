@@ -1,8 +1,10 @@
 import datetime
 import data_collector.data_collector as dc
 
+from copy import deepcopy
 from global_config.global_config import CONFIG as GLOBAL_CONFIG
 from json import dumps
+from pymongo import InsertOne, UpdateOne
 from pytz import UTC
 from queue import Queue
 from threading import Condition, Thread
@@ -11,7 +13,7 @@ from utilities.util import get_config, get_module_name, read_state, serialize_da
 
 CONFIG = get_config(__file__)
 EXECUTION_ID = read_state(__file__, CONFIG['EXECUTION_ID_STRUCT'])['execution_id'] + 1  # Updating execution ID count
-
+write_state({'execution_id': EXECUTION_ID}, __file__)
 
 class SupervisorThread(Thread):
     """
@@ -43,8 +45,9 @@ class Supervisor:
         self.config = get_config(__file__)
         self.module_name = get_module_name(__file__)
         self.collection = MongoDBCollection(self.module_name)
-        self.execution_report = self.collection.get_last_elements(amount=1)
-        if not self.execution_report:
+        self.execution_report = {'last_execution': self.config['STATE_STRUCT']['last_execution'], 'aggregated':
+                self.collection.get_last_elements(amount=1, filter={'_id': {'$eq': 'aggregated'}})}
+        if not self.execution_report['aggregated']:
             self.execution_report = self.config['STATE_STRUCT']
         self.collection.close()
         self.registered = 0
@@ -104,8 +107,8 @@ class Supervisor:
                     data_collector.state['restart_required'] = True
                     if data_collector.state['error']:
                         data_collector.execute_actions(state=dc.EXECUTION_CHECKED, who=self)
-                    self.logger.info('Scheduled restart has been set for "%s". Errors and backoff time have been '
-                                       'serialized.' % (data_collector))
+                        self.logger.info('Scheduled restart has been set for "%s". Errors and backoff time have been '
+                                           'serialized.' % (data_collector))
                 except Exception:
                     self.logger.exception('Unable to schedule "%s" restart.' % (data_collector))
             if data_collector.successful_execution():
@@ -117,6 +120,7 @@ class Supervisor:
 
     def generate_report(self, duration: float):
         failed_modules = []
+        modules_with_pending_work = 0
         modules_succeeded = 0
         modules_failed = 0
         collected_elements = 0
@@ -125,8 +129,11 @@ class Supervisor:
         for dc in self.registered_data_collectors:
             if not self.execution_report['aggregated']['per_module'].get(dc.module_name):
                 self.execution_report['aggregated']['per_module'][dc.module_name] = {
-                        'total_executions': 0, 'succeeded_executions': 0, 'failed_executions': 0, 'failure_details': []}
+                        'total_executions': 0, 'executions_with_pending_work': 0, 'succeeded_executions': 0,
+                        'failed_executions': 0, 'failure_details': {}}
             self.execution_report['aggregated']['per_module'][dc.module_name]['total_executions'] += 1
+            collected_elements += dc.state['data_elements'] if dc.state['data_elements'] else 0
+            inserted_elements += dc.state['inserted_elements'] if dc.state['inserted_elements'] else 0
             if dc.successful_execution():
                 modules_succeeded += 1
                 self.execution_report['aggregated']['per_module'][dc.module_name]['succeeded_executions'] += 1
@@ -135,13 +142,17 @@ class Supervisor:
                 modules_failed += 1
                 failed_modules.append(dc.module_name)
                 self.execution_report['aggregated']['per_module'][dc.module_name]['failed_executions'] += 1
-                self.execution_report['aggregated']['per_module'][dc.module_name]['failure_details'].append({
-                        'execution_id': EXECUTION_ID, 'cause': dc.state['error']})
-            collected_elements += dc.state['data_elements'] if dc.state['data_elements'] else 0
-            inserted_elements += dc.state['inserted_elements'] if dc.state['inserted_elements'] else 0
+                cause = dc.state['error'] if dc.state['error'] else 'Unknown cause'
+                if self.execution_report['aggregated']['per_module'][dc.module_name]['failure_details'].get(
+                        cause) is None:
+                    self.execution_report['aggregated']['per_module'][dc.module_name]['failure_details'][cause] = []
+                self.execution_report['aggregated']['per_module'][dc.module_name]['failure_details'][cause].append(
+                        EXECUTION_ID)
+            if dc.pending_work:
+                modules_with_pending_work += 1
+                self.execution_report['aggregated']['per_module'][dc.module_name]['executions_with_pending_work'] += 1
         # Current execution statistics
-        self.execution_report['_id'] = EXECUTION_ID
-        self.execution_report['last_execution']['id'] = EXECUTION_ID
+        self.execution_report['last_execution']['_id']['execution_id'] = EXECUTION_ID
         self.execution_report['last_execution']['subsystem_version'] = GLOBAL_CONFIG['SUBSYSTEM_VERSION']
         self.execution_report['last_execution']['timestamp'] = serialize_date(datetime.datetime.now(tz=UTC))
         self.execution_report['last_execution']['duration'] = duration
@@ -149,10 +160,13 @@ class Supervisor:
         self.execution_report['last_execution']['collected_elements'] = collected_elements
         self.execution_report['last_execution']['inserted_elements'] = inserted_elements
         self.execution_report['last_execution']['modules_executed'] = len(self.registered_data_collectors)
+        self.execution_report['last_execution']['modules_with_pending_work'] = modules_with_pending_work
         self.execution_report['last_execution']['modules_succeeded'] = modules_succeeded
         self.execution_report['last_execution']['modules_failed']['amount'] = modules_failed
         # Aggregated executions
         self.execution_report['aggregated']['executions'] += 1
+        self.execution_report['aggregated']['last_execution_id'] = EXECUTION_ID
+        self.execution_report['aggregated']['timestamp'] = self.execution_report['last_execution']['timestamp']
         self.execution_report['aggregated']['max_duration'] = self.execution_report['aggregated']['max_duration'] \
                 if self.execution_report['aggregated']['max_duration'] and duration < self.execution_report[
                 'aggregated']['max_duration'] else duration
@@ -176,8 +190,16 @@ class Supervisor:
             self.execution_report['last_execution']['modules_failed']['modules'] = failed_modules
         # Saving execution report to database
         self.collection.connect()
-        self.collection.collection.insert_one(self.execution_report)
+        operations = [UpdateOne({'_id': self.execution_report['aggregated']['_id']},
+                                update={'$set': self.execution_report['aggregated']}, upsert=True),
+                      InsertOne(self.execution_report['last_execution'])]
+        self.collection.collection.bulk_write(operations)
         self.collection.close()
-        write_state({'execution_id': EXECUTION_ID}, __file__)
-        del self.execution_report['_id']
-        self.logger.debug('Execution results:\n%s' % (dumps(self.execution_report, indent=4, separators=(',', ': '))))
+        # Improving report console output.
+        copy = deepcopy(self.execution_report)
+        del copy['last_execution']['_id']
+        del copy['aggregated']['_id']
+        del copy['aggregated']['last_execution_id']
+        del copy['aggregated']['timestamp']
+        copy['last_execution']['execution_id'] = EXECUTION_ID
+        self.logger.debug('Execution results:\n%s' % (dumps(copy, indent=4, separators=(',', ': '))))

@@ -262,6 +262,3 @@ class __LocationsDataCollector(DataCollector):
         """
         return loc_name == data_name and loc_cc == data_cc and check_coordinates(loc_lat, loc_long, data_lat, data_long,
                 margin=margin)
-
-if __name__ == '__main__':
-    instance().run()

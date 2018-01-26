@@ -1,8 +1,29 @@
 #! /bin/bash
 
+# ---------- Definitions ---------- #
+
 # Setting default values
 LOCALHOST_IP=null;
 SKIP_DEPLOY=false;
+
+# Exits the installation process, but prints a message to command line before doing so.
+# :param $1: Colour of the output line. This will be reset before exiting.
+#            If this value equals -1, the default color is used.
+# :param $2: Message to be printed.
+# :param $3: Exit code.
+function exit_with_message () {
+    if [ $1 != -1 ]
+        then
+            tput setaf $1;
+    fi
+    tput bold;
+    echo $2;
+    tput sgr0;
+    echo ""
+    exit $3;
+}
+
+# ---------- Installation ---------- #
 
 # Parsing arguments
 for ARGUMENT in "$@"
@@ -12,7 +33,7 @@ do
     case "$KEY" in
             LOCALHOST_IP)   LOCALHOST_IP=${VALUE} ;;
             SKIP_DEPLOY)    SKIP_DEPLOY=${VALUE} ;;
-            *)   
+            *)
     esac
 done
 
@@ -22,12 +43,17 @@ SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 # Ensuring variables contain legit values
 if [ "$LOCALHOST_IP" = "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ])
     then
-        tput setaf 1;
-        tput bold;
-        echo "> usage: install.sh LOCALHOST_IP=xxx.xxx.xxx.xxx [SKIP_DEPLOY={true|false}]";
-        tput sgr0;
-        echo ""
-        exit 1;
+        1 exit_with_message "> usage: install.sh LOCALHOST_IP=xxx.xxx.xxx.xxx [SKIP_DEPLOY={true|false}]" 1;
+fi
+
+
+# Deleting the MongoDB service if it was already been created: Brand-new container.
+if [ "$(docker ps -aq -f name=mongodb)" ]; then
+    tput bold;
+    echo "> Removing previous MongoDB container."
+    tput sgr0;
+    docker stop mongodb
+    docker rm mongodb
 fi
 
 # Launching the MongoDB service
@@ -37,12 +63,7 @@ tput sgr0;
 docker-compose up -d mongodb
 if [ $? != 0 ]
     then
-        tput setaf 1;
-        tput bold;
-        echo "> The Data Gathering Subsystem could not be built.";
-        tput sgr0;
-        echo ""
-        exit $?;
+        1 exit_with_message "> The Data Gathering Subsystem could not be built." $?;
 fi
 
 # Building the Subsystem component
@@ -52,17 +73,9 @@ tput sgr0;
 docker-compose build --build-arg LOCALHOST_IP=${LOCALHOST_IP} --build-arg SKIP_DEPLOY=${SKIP_DEPLOY} subsystem
 if [ $? != 0 ]
     then
-        tput setaf 1;
-        tput bold;
-        echo "> The Data Gathering Subsystem could not be built.";
-        tput sgr0;
-        echo ""
-        exit $?;
+        1 exit_with_message "> The Data Gathering Subsystem could not be built." $?;
 fi
 
 # Displaying success message
-tput setaf 4;
-tput bold;
-echo $'\n> The Data Gathering Subsystem has been successfully built.';
-tput sgr0;
-echo "";
+echo ""
+4 exit_with_message "> The Data Gathering Subsystem has been successfully built." $?;

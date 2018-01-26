@@ -1,6 +1,7 @@
 import datetime
-from unittest import TestCase, main, mock
+from unittest import TestCase, mock
 
+from copy import deepcopy
 from pytz import UTC
 
 import data_collector.data_collector as data_collector
@@ -8,7 +9,6 @@ from data_collector.data_collector import ABORTED, CONFIG, CREATED, DATA_COLLECT
     FINISHED, INITIALIZED, PENDING_WORK_CHECKED, STATE_RESTORED, STATE_SAVED
 from global_config.global_config import CONFIG as GLOBAL_CONFIG
 from supervisor.supervisor import Supervisor
-from utilities.util import serialize_date
 
 
 class SimpleDataCollector(data_collector.DataCollector):
@@ -19,7 +19,7 @@ class SimpleDataCollector(data_collector.DataCollector):
     """
 
     def __init__(self, fail_on='', pending_work=True, data_collected=None, data_inserted=None,
-                 update_frequency={'value': 0, 'units': 's'}, restart_required=False, backoff_time=None ,
+                 update_frequency={'value': 0, 'units': 's'}, restart_required=False, backoff_time=None,
                  log_to_file=True, log_to_stdout=False):
         fake_file_path = GLOBAL_CONFIG['DATA_MODULES_PATH'] + 'test/simple_data_collector/simple_data_collector.py'
         super().__init__(fake_file_path, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
@@ -77,7 +77,7 @@ class TestDataCollector(TestCase):
     def create_run(self, fail_on='', pending_work=True, data_collected=0, data_inserted=0,
                    update_frequency={'value': 0, 'units': 's'}):
         with mock.patch('data_collector.data_collector.get_config') as mock_config:
-            mock_config.return_value = CONFIG
+            mock_config.return_value = deepcopy(CONFIG)
             CONFIG['STATE_STRUCT']['last_request'] = None
             self.data_collector = SimpleDataCollector(fail_on=fail_on, pending_work=pending_work,
                                                       data_collected=data_collected, data_inserted=data_inserted,
@@ -239,7 +239,7 @@ class TestDataCollector(TestCase):
                     EXECUTION_CHECKED, STATE_SAVED, FINISHED]
         self.assertTrue(self.data_collector.pending_work)
         self.assertFalse(self.data_collector.check_result)
-        self.assertIsNone(self.data_collector.state['error'])
+        self.assertEqual('PendingWorkAndNoDataCollectedError', self.data_collector.state['error'])
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
@@ -357,8 +357,7 @@ class TestDataCollector(TestCase):
         dc2.run()
         dc2.config = config
         dc2.execute_actions(EXECUTION_CHECKED, supervisor)
-        self.assertGreater(dc2.state['backoff_time']['value'],
-                           exponential_backoff_value)  # Next exponential backoff
+        self.assertGreater(dc2.state['backoff_time']['value'], exponential_backoff_value)  # Next exponential backoff
         self.assertEqual('Exception', dc2.state['error'])
         self.assertDictEqual({'Exception': 2}, dc2.state['errors'])
         exponential_backoff_value = dc2.state['backoff_time']['value']
@@ -368,8 +367,7 @@ class TestDataCollector(TestCase):
         dc3.config = config
         dc3.state['error'] = {'class': 'ValueError', 'message': 'Fail!'}
         dc3.execute_actions(EXECUTION_CHECKED, supervisor)
-        self.assertLess(dc3.state['backoff_time']['value'],
-                        exponential_backoff_value)  # Exponential backoff restarted
+        self.assertLess(dc3.state['backoff_time']['value'], exponential_backoff_value)  # Exponential backoff restarted
         self.assertEqual('ValueError', dc3.state['error'])
         self.assertDictEqual({'Exception': 2, 'ValueError': 1}, dc3.state['errors'])
 

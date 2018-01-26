@@ -4,7 +4,7 @@ services:
     subsystem:
         build: .
         container_name: data_gathering_subsystem
-        image: diegohermida/data_gathering_subsystem:1.1.1
+        image: diegohermida/data_gathering_subsystem:1.1
         volumes:
             - ~/DataGatheringSubsystem/log:/DataGatheringSubsystem/log
             - ~/DataGatheringSubsystem/state:/DataGatheringSubsystem/state

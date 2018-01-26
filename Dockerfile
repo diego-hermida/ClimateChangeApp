@@ -7,7 +7,7 @@ ENV LOCALHOST_IP=$LOCALHOST_IP
 
 # Allows skipping deploy operations by setting an environment variable. Use --build-arg SKIP_DEPLOY=true when building
 # the Subsystem service with docker-compose.
-ARG SKIP_DEPLOY=false
+ARG SKIP_DEPLOY
 ENV SKIP_DEPLOY=$SKIP_DEPLOY
 
 # Getting the last package updates.

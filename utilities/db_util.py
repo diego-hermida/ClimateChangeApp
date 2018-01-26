@@ -162,10 +162,18 @@ class MongoDBCollection:
         """
         return self.collection.delete_many({})
 
-    def get_last_elements(self, amount=1):
-        count = self.collection.count()
+    def get_last_elements(self, amount=1, filter=None):
+        """
+            Finds the last element(s) which meet(s) a given condition(s).
+            :param amount: Number of elements to be retrieved. If this parameter is set to '1', it will return a single
+                           element; otherwise, a list of them.
+            :param filter: Filters the search to the elements which meet the specified conditions.
+            :return: A deserialized JSON document, or a list of them, depending on the value of the 'amount' parameter.
+                     If the collection has no items, this operation will return 'None'.
+        """
+        count = self.collection.count(filter=filter)
         if count == 0:
             return None
         else:
-            result = list(self.collection.find().skip(count - amount))
+            result = list(self.collection.find(filter=filter).skip(count - amount))
             return result[0] if amount == 1 else result
