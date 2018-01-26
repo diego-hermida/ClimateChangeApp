@@ -156,7 +156,7 @@ class __HistoricalWeatherDataCollector(DataCollector):
                             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                                 self.state['consecutive_unmeasured_days'] += 1
                             # N days without measures indicate that no data is available before last successful date.
-                            if self.state['consecutive_unmeasured_days'] == self.config['MAX_DAY_COUNT']:
+                            if self.state['consecutive_unmeasured_days'] >= self.config['MAX_DAY_COUNT']:
                                 self.logger.info('No historical data available for "%s" before %s.' % (location['name'],
                                         self.__sum_days( self.state['current_date'], self.config['MAX_DAY_COUNT'] - 1,
                                         date_format_out='%d/%m/%Y')))
