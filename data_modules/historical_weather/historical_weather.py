@@ -125,15 +125,14 @@ class __HistoricalWeatherDataCollector(DataCollector):
                         token = tokens[0]
                         current_request = 0
                         while current_request < self.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN']:
-                            current_request += 1
-                            self.state['tokens'][token]['daily_requests'] += 1
-                            self.state['tokens'][token]['usable'] = self.state['tokens'][token]['daily_requests'] <= \
+                            self.state['tokens'][token]['usable'] = self.state['tokens'][token]['daily_requests'] < \
                                     self.config['MAX_DAILY_REQUESTS_PER_TOKEN']
                             if not self.state['tokens'][token]['usable']:
                                 self.logger.info('API token "%s" has reached the maximum daily requests allowed.'%(token))
                                 tokens.remove(token)
-                                self.state['tokens'][token]['daily_requests'] -= 1
                                 break
+                            current_request += 1
+                            self.state['tokens'][token]['daily_requests'] += 1
                             url = self.config['BASE_URL'].replace('{TOKEN}', token).replace('{YYYYMMDD}', self.state[
                                     'current_date']).replace('{LANG}', self.config['LANG']).replace('{LOC_ID}',
                                     str(location['wunderground_loc_id']))
@@ -156,6 +155,7 @@ class __HistoricalWeatherDataCollector(DataCollector):
                             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                                 self.state['consecutive_unmeasured_days'] += 1
                             # N days without measures indicate that no data is available before last successful date.
+                            # Replacing '==' with '>=' fixes [BUG-021].
                             if self.state['consecutive_unmeasured_days'] >= self.config['MAX_DAY_COUNT']:
                                 self.logger.info('No historical data available for "%s" before %s.' % (location['name'],
                                         self.__sum_days( self.state['current_date'], self.config['MAX_DAY_COUNT'] - 1,

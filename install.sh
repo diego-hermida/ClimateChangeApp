@@ -43,7 +43,7 @@ SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 # Ensuring variables contain legit values
 if [ "$LOCALHOST_IP" = "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ])
     then
-        1 exit_with_message "> usage: install.sh LOCALHOST_IP=xxx.xxx.xxx.xxx [SKIP_DEPLOY={true|false}]" 1;
+        exit_with_message 1 "> usage: install.sh LOCALHOST_IP=xxx.xxx.xxx.xxx [SKIP_DEPLOY={true|false}]" 1;
 fi
 
 
@@ -63,7 +63,7 @@ tput sgr0;
 docker-compose up -d mongodb
 if [ $? != 0 ]
     then
-        1 exit_with_message "> The Data Gathering Subsystem could not be built." $?;
+        exit_with_message 1 "> The Data Gathering Subsystem could not be built." $?;
 fi
 
 # Building the Subsystem component
@@ -73,9 +73,9 @@ tput sgr0;
 docker-compose build --build-arg LOCALHOST_IP=${LOCALHOST_IP} --build-arg SKIP_DEPLOY=${SKIP_DEPLOY} subsystem
 if [ $? != 0 ]
     then
-        1 exit_with_message "> The Data Gathering Subsystem could not be built." $?;
+        exit_with_message 1 "> The Data Gathering Subsystem could not be built." $?;
 fi
 
 # Displaying success message
 echo ""
-4 exit_with_message "> The Data Gathering Subsystem has been successfully built." $?;
+exit_with_message 4 "> The Data Gathering Subsystem has been successfully built." 0;
