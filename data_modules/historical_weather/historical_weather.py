@@ -42,14 +42,15 @@ class __HistoricalWeatherDataCollector(DataCollector):
         """
         super()._has_pending_work()
         if self.pending_work:
-            # Determining token usability only if the DataCollector has pending work
-            for token in self.config['TOKENS']:
-                # FIXES [BUG-022]
-                if not self.state['tokens'][token]['usable']:
-                    self.logger.info('Resetting daily requests for token "%s", since it is usable again.'%(token))
-                    self.state['tokens'][token]['daily_requests'] = 0
-                    self.state['tokens'][token]['usable'] = True
-                    reset_tokens = True
+            # Resetting tokens if all tokens weren't usable and the module has pending work --> A MAX_UPDATE_FREQUENCY
+            # period has passed.
+            if not [x for x in self.config['TOKENS'] if self.state['tokens'][x]['usable']]:
+                for token in self.config['TOKENS']:
+                    # FIXES [BUG-022]
+                    if not self.state['tokens'][token]['usable']:
+                        self.logger.info('Resetting daily requests for token "%s", since it is usable again.'%(token))
+                        self.state['tokens'][token]['daily_requests'] = 0
+                        self.state['tokens'][token]['usable'] = True
             # FIXES [BUG-026]
             self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
 
