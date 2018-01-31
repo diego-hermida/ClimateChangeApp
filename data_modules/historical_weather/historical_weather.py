@@ -44,11 +44,14 @@ class __HistoricalWeatherDataCollector(DataCollector):
         if self.pending_work:
             # Determining token usability only if the DataCollector has pending work
             for token in self.config['TOKENS']:
-                # FIXES: [BUG-022]
+                # FIXES [BUG-022]
                 if not self.state['tokens'][token]['usable']:
                     self.logger.info('Resetting daily requests for token "%s", since it is usable again.'%(token))
                     self.state['tokens'][token]['daily_requests'] = 0
                     self.state['tokens'][token]['usable'] = True
+                    reset_tokens = True
+            # FIXES [BUG-026]
+            self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
 
     def _collect_data(self):
         """
@@ -72,6 +75,8 @@ class __HistoricalWeatherDataCollector(DataCollector):
             if locations_count == 0:
                 self.logger.info('No locations are available. Data collection will be stopped.')
                 self.advisedly_no_data_collected = True
+                # FIXES [BUG-027]
+                self.state['current_date'] = None
                 self.state['missing_data_check'] = True
                 self.state['data_elements'] = 0
                 self.data = None
@@ -103,12 +108,16 @@ class __HistoricalWeatherDataCollector(DataCollector):
                 self.logger.info('All location(s) are up to date. Next execution will be carried out normally.')
                 self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
             self.state['missing_data_check'] = False
+            # FIXES [BUG-027]
+            self.state['current_date'] = None
             self.advisedly_no_data_collected = True
         else:
             # NORMAL MODE
             if not self.state['missing_data_ids']:
                 self.logger.warning('No locations are available. A check will be made in the next execution.')
                 self.state['missing_data_check'] = True
+                # FIXES [BUG-027]
+                self.state['current_date'] = None
                 self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
                 self.advisedly_no_data_collected = True
             else:
@@ -147,15 +156,15 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                     temp['_id'] = {'loc_id': location['_id'],
                                                    'date_utc': date_to_millis_since_epoch(date)}
                                     self.data.append(temp)
-                                    # A new value resets unmeasured days. FIXES: [BUG-018]
+                                    # A new value resets unmeasured days. FIXES [BUG-018]
                                     self.state['consecutive_unmeasured_days'] = 0
                                 else:
                                     self.state['consecutive_unmeasured_days'] += 1
-                            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+                            # Adding json.decoder.JSONDecodeError FIXES [BUG-020]
                             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                                 self.state['consecutive_unmeasured_days'] += 1
                             # N days without measures indicate that no data is available before last successful date.
-                            # Replacing '==' with '>=' fixes [BUG-021].
+                            # Replacing '==' with '>=' FIXES [BUG-021]
                             if self.state['consecutive_unmeasured_days'] >= self.config['MAX_DAY_COUNT']:
                                 self.logger.info('No historical data available for "%s" before %s.' % (location['name'],
                                         self.__sum_days( self.state['current_date'], self.config['MAX_DAY_COUNT'] - 1,
@@ -163,8 +172,11 @@ class __HistoricalWeatherDataCollector(DataCollector):
                                 self.state['missing_data_ids'] = self.state['missing_data_ids'][1:] if len(
                                         self.state['missing_data_ids']) > 1 else None
                                 self.location_changed = True
+                                # FIXES [BUG-027]
+                                self.state['current_date'] = None
                                 raise StopIteration()
-                            self.state['current_date'] = self.__sum_days(self.state['current_date'], -1)
+                            else:
+                                self.state['current_date'] = self.__sum_days(self.state['current_date'], -1)
                         try:
                             tokens.remove(token)
                         except ValueError:
@@ -210,11 +222,13 @@ class __HistoricalWeatherDataCollector(DataCollector):
                 elif self.state['missing_data_ids'] and len(self.state['missing_data_ids']) > 0:
                     self.state['missing_data_ids'] = self.state['missing_data_ids'][1:] if len(self.state[
                             'missing_data_ids']) > 1 else None
+                    # FIXES [BUG-027]
+                    self.state['current_date'] = None
                     if self.state['missing_data_ids']:
                         self.logger.info('Current location has been be set to the next one.')
                     else:
                         self.logger.info('All locations have already the most recent data. Update frequency will be set'
-                            ' to its MAX value (if it wasn\'t done yet).')
+                                ' to its MAX value (if it wasn\'t done yet).')
                         self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
             else:
                 self.logger.debug('Collected data is new.')

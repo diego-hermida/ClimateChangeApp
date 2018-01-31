@@ -33,7 +33,7 @@ def deploy(log_to_file=True, log_to_stdout=True):
         parser.add_argument('-s', '--skip-all', help='does not execute any deploy step', required=False,
                             action='store_true')
         args = parser.parse_args()
-        # Fixes [BUG-019]
+        # FIXES [BUG-019]
         if args.skip_all or (bool(environ.get('SKIP_DEPLOY')) and environ.get('SKIP_DEPLOY').upper() == 'TRUE'):
             logger.info('Deploy operations have been skipped.')
             exit(0)

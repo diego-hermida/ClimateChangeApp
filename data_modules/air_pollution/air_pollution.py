@@ -49,7 +49,7 @@ class __AirPollutionDataCollector(DataCollector):
                     self.data.append(temp)
                 else:
                     unmatched.append(location['name'])
-            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+            # Adding json.decoder.JSONDecodeError FIXES [BUG-020]
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 unmatched.append(location['name'])
             if index > 0 and index % 10 is 0:

@@ -48,7 +48,7 @@ class __CurrentConditionsDataCollector(DataCollector):
                     temp['location_id'] = location['_id']
                     temp['_id'] = {'station_id': temp['id'], 'time': temp['dt']}
                     self.data.append(temp)
-            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+            # Adding json.decoder.JSONDecodeError FIXES [BUG-020]
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 unmatched.append(location['name'])
             if index > 0 and index % 10 is 0:

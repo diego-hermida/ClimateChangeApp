@@ -1,4 +1,5 @@
-from unittest import TestCase, main, mock
+from unittest import TestCase, mock
+from unittest.mock import Mock
 
 import utilities.db_util
 
@@ -115,3 +116,13 @@ class TestDbUtil(TestCase):
 
         result = get_collection().get_last_elements(amount=5)
         self.assertListEqual(get_collection().find()['data'], result)
+
+    def test_ping_database(self):
+        self.assertIsNone(utilities.db_util.ping_database())
+
+    @mock.patch('utilities.db_util.MongoClient')
+    def test_ping_database_when_database_is_down(self, client):
+        client.return_value.server_info = Mock(side_effect=EnvironmentError())
+        with self.assertRaises(EnvironmentError):
+            utilities.db_util.ping_database()
+        self.assertTrue(client.called)

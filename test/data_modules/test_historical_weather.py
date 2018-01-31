@@ -158,9 +158,30 @@ class TestHistoricalWeather(TestCase):
         self.assertTrue(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['current_date'])
         self.assertEqual(0, self.data_collector.state['data_elements'])
         self.assertEqual(0, self.data_collector.state['inserted_elements'])
         self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+
+    @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
+    def test_data_collection_with_no_locations_in_database(self, mock_collection):
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.count.return_value = 0
+        # Actual execution
+        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector.config['STATE_STRUCT']['missing_data_check'] = True
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertIsNotNone(self.data_collector.state['data_elements'])
+        self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['current_date'])
+        self.assertEqual(0, self.data_collector.state['data_elements'])
+        self.assertEqual(0, self.data_collector.state['inserted_elements'])
+        self.assertEqual(self.data_collector.config['MIN_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
@@ -279,6 +300,44 @@ class TestHistoricalWeather(TestCase):
 
     @mock.patch('requests.get')
     @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
+    def test_update_frequency_is_reset_when_tokens_are_usable_again(self, mock_collection, mock_requests):
+        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector.config['STATE_STRUCT'] = {'update_frequency': {'value': 1, 'units': 'day'},
+            'last_request': None, 'data_elements': 0, 'inserted_elements': 0, 'restart_required': False,
+            'last_error': None, 'error': None, 'errors': {}, 'backoff_time': {'value': 1, 'units': 's'},
+            'missing_data_check': False, 'current_date': '20180116', 'missing_data_ids': [1],
+            'consecutive_unmeasured_days': 0, 'tokens': {'5f06ae04f7342abf': {'daily_requests': 0, 'usable': False},
+                'e63c2d687265be99': {'daily_requests': 0, 'usable': False},
+                '4ea749ef53da4c65': {'daily_requests': 0, 'usable': False},
+                '3d93ef701440b478': {'daily_requests': 0, 'usable': False},
+                'bb866b8bda7036f4': {'daily_requests': 0, 'usable': False},
+                '8649251baef91434': {'daily_requests': 0, 'usable': False},
+                '0e85d055e5337977': {'daily_requests': 0, 'usable': False},
+                '330521663b1024c9': {'daily_requests': 0, 'usable': False},
+                '9309f4166988f1e3': {'daily_requests': 0, 'usable': False},
+                '5e1dd9d990fef0f8': {'daily_requests': 0, 'usable': False}}}
+
+        # Mocking MongoDBCollection: initialization and operations
+        mock_collection.return_value.close.return_value = None
+        mock_collection.return_value.collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+                                                                         'wunderground_loc_id': 1}
+        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        insert_result.bulk_api_result = {
+            'nInserted': len(self.data_collector.config['TOKENS']) * self.data_collector.config[
+                'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'], 'nMatched': 0, 'nUpserted': 0}
+        # Mocking requests (get and response content)
+        mock_requests.return_value = response = Mock()
+        response.content = DATA
+        self.data_collector.run()
+        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_requests.called)
+        self.assertTrue(self.data_collector.finished_execution())
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertEqual(self.data_collector.config['MIN_UPDATE_FREQUENCY'],
+                         self.data_collector.state['update_frequency'])
+
+    @mock.patch('requests.get')
+    @mock.patch('data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_data_collection_unparseable_data_but_not_all(self, mock_collection, mock_requests):
         self.data_collector = historical_weather.instance(log_to_stdout=False)
         self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 1
@@ -382,6 +441,7 @@ class TestHistoricalWeather(TestCase):
                     'MAX_REQUESTS_PER_MINUTE_AND_TOKEN']), self.data_collector.state['current_date'])
         self.assertIsNotNone(self.data_collector.state['data_elements'])
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['current_date'])
         self.assertEqual(0, self.data_collector.state['data_elements'])
         self.assertEqual(0, self.data_collector.state['inserted_elements'])
         self.assertEqual(self.data_collector.config['MIN_UPDATE_FREQUENCY'],
@@ -410,6 +470,7 @@ class TestHistoricalWeather(TestCase):
         self.assertTrue(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['current_date'])
         self.assertEqual(0, self.data_collector.state['data_elements'])
         self.assertEqual(0, self.data_collector.state['inserted_elements'])
         self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
@@ -424,6 +485,7 @@ class TestHistoricalWeather(TestCase):
         self.assertTrue(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['current_date'])
         self.assertEqual(0, self.data_collector.state['data_elements'])
         self.assertEqual(0, self.data_collector.state['inserted_elements'])
         self.assertTrue(self.data_collector.state['missing_data_check'])
@@ -566,6 +628,7 @@ class TestHistoricalWeather(TestCase):
         self.assertTrue(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['current_date'])
         self.assertEqual(6, self.data_collector.state['data_elements'])
         self.assertEqual(6, self.data_collector.state['inserted_elements'])
         self.assertTrue(self.data_collector.location_changed)
@@ -594,6 +657,7 @@ class TestHistoricalWeather(TestCase):
         self.assertTrue(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
         self.assertIsNotNone(self.data_collector.state['inserted_elements'])
+        self.assertIsNone(self.data_collector.state['current_date'])
         self.assertEqual(100, self.data_collector.state['data_elements'])
         self.assertEqual(100, self.data_collector.state['inserted_elements'])
         self.assertIsNone(self.data_collector.state['missing_data_ids'])

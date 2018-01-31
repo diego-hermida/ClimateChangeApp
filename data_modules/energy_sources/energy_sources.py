@@ -56,7 +56,7 @@ class __EnergySourcesDataCollector(DataCollector):
                     self.data.append(temp)
                 else:
                     unmatched.append(country['name'])
-            # Adding json.decoder.JSONDecodeError FIXES: [BUG-020]
+            # Adding json.decoder.JSONDecodeError FIXES [BUG-020]
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 unmatched.append(country['name'])
             if index > 0 and index % 10 is 0:
