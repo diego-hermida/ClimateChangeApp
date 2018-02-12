@@ -1,19 +1,35 @@
 version: "3.4"
 
 services:
-    subsystem:
-        build: .
+    data_gathering_subsystem:
+        build:
+            context: .
+            dockerfile: ./data_gathering_subsystem/Dockerfile
         container_name: data_gathering_subsystem
-        image: diegohermida/data_gathering_subsystem:1.1.1
+        image: diegohermida/data_gathering_subsystem:2.0
         volumes:
-            - ~/DataGatheringSubsystem/log:/DataGatheringSubsystem/log
-            - ~/DataGatheringSubsystem/state:/DataGatheringSubsystem/state
+            - ~/DataSubsystems/log:/DataSubsystems/log
+            - ~/DataSubsystems/state:/DataSubsystems/state/data_gathering_subsystem
         environment:
             - PYTHONUNBUFFERED=1
         links:
             - mongodb
         depends_on:
             - mongodb
+    api:
+        build:
+            context: .
+            dockerfile: ./api/Dockerfile
+        container_name: data_gathering_subsystem_api
+        image: diegohermida/data_gathering_subsystem_api:1.0.0
+        environment:
+            - PYTHONUNBUFFERED=1
+        links:
+            - mongodb
+        depends_on:
+            - mongodb
+        ports:
+            - 5000:5000
     mongodb:
         image: mongo:latest
         container_name: mongodb
@@ -22,7 +38,7 @@ services:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=root
         volumes:
-            - ~/DataGatheringSubsystem/data/db:/data/db
+            - ~/DataSubsystems/data/db:/data/db
         ports:
             - 27017:27017
         command: mongod --smallfiles

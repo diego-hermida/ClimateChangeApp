@@ -1,3 +1,4 @@
+import builtins
 import datetime
 import logging
 import smtplib
@@ -6,13 +7,12 @@ import threading
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from global_config.global_config import CONFIG as GLOBAL_CONFIG
+from global_config.global_config import GLOBAL_CONFIG
 from logging.handlers import BaseRotatingHandler, RotatingFileHandler
 from os import sep as os_file_separator, remove
 from os.path import basename, exists
 from pytz import UTC
 from shutil import copyfile
-from supervisor.supervisor import EXECUTION_ID
 from utilities.util import get_config, recursive_makedir, serialize_date
 
 CONFIG = get_config(__file__)
@@ -27,7 +27,6 @@ class SMTPRotatingFileHandler(RotatingFileHandler):
         The e-mail operation can be executed both synchronously and async (by default).
         E-mail settings (to, from, server, port, etc.) are read from the 'log_util.config' configuration file.
     """
-
     def __init__(self, filename, mode='a', maxBytes=0, backupCount=0, encoding=None, delay=False, async_email=True):
         super().__init__(filename, mode, maxBytes, backupCount, encoding, delay)
         self.async_email=async_email
@@ -100,15 +99,16 @@ class SMTPRotatingFileHandler(RotatingFileHandler):
 
 
 def get_logger(path: str, name: str, level=logging.INFO, date_format=CONFIG['LOG_DATE_FORMAT'],
-               line_format=CONFIG['LOG_RECORD_FORMAT'], to_stdout=False,
-               stdout_level=logging.DEBUG, to_file=True, oldest_to_email=True, async_email=True) -> logging.LoggerAdapter:
+               line_format=CONFIG['LOG_DATA_GATHERING_SUBSYSTEM_RECORD_FORMAT'], to_stdout=False,
+               stdout_level=logging.DEBUG, to_file=True, oldest_to_email=True, async_email=True,
+               is_subsystem=True) -> logging.LoggerAdapter:
     """
         Configures a logging.Logger object.
         Log file maximum size is limited to MAX_LOG_FILE_SIZE. If max size is reached, current log file is closed and
         renamed to '{log file name}.1'. Next time MAX_LOG_FILE_SIZE is reached, a '{log file name}.2' will be created;
         and so on, until MAX_BACKUP_FILES are created. Oldest log file is deleted when MAX_BACKUP_FILES have been filled,
         and a new backup file is created.
-        To see where log files are saved, read __get_log_filepath() documentation (log_util.py:54).
+        To see where log files are saved, read _get_log_filepath() documentation (log_util.py:54).
         :param path: Path of the calling module (expected: __file__ ).
         :param name: Logger's name.
         :param level: Minimum issue level to include log records into log file.
@@ -119,22 +119,23 @@ def get_logger(path: str, name: str, level=logging.INFO, date_format=CONFIG['LOG
         :param to_file: If True, saves log records to a log file.
         :param oldest_to_email: If True, sends the oldest log file by email.
         :param async_email: If True, sends the e-mails in their own thread.
+        :param is_subsystem: If True, logging records will have the LOG_DATA_GATHERING_SUBSYSTEM_RECORD_FORMAT.
         :return: A logging.Logger object, configured and initialized with arguments.
         :rtype: logging.Logger
     """
     logger = logging.getLogger(name)
-    formatter = logging.Formatter(line_format, datefmt=date_format)
+    formatter = logging.Formatter(line_format if is_subsystem else CONFIG['LOG_RECORD_FORMAT'], datefmt=date_format)
     # Configuring stream handler
-    if to_stdout and not __has_stream_handler(logger):
+    if to_stdout and not _has_stream_handler(logger):
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setFormatter(formatter)
         stream_handler.setLevel(stdout_level)
         logger.addHandler(stream_handler)
     elif not to_stdout:
-        __remove_stream_handlers(logger)
+        _remove_stream_handlers(logger)
     # Configuring file handler
-    if to_file and not __has_rotating_file_handler(logger):
-        path = __get_log_filepath(path)
+    if to_file and not _has_rotating_file_handler(logger):
+        path = _get_log_filepath(path)
         recursive_makedir(path[:path.rfind(os_file_separator)])
         if oldest_to_email:
             file_handler = SMTPRotatingFileHandler(filename=path, maxBytes=CONFIG['MAX_LOG_FILE_SIZE'],
@@ -147,11 +148,18 @@ def get_logger(path: str, name: str, level=logging.INFO, date_format=CONFIG['LOG
         file_handler.setLevel(level)
         logger.addHandler(file_handler)
     elif not to_file:
-        __remove_rotating_file_handlers(logger)
-
+        _remove_rotating_file_handlers(logger)
     logger.setLevel(level if level <= stdout_level else stdout_level)  # Logger must have the minimum level
     # Getting execution ID to display it in all log records
-    return logging.LoggerAdapter(logger, {'execution_id': '?' if EXECUTION_ID is None else str(EXECUTION_ID)})
+    if is_subsystem:
+        try:
+            builtins.EXECUTION_ID
+        except AttributeError:
+            builtins.EXECUTION_ID = None
+        return logging.LoggerAdapter(logger, {'execution_id': '?' if builtins.EXECUTION_ID is None else str(
+                builtins.EXECUTION_ID)})
+    else:
+        return logger
 
 
 def remove_log_file(path: str):
@@ -160,11 +168,10 @@ def remove_log_file(path: str):
         :param path: File path to the DataCollector module. '__file__' is the expected value for this parameter.
     """
     from os import remove
+    remove(_get_log_filepath(path))
 
-    remove(__get_log_filepath(path))
 
-
-def __get_log_filepath(path: str) -> str:
+def _get_log_filepath(path: str) -> str:
     """
     By convention, any log record generated by a module is stored in a file which is located under a base log directory,
     ROOT_LOG_FOLDER (log_util.config). To ease finding log files, paths from DataGatheringSubsystem's base directory are
@@ -180,7 +187,7 @@ def __get_log_filepath(path: str) -> str:
     return GLOBAL_CONFIG['ROOT_LOG_FOLDER'] + path.split(base)[-1].replace('.py', '.log')
 
 
-def __has_rotating_file_handler(logger: logging.Logger) -> bool:
+def _has_rotating_file_handler(logger: logging.Logger) -> bool:
     """
         Given a logging.Logger object, determines if it 'handlers' attribute contains an instance of BaseRotatingHandler.
         :param logger: A logging.logger object.
@@ -192,7 +199,7 @@ def __has_rotating_file_handler(logger: logging.Logger) -> bool:
     return False
 
 
-def __has_stream_handler(logger: logging.Logger) -> bool:
+def _has_stream_handler(logger: logging.Logger) -> bool:
     """
         Given a logging.Logger object, determines if it 'handlers' attribute contains an instance of StreamHandler.
         :param logger: A logging.logger object.
@@ -204,7 +211,7 @@ def __has_stream_handler(logger: logging.Logger) -> bool:
     return False
 
 
-def __remove_stream_handlers(logger: logging.Logger):
+def _remove_stream_handlers(logger: logging.Logger):
     """
         Given a logging.Logger object, removes all StreamHandler handlers contained in 'logger.handlers'.
         If 'logger.handlers' does not have StreamHandler handlers, it's a no-op.
@@ -215,7 +222,7 @@ def __remove_stream_handlers(logger: logging.Logger):
             logger.removeHandler(h)
 
 
-def __remove_rotating_file_handlers(logger: logging.Logger):
+def _remove_rotating_file_handlers(logger: logging.Logger):
     """
         Given a logging.Logger object, removes all BaseRotatingHandler handlers contained in 'logger.handlers'.
         If 'logger.handlers' does not have BaseRotatingHandler handlers, it's a no-op.

@@ -9,7 +9,6 @@ from contextlib import contextmanager
 from os import makedirs, sep as os_file_separator
 from os.path import exists
 from random import randint
-from doc.relativedelta import relativedelta
 
 
 def enum(*args) -> type:
@@ -20,9 +19,10 @@ def enum(*args) -> type:
     return type('Enum', (), dict(zip(args, args)))
 
 
-TimeUnits = enum('s', 'min', 'h', 'day', 'week', 'month', 'year', 'NEVER')
+TimeUnits = enum('s', 'min', 'h', 'day', 'NEVER')
 MeasureUnits = enum('mm', 'm', 'km', 'Gt')
 MassType = enum('antarctica', 'greenland', 'ocean')
+SubsystemType = enum('data_gathering', 'data_conversion')
 
 
 def date_to_millis_since_epoch(date: datetime.datetime) -> int:
@@ -54,6 +54,20 @@ def decimal_date_to_millis_since_epoch(decimal_date: float) -> int:
     return date_to_millis_since_epoch(result)
 
 
+def current_date_in_millis() -> int:
+    """
+        Retrieves the current UTC date in milliseconds.
+    """
+    return date_to_millis_since_epoch(datetime.datetime.now(tz=pytz.UTC))
+
+
+def current_timestamp_utc() -> datetime.datetime:
+    """
+        Retrieves the current UTC date as a datetime.datetime object, avoiding importing 'datetime' and 'pytz' modules.
+    """
+    return datetime.datetime.now(tz=pytz.UTC)
+
+
 def recursive_makedir(path: str):
     """
         Recursively creates all directories under a base directory. If a directory does already exist, silently performs
@@ -83,18 +97,26 @@ def get_config(path: str) -> dict:
     return config
 
 
-def map_data_collector_path_to_state_file_path(path: str) -> str:
+def map_data_collector_path_to_state_file_path(path: str, subsystem_type: SubsystemType = None) -> str:
     """
     Given the path to a file, returns the path to a '.state' file (with the same name as the original one) under the
     STATE_FILES_ROOT_FOLDER (from global_config.global_config.CONFIG).
     :param path: Path to the target file.
+    :param subsystem_type: Depending on this parameter, the root directory for '.state' files will be different.
     :return: Path to the '.state' file, under STATE_FILES_ROOT_FOLDER.
     :rtype: str
     """
-    from global_config.global_config import CONFIG
+    from global_config.global_config import GLOBAL_CONFIG
 
     file_name = get_module_name(path)
-    return CONFIG['STATE_FILES_ROOT_FOLDER'] + file_name + '.state'
+    if subsystem_type is None:
+        return GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER'] + file_name + '.state'
+    elif subsystem_type == SubsystemType.data_gathering:
+        return GLOBAL_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'] + file_name + '.state'
+    elif subsystem_type == SubsystemType.data_conversion:
+        return GLOBAL_CONFIG['DATA_CONVERSION_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'] + file_name + '.state'
+    else:
+        raise ValueError('The specified SubsystemType is not valid. Valid ones are: [data_gathering, data_conversion].')
 
 
 def create_state_file(path: str):
@@ -104,16 +126,18 @@ def create_state_file(path: str):
     recursive_makedir(path[:path.rfind(os_file_separator)])
     open(path, 'w').close()
 
-def remove_state_file(path: str):
+
+def remove_state_file(path: str, subsystem_type: SubsystemType = None):
     """
         Given the path to a data module, removes its attached '.state' file.
-        :param path:
+        :param path: Path to the .py file.
+        :param subsystem_type: Depending on this parameter, the root directory for '.state' files will be different.
     """
     from os import remove
-    remove(map_data_collector_path_to_state_file_path(path))
+    remove(map_data_collector_path_to_state_file_path(path, subsystem_type=subsystem_type))
 
 
-def read_state(path: str, repair_struct: dict) -> dict:
+def read_state(path: str, repair_struct: dict, subsystem_type: SubsystemType = None) -> dict:
     """
         Given the file path to a '.py' file (DataCollector module), retrieves the data inside the  '.state'
         file (located under the STATE_FILES_ROOT_FOLDER or a subdirectory). If
@@ -121,10 +145,11 @@ def read_state(path: str, repair_struct: dict) -> dict:
         :param path: File path to the DataCollector module. '__file__' is the expected value for this parameter.
         :param repair_struct: If the document is unparseable, this structure allows the '.state' file to reach a
                               consistent state. This structure is dumped into the '.state' file if it's unparseable.
+        :param subsystem_type: Depending on this parameter, the root directory for '.state' files will be different.
         :return: A dict, containing all data inside the '.state' file, or 'repair_struct' if the '.state' file is
                  unparseable.
     """
-    path = map_data_collector_path_to_state_file_path(path)
+    path = map_data_collector_path_to_state_file_path(path, subsystem_type=subsystem_type)
     if not exists(path):
         create_state_file(path)
     with open(path, 'r') as f:
@@ -138,19 +163,21 @@ def read_state(path: str, repair_struct: dict) -> dict:
     return state
 
 
-def write_state(state: dict, path: str) -> str:
+def write_state(state: dict, path: str, subsystem_type: SubsystemType = None) -> str:
     """
         Given the file path to a '.py' file (DataCollector module), serializes the 'state' variable into the '.state'
         file (under the same directory as the module).
         Precondition: The 'state' variable is valid JSON document.
         :param state: A valid JSON document (as a dict object).
         :param path: File path to the DataCollector module. '__file__' is the expected value for this parameter.
+        :param subsystem_type: Depending on this parameter, the root directory for '.state' files will be different.
         :return: The file path to the written '.state' file.
     """
-    state_path = map_data_collector_path_to_state_file_path(path)
+    state_path = map_data_collector_path_to_state_file_path(path, subsystem_type=subsystem_type)
     with open(state_path, 'w') as f:
         json.dump(state, f)
     return state_path
+
 
 def serialize_date(date: datetime.datetime) -> str:
     """
@@ -246,25 +273,21 @@ def date_plus_timedelta_gt_now(date: datetime.datetime, frequency: dict) -> bool
         return True
     elif date.tzinfo != pytz.UTC:
         raise ValueError('Date timezone must be UTC')
-    if frequency['units'] == TimeUnits.s:
-        result_date = date + relativedelta(seconds=frequency['value'])
-    elif frequency['units'] == TimeUnits.min:
-        result_date = date + relativedelta(minutes=frequency['value'])
-    elif frequency['units'] == TimeUnits.h:
-        result_date = date + relativedelta(hours=frequency['value'])
-    elif frequency['units'] == TimeUnits.day:
-        result_date = date + relativedelta(days=frequency['value'])
-    elif frequency['units'] == TimeUnits.week:
-        result_date = date + relativedelta(weeks=frequency['value'])
-    elif frequency['units'] == TimeUnits.month:
-        result_date = date + relativedelta(months=frequency['value'])
-    elif frequency['units'] == TimeUnits.year:
-        result_date = date + relativedelta(years=frequency['value'])
-    elif frequency['units'] == TimeUnits.NEVER:
-        return False
     else:
-        pass # AttributeError will be raised if frequency['units'] is not a valid TimeUnits value.
-    return result_date <= datetime.datetime.now(pytz.UTC)
+        date_millis = date_to_millis_since_epoch(date)
+        if frequency['units'] == TimeUnits.s:
+            result_date = date_millis + frequency['value'] * 1000
+        elif frequency['units'] == TimeUnits.min:
+            result_date = date_millis + frequency['value'] * 60000
+        elif frequency['units'] == TimeUnits.h:
+            result_date = date_millis + frequency['value'] * 3600000
+        elif frequency['units'] == TimeUnits.day:
+            result_date = date_millis + frequency['value'] * 86400000
+        elif frequency['units'] == TimeUnits.NEVER:
+            return False
+        else:
+            pass # AttributeError will be raised if frequency['units'] is not a valid TimeUnits value.
+        return result_date <= current_date_in_millis()
 
 
 def remove_all_under_directory(path: str):
