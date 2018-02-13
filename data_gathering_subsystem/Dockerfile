@@ -19,22 +19,22 @@ RUN pip3 install --upgrade pip setuptools
 ENV DOCKER_MODE=true
 
 # Adding project code to the image.
-ADD . /DataSubsystems/code
+ADD . /ClimateChangeApp/code
 
 # Installing all project dependencies.
-RUN pip3 install -r /DataSubsystems/code/data_gathering_subsystem/doc/requirements.txt
+RUN pip3 install -r /ClimateChangeApp/code/data_gathering_subsystem/doc/requirements.txt
 
 # Setting working directory.
-WORKDIR /DataSubsystems/code/data_gathering_subsystem
+WORKDIR /ClimateChangeApp/code/data_gathering_subsystem
 
 # Adding project root folder to PYTHONPATH, to avoid raising ImportError.
-ENV PYTHONPATH /DataSubsystems:/DataSubsystems/code
+ENV PYTHONPATH /ClimateChangeApp:/ClimateChangeApp/code
 
 # Subsystem log files will be generated under this directory.
-VOLUME /DataSubsystems/log
+VOLUME /ClimateChangeApp/log
 
 # Subsystem '.state' files will be generated under this directory.
-VOLUME /DataSubsystems/state/data_gathering_subsystem
+VOLUME /ClimateChangeApp/state/data_gathering_subsystem
 
 # Deploy script which performs necessary operations before running the Subsystem for the first time.
 RUN ["pypy3", "deploy.py"]

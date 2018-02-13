@@ -65,7 +65,9 @@ DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=echo "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS
 if [ "$API_DEPLOY_ARGS" != "null" ] && [ "$SKIP_DEPLOY" == "true" ]; then
     message 3 "[WARNING] Parameter API_DEPLOY_ARGS has been set, but SKIP_DEPLOY is true. The value will be overridden
               to \"--skip-all\".";
-    API_DEPLOY_ARGS="--skip-all"
+    elif [ "$SKIP_DEPLOY" == "true" ]; then
+        message -1 "[INFO] Deploy operations will be skipped for the API component.";
+        API_DEPLOY_ARGS="--skip-all"
     elif [ "$API_DEPLOY_ARGS" == "null" ]; then
         message -1 "[INFO] Using default values for API_DEPLOY_ARGS.";
         API_DEPLOY_ARGS="--with-tests";
@@ -73,7 +75,9 @@ fi
 if [ "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS" != "null" ] && [ "$SKIP_DEPLOY" == "true" ]; then
     message 3 "[WARNING] Parameter DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS has been set, but SKIP_DEPLOY is true. The
               value will be overridden to \"--skip-all\".";
-    DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
+    elif [ "$SKIP_DEPLOY" == "true" ]; then
+        message -1 "[INFO] Deploy operations will be skipped for the Data Gathering Subsystem component.";
+        DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--skip-all"
     elif [ "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS" == "null" ]; then
         message -1 "[INFO] Using default values for DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS.";
         DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";

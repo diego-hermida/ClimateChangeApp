@@ -8,8 +8,8 @@ services:
         container_name: data_gathering_subsystem
         image: diegohermida/data_gathering_subsystem:2.0
         volumes:
-            - ~/DataSubsystems/log:/DataSubsystems/log
-            - ~/DataSubsystems/state:/DataSubsystems/state/data_gathering_subsystem
+            - ~/ClimateChangeApp/log:/ClimateChangeApp/log
+            - ~/ClimateChangeApp/state/data_gathering_subsystem:/ClimateChangeApp/state/data_gathering_subsystem
         environment:
             - PYTHONUNBUFFERED=1
         links:
@@ -38,7 +38,7 @@ services:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=root
         volumes:
-            - ~/DataSubsystems/data/db:/data/db
+            - ~/ClimateChangeApp/data/db:/data/db
         ports:
             - 27017:27017
         command: mongod --smallfiles
@@ -50,6 +50,6 @@ services:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=root
         volumes:
-            - ~/DataSubsystems/postgresql/data:/postgresql/data
+            - ~/ClimateChangeApp/postgresql/data:/postgresql/data
         ports:
             - 5432:5432

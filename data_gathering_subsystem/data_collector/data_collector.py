@@ -227,7 +227,7 @@ class DataCollector(ABC):
            - Automatic flow control (by calling the 'run' method, all operations will also be invoked, in proper order).
            - Error handling: Any raised error is automatically handled, logged and execution suspended.
        To define a DataCollector that inherits from this class, it's strongly recommended to read this page in the
-       repository Wiki: https://github.com/diego-hermida/DataSubsystems/wiki/Adding-a-DataCollector-module
+       repository Wiki: https://github.com/diego-hermida/ClimateChangeApp/wiki/Adding-a-DataCollector-module
     """
 
     def _initialize_states(self):
@@ -295,7 +295,7 @@ class DataCollector(ABC):
             This method must NOT be overridden. Once a DataCollector instance is created, simply invoke this method to
             perform all operations. By inheriting from DataCollector, flow control and unexpected error handling are
             automatically provided.
-            Further info available at: https://github.com/diego-hermida/DataSubsystems/wiki/Subsystem-Structure
+            Further info available at: https://github.com/diego-hermida/ClimateChangeApp/wiki/Subsystem-Structure
         """
         if self._transition_state != self._ABORTED:
             self.logger.info('Starting Data Collector execution.')
