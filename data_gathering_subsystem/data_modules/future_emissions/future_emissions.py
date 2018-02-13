@@ -1,5 +1,5 @@
-from global_config.global_config import GLOBAL_CONFIG
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
+from data_gathering_subsystem.config.config import DGS_CONFIG
 from utilities.util import current_timestamp_utc
 
 _singleton = None
@@ -25,7 +25,7 @@ class _FutureEmissionsDataCollector(DataCollector):
         super()._collect_data()
         self.data = []
         for file in self.config['FILE_NAMES']:
-            with open(GLOBAL_CONFIG['ROOT_DATA_GATHERING_SUBSYSTEM_FOLDER'] + self.config['DATA_DIR'] + file +
+            with open(DGS_CONFIG['ROOT_DATA_GATHERING_SUBSYSTEM_FOLDER'] + self.config['DATA_DIR'] + file +
                     self.config['FILE_EXT'], 'r') as f:
                 for line in f:
                     fields = line.split()

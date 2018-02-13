@@ -42,3 +42,14 @@ services:
         ports:
             - 27017:27017
         command: mongod --smallfiles
+    postgres:
+        image: postgres
+        container_name: postgres
+        environment:
+            - PGDATA=/postgresql/data
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=root
+        volumes:
+            - ~/DataSubsystems/postgresql/data:/postgresql/data
+        ports:
+            - 5432:5432

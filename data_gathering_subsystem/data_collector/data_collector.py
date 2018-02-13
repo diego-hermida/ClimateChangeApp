@@ -1,12 +1,13 @@
 import builtins
 
 from abc import ABC, abstractmethod
+from data_gathering_subsystem.config.config import DGS_CONFIG
 from functools import wraps
 from queue import Queue
 from threading import Condition, Thread
 from utilities.db_util import MongoDBCollection
 from utilities.util import date_plus_timedelta_gt_now, deserialize_date, enum, get_config, get_exception_info, \
-    get_module_name, next_exponential_backoff, read_state, serialize_date, write_state, remove_state_file, SubsystemType
+    get_module_name, next_exponential_backoff, read_state, serialize_date, write_state, remove_state_file
 
 
 CREATED = 0
@@ -281,7 +282,7 @@ class DataCollector(ABC):
         from utilities.log_util import remove_log_file
 
         try:
-            remove_state_file(self._file_path, subsystem_type=SubsystemType.data_gathering)
+            remove_state_file(self._file_path, root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
         except FileNotFoundError:
             pass
         try:
@@ -379,7 +380,7 @@ class DataCollector(ABC):
             datetime.datetime and others, and initializes 'volatile' fields.
         """
         self.state = read_state(self._file_path, repair_struct=self.config['STATE_STRUCT'],
-                                subsystem_type=SubsystemType.data_gathering)
+                                root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
         if self.state == self.config['STATE_STRUCT']:
             self.logger.warning('State file could not be read. Restoring state with STATE_STRUCT.')
         self.state['last_request'] = deserialize_date(self.state['last_request'])  # Creates datetime object
@@ -491,7 +492,7 @@ class DataCollector(ABC):
                 self.state['backoff_time'] = MIN_BACKOFF
             self.state['last_error'] = self.state['error']
         self.state['last_request'] = serialize_date(self.state['last_request'])
-        write_state(self.state, self._file_path, subsystem_type=SubsystemType.data_gathering)
+        write_state(self.state, self._file_path, DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
         self.logger.info('Successfully serialized state.')
 
     def _finish_execution(self):

@@ -128,14 +128,15 @@ class TestDbUtil(TestCase):
         self.assertTrue(client.called)
 
     def test_create_authorized_user(self):
-        utilities.db_util.GLOBAL_CONFIG['DB_API_AUTHORIZED_USERS_COLLECTION'] = 'test_collection'
-        utilities.db_util.create_authorized_user('test_user', 'test_token')
+        utilities.db_util.GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'] = 'test_collection'
+        utilities.db_util.create_authorized_user('test_user', 'test_token', scope=1)
         result = get_collection().collection.find_one(filter={'_id': 'test_user'})
         self.assertEqual('test_user', result['_id'])
         self.assertEqual('test_token', result['token'])
+        self.assertEqual(1, result['scope'])
 
     def get_and_increment_execution_id(self):
-        utilities.db_util.GLOBAL_CONFIG['DB_STATS_COLLECTION'] = 'test_collection'
+        utilities.db_util.GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'] = 'test_collection'
         self.assertEqual(1, utilities.db_util.get_and_increment_execution_id())
         self.assertEqual(2, utilities.db_util.get_and_increment_execution_id())
         self.assertEqual(3, utilities.db_util.get_and_increment_execution_id())

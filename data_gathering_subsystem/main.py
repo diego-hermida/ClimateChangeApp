@@ -1,8 +1,8 @@
 import builtins
-from global_config.global_config import GLOBAL_CONFIG
 from os import environ
 from queue import Queue
 from data_gathering_subsystem.data_collector.data_collector import DataCollectorThread, Message, MessageType
+from data_gathering_subsystem.config.config import DGS_CONFIG
 from data_gathering_subsystem.supervisor.supervisor import SupervisorThread
 from timeit import default_timer as timer
 from threading import Condition
@@ -31,7 +31,7 @@ def main(log_to_file=True, log_to_stdout=True):
     __logger = get_logger(__file__, 'MainLogger', to_stdout=log_to_stdout, to_file=log_to_file)
 
     # This provisional solution FIXES [BUG-015]
-    if not environ.get('LOCALHOST_IP', True) or environ.get('LOCALHOST_IP') is None:
+    if environ.get('LOCALHOST_IP') is None:
         __logger.critical('LOCALHOST_IP must exist as an ENVIRONMENT VARIABLE at execution time. Aborting Subsystem.')
         exit(1)
     else:
@@ -55,14 +55,14 @@ def main(log_to_file=True, log_to_stdout=True):
         __logger.warning('Starting Data Gathering Subsystem. Execution ID is unknown. This may difficult debug operations.')
 
     # Dynamically, recursively imports all Python modules under base directory (and returns them in a list)
-    modules = import_modules(GLOBAL_CONFIG['DATA_MODULES_PATH'], recursive=True,
-            base_package=GLOBAL_CONFIG['DATA_COLLECTOR_BASE_PACKAGE'])
+    modules = import_modules(DGS_CONFIG['DATA_MODULES_PATH'], recursive=True,
+            base_package=DGS_CONFIG['DATA_COLLECTOR_BASE_PACKAGE'])
     if not modules:
         __logger.critical('Data modules could not be instantiated. Aborting Data Gathering Subsystem.')
         exit(1)
-    if len(modules) > GLOBAL_CONFIG['MAX_RECOMMENDED_DATA_COLLECTORS']:
+    if len(modules) > DGS_CONFIG['MAX_RECOMMENDED_DATA_COLLECTORS']:
         __logger.warning('The number of DataCollector modules (%d) exceeds the recommended amount: %d. This may lead '
-                'into performance penalties.'%(len(modules), GLOBAL_CONFIG['MAX_RECOMMENDED_DATA_COLLECTORS']))
+                'into performance penalties.'%(len(modules), DGS_CONFIG['MAX_RECOMMENDED_DATA_COLLECTORS']))
 
     # Enabling a channel to pass messages between DataCollectors and Supervisor.
     channel = Queue(maxsize=(len(modules) * 2) + 2)
@@ -101,7 +101,7 @@ def main(log_to_file=True, log_to_stdout=True):
 
 if __name__ == '__main__':
     try:
-        with time_limit(GLOBAL_CONFIG['SUBSYSTEM_TIMEOUT']):
+        with time_limit(DGS_CONFIG['SUBSYSTEM_TIMEOUT']):
             main()
     except TimeoutError:
         __logger.critical('The Subsystem execution has been timed out. This error should be revised, since the causes '

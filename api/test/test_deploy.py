@@ -1,3 +1,4 @@
+from api.config.config import API_CONFIG
 from unittest import TestCase, mock
 from unittest.mock import Mock
 
@@ -19,12 +20,11 @@ class TestDeploy(TestCase):
     @mock.patch('api.deploy.ping_database', Mock())
     @mock.patch('argparse.ArgumentParser')
     def test_all_with_tests_everything_ok(self, mock_args, mock_auth_users, mock_test_runner):
-        from global_config.global_config import GLOBAL_CONFIG
         import yaml
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = True
-        with open(GLOBAL_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
+        with open(API_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
             users = yaml.load(f)
         mock_auth_users.return_value = len(users['authorized_users'].keys())
         deploy.deploy(log_to_file=False, log_to_stdout=False)
@@ -36,14 +36,27 @@ class TestDeploy(TestCase):
     @mock.patch('api.deploy.TestLoader', Mock())
     @mock.patch('api.deploy.bulk_create_authorized_users')
     @mock.patch('api.deploy.ping_database', Mock())
+    @mock.patch('api.deploy.environ', {'DEPLOY_ARGS': '--with-tests'})
+    def test_all_with_tests_everything_ok_with_args_from_env_variable(self, mock_auth_users, mock_test_runner):
+        import yaml
+        with open(API_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
+            users = yaml.load(f)
+        mock_auth_users.return_value = len(users['authorized_users'].keys())
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
+        self.assertTrue(mock_auth_users.called)
+        self.assertTrue(mock_test_runner.called)
+
+    @mock.patch('api.deploy.TextTestRunner')
+    @mock.patch('api.deploy.TestLoader', Mock())
+    @mock.patch('api.deploy.bulk_create_authorized_users')
+    @mock.patch('api.deploy.ping_database', Mock())
     @mock.patch('argparse.ArgumentParser')
     def test_tests_failed(self, mock_args, mock_auth_users, mock_test_runner):
-        from global_config.global_config import GLOBAL_CONFIG
         import yaml
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.with_tests = True
         args.skip_all = False
-        with open(GLOBAL_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
+        with open(API_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
             users = yaml.load(f)
         mock_auth_users.return_value = len(users['authorized_users'].keys())
         mock_test_runner.return_value.run = results = Mock()
@@ -65,6 +78,45 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = True
         args.with_tests = False
+        with self.assertRaises(SystemExit):
+            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        self.assertTrue(mock_args.called)
+
+    @mock.patch('api.deploy.ping_database',
+                Mock(side_effect=EnvironmentError('Test error to verify deploy is aborted.')))
+    def test_deploy_aborts_if_database_down(self):
+        with self.assertRaises(SystemExit):
+            deploy.deploy(log_to_file=False, log_to_stdout=False)
+
+    @mock.patch('api.deploy.bulk_create_authorized_users', Mock(return_value=0))
+    @mock.patch('api.deploy.ping_database', Mock())
+    @mock.patch('argparse.ArgumentParser')
+    def test_deploy_aborts_if_not_all_authorized_users_are_inserted(self, mock_args):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.skip_all = False
+        args.with_tests = True
+        with self.assertRaises(SystemExit):
+            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        self.assertTrue(mock_args.called)
+
+    @mock.patch('yaml.load', Mock(return_value={'authorized_users': {'user1': {'token': 'test_token'}}}))
+    @mock.patch('api.deploy.ping_database', Mock())
+    @mock.patch('argparse.ArgumentParser')
+    def test_deploy_aborts_if_authorized_users_do_not_have_scope(self, mock_args):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.skip_all = False
+        args.with_tests = True
+        with self.assertRaises(SystemExit):
+            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        self.assertTrue(mock_args.called)
+
+    @mock.patch('yaml.load', Mock(return_value={'authorized_users': {'user1': {'scope': 1}}}))
+    @mock.patch('api.deploy.ping_database', Mock())
+    @mock.patch('argparse.ArgumentParser')
+    def test_deploy_aborts_if_authorized_users_do_not_have_token(self, mock_args):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.skip_all = False
+        args.with_tests = True
         with self.assertRaises(SystemExit):
             deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)

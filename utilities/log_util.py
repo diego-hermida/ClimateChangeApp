@@ -99,7 +99,7 @@ class SMTPRotatingFileHandler(RotatingFileHandler):
 
 
 def get_logger(path: str, name: str, level=logging.INFO, date_format=CONFIG['LOG_DATE_FORMAT'],
-               line_format=CONFIG['LOG_DATA_GATHERING_SUBSYSTEM_RECORD_FORMAT'], to_stdout=False,
+               line_format=CONFIG['LOG_SUBSYSTEM_RECORD_FORMAT'], to_stdout=False,
                stdout_level=logging.DEBUG, to_file=True, oldest_to_email=True, async_email=True,
                is_subsystem=True) -> logging.LoggerAdapter:
     """
@@ -119,7 +119,7 @@ def get_logger(path: str, name: str, level=logging.INFO, date_format=CONFIG['LOG
         :param to_file: If True, saves log records to a log file.
         :param oldest_to_email: If True, sends the oldest log file by email.
         :param async_email: If True, sends the e-mails in their own thread.
-        :param is_subsystem: If True, logging records will have the LOG_DATA_GATHERING_SUBSYSTEM_RECORD_FORMAT.
+        :param is_subsystem: If True, logging records will have the LOG_SUBSYSTEM_RECORD_FORMAT.
         :return: A logging.Logger object, configured and initialized with arguments.
         :rtype: logging.Logger
     """

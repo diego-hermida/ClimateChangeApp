@@ -2,7 +2,7 @@ import argparse
 import sys
 import yaml
 
-from global_config.global_config import GLOBAL_CONFIG
+from api.config.config import API_CONFIG
 from os import environ
 from unittest import TestLoader, TextTestRunner
 from utilities.db_util import bulk_create_authorized_users, ping_database
@@ -43,14 +43,19 @@ def deploy(log_to_file=True, log_to_stdout=True):
 
         # 2. Adding API authorized users.
         logger.info('Adding API authorized users to database.')
-        with open(GLOBAL_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
+        with open(API_CONFIG['AUTHORIZED_USERS_FILEPATH'], 'r', encoding='utf-8') as f:
             users = yaml.load(f)
         authorized_users = []
         for user in users['authorized_users']:
-            authorized_users.append({'_id': user, 'token': users['authorized_users'][user]['token']})
+            user_data = users['authorized_users'][user]
+            if user_data.get('token') is None or user_data.get('scope') is None:
+                logger.error('Authorized user "%s" does not have the required fields. This may lead to unexpected '
+                             'errors while using API. Deploy will be aborted.' % user)
+                exit(1)
+            authorized_users.append({'_id': user, 'token': user_data['token'], 'scope': user_data['scope']})
         added_users = bulk_create_authorized_users(authorized_users)
         if len(authorized_users) == added_users:
-            logger.info('All API authorized users have been added.')
+            logger.info('All API authorized users have been added (%d).' % added_users)
         else:
             logger.error('Some API authorized users have not been added (%d out of %d). Deploy will be aborted. '%(
                     added_users, len(authorized_users)))
@@ -60,7 +65,7 @@ def deploy(log_to_file=True, log_to_stdout=True):
         if args.with_tests:
             logger.info('Running all the API tests.')
             loader = TestLoader()
-            suite = loader.discover(GLOBAL_CONFIG['ROOT_API_FOLDER'])
+            suite = loader.discover(API_CONFIG['ROOT_API_FOLDER'])
             runner = TextTestRunner(failfast=True, verbosity=2)
             results = runner.run(suite)
             sys.stderr.flush()

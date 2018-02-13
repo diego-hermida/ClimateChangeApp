@@ -7,7 +7,7 @@ from pytz import UTC
 import data_gathering_subsystem.data_collector.data_collector as data_collector
 from data_gathering_subsystem.data_collector.data_collector import ABORTED, CONFIG, CREATED, DATA_COLLECTED, DATA_SAVED, \
     EXECUTION_CHECKED, FINISHED, INITIALIZED, PENDING_WORK_CHECKED, STATE_RESTORED, STATE_SAVED
-from global_config.global_config import GLOBAL_CONFIG
+from data_gathering_subsystem.config.config import DGS_CONFIG
 from data_gathering_subsystem.supervisor.supervisor import Supervisor
 
 
@@ -21,7 +21,7 @@ class SimpleDataCollector(data_collector.DataCollector):
     def __init__(self, fail_on='', pending_work=True, data_collected=None, data_inserted=None,
                  update_frequency={'value': 0, 'units': 's'}, restart_required=False, backoff_time=None,
                  log_to_file=True, log_to_stdout=False):
-        fake_file_path = GLOBAL_CONFIG['DATA_MODULES_PATH'] + 'test/simple_data_collector/simple_data_collector.py'
+        fake_file_path = DGS_CONFIG['DATA_MODULES_PATH'] + 'test/simple_data_collector/simple_data_collector.py'
         super().__init__(fake_file_path, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
         self.fail_on = fail_on
         self._pending_work = pending_work
@@ -147,9 +147,10 @@ class TestDataCollector(TestCase):
         mock.return_value = CONFIG
         self.create_run(data_collected=1000, data_inserted=1000)
         self.data_collector.remove_files()
-        self.assertFalse(exists(map_data_collector_path_to_state_file_path(__file__)))
-        self.assertFalse(
-                exists(GLOBAL_CONFIG['ROOT_LOG_FOLDER'] + 'test/simple_data_collector/simple_data_collector.py'))
+        self.assertFalse(exists(map_data_collector_path_to_state_file_path(__file__,
+                GLOBAL_CONFIG['ROOT_PROJECT_FOLDER'])))
+        self.assertFalse(exists(GLOBAL_CONFIG['ROOT_LOG_FOLDER'] +
+                'test/simple_data_collector/simple_data_collector.py'))
 
     def test_positive_execution_with_pending_work(self):
         supervisor = Supervisor(None, None)

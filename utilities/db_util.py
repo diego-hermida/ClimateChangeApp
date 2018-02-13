@@ -7,48 +7,49 @@ def drop_application_database():
     """
         Deletes all contents from the Subsystem database.
     """
-    MongoClient(host=environ.get(GLOBAL_CONFIG['DB_SERVER'], 'localhost'),
-                port=GLOBAL_CONFIG['DB_PORT'],
-                authSource=GLOBAL_CONFIG['DB_ADMIN'],
-                serverSelectionTimeoutMS=GLOBAL_CONFIG['DB_MAX_MILLISECONDS_WAIT'],
-                username=GLOBAL_CONFIG['DB_ROOT'],
-                password=GLOBAL_CONFIG['DB_ROOT_PASSWORD'],
-                authMechanism=GLOBAL_CONFIG['DB_AUTH_MECHANISM']).drop_database(GLOBAL_CONFIG['DATABASE'])
+    MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
+                port=GLOBAL_CONFIG['MONGODB_PORT'],
+                authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                username=GLOBAL_CONFIG['MONGODB_ROOT'],
+                password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM']).drop_database(GLOBAL_CONFIG['MONGODB_DATABASE'])
 
 
 def create_application_user():
     """
         Creates an admin user, who owns the Subsystem database on MongoDB.
     """
-    MongoClient(host=environ.get(GLOBAL_CONFIG['DB_SERVER'], 'localhost'),
-                port=GLOBAL_CONFIG['DB_PORT'],
-                authSource=GLOBAL_CONFIG['DB_ADMIN'],
-                serverSelectionTimeoutMS=GLOBAL_CONFIG['DB_MAX_MILLISECONDS_WAIT'],
-                username=GLOBAL_CONFIG['DB_ROOT'], password=GLOBAL_CONFIG['DB_ROOT_PASSWORD'],
-                authMechanism=GLOBAL_CONFIG['DB_AUTH_MECHANISM']).get_database(GLOBAL_CONFIG['DATABASE']).command(
-            'createUser', GLOBAL_CONFIG['DB_USERNAME'], pwd=GLOBAL_CONFIG['DB_PASSWORD'], roles=[{"role": "dbOwner",
-            "db": GLOBAL_CONFIG['DATABASE']}])
+    MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
+                port=GLOBAL_CONFIG['MONGODB_PORT'],
+                authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM']).get_database(GLOBAL_CONFIG['MONGODB_DATABASE']).\
+        command('createUser', GLOBAL_CONFIG['MONGODB_USERNAME'], pwd=GLOBAL_CONFIG['MONGODB_PASSWORD'], roles=[{"role":
+                "dbOwner", "db": GLOBAL_CONFIG['MONGODB_DATABASE']}])
 
 
 def drop_application_user():
     """
         Drops the admin user, who owns the Subsystem database on MongoDB.
     """
-    MongoClient(host=environ.get(GLOBAL_CONFIG['DB_SERVER'], 'localhost'),
-                port=GLOBAL_CONFIG['DB_PORT'],
-                authSource=GLOBAL_CONFIG['DB_ADMIN'],
-                serverSelectionTimeoutMS=GLOBAL_CONFIG['DB_MAX_MILLISECONDS_WAIT'],
-                username=GLOBAL_CONFIG['DB_ROOT'], password=GLOBAL_CONFIG['DB_ROOT_PASSWORD'],
-                authMechanism=GLOBAL_CONFIG['DB_AUTH_MECHANISM']).get_database(GLOBAL_CONFIG['DATABASE']).command(
-            'dropUser', GLOBAL_CONFIG['DB_USERNAME'])
+    MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
+                port=GLOBAL_CONFIG['MONGODB_PORT'],
+                authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM']).get_database(GLOBAL_CONFIG['MONGODB_DATABASE']).\
+        command('dropUser', GLOBAL_CONFIG['MONGODB_USERNAME'])
 
 
-def create_authorized_user(username, token):
+def create_authorized_user(username: str, token: str, scope: int):
     """
         Creates an authorized user, granting him/her access to the Subsystem API.
     """
-    c = MongoDBCollection(collection_name=GLOBAL_CONFIG['DB_API_AUTHORIZED_USERS_COLLECTION'])
-    c.collection.update_one({'_id': username}, {'$setOnInsert': {'_id': username, 'token': token}}, upsert=True)
+    c = MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'])
+    c.collection.update_one({'_id': username}, {'$setOnInsert': {'_id': username, 'token': token, 'scope': scope}},
+            upsert=True)
 
 
 def bulk_create_authorized_users(users: list) -> int:
@@ -63,7 +64,7 @@ def bulk_create_authorized_users(users: list) -> int:
     ops = []
     for user in users:
         ops.append(UpdateOne({'_id': user['_id']}, update={'$set': user}, upsert=True))
-    c = MongoDBCollection(collection_name=GLOBAL_CONFIG['DB_API_AUTHORIZED_USERS_COLLECTION'])
+    c = MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'])
     result = c.collection.bulk_write(ops)
     return result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] + result.bulk_api_result['nUpserted']
 
@@ -75,10 +76,10 @@ def ping_database():
     """
     client = None
     try:
-        client = MongoClient(host=environ.get(GLOBAL_CONFIG['DB_SERVER'], 'localhost'), port=GLOBAL_CONFIG['DB_PORT'],
-                    authSource=GLOBAL_CONFIG['DB_ADMIN'], serverSelectionTimeoutMS=GLOBAL_CONFIG['DB_MAX_MILLISECONDS_WAIT'],
-                    username=GLOBAL_CONFIG['DB_ROOT'], password=GLOBAL_CONFIG['DB_ROOT_PASSWORD'],
-                    authMechanism=GLOBAL_CONFIG['DB_AUTH_MECHANISM'])
+        client = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), port=GLOBAL_CONFIG[
+            'MONGODB_PORT'], authSource=GLOBAL_CONFIG['MONGODB_ADMIN'], serverSelectionTimeoutMS=GLOBAL_CONFIG[
+            'MONGODB_DB_MAX_MILLISECONDS_WAIT'], username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG[
+            'MONGODB_ROOT_PASSWORD'], authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'])
         client.server_info()
     except Exception as exc:
         raise EnvironmentError from exc
@@ -96,9 +97,10 @@ def get_and_increment_execution_id() -> int:
         Postcondition: The execution ID is auto-incremented in one unit.
         :return: An integer, containing the current execution ID.
     """
-    collection = MongoDBCollection(GLOBAL_CONFIG['DB_STATS_COLLECTION'])
-    return collection.collection.find_and_modify(query={'_id': 'execution_id'}, update={'$inc': {'value': 1}},
-            fields={'value': 1}, new=True, upsert=True)['value']
+    from data_gathering_subsystem.config.config import DGS_CONFIG
+    collection = MongoDBCollection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
+    return collection.collection.find_and_modify(query={'_id': {'execution_id': True, 'subsystem_id': DGS_CONFIG[
+        'SUBSYSTEM_INSTANCE_ID']}}, update={'$inc': {'value': 1}}, fields={'value': 1}, new=True, upsert=True)['value']
 
 
 class MongoDBCollection:
@@ -116,15 +118,15 @@ class MongoDBCollection:
         """
         self._collection_name = collection_name
         self._client = MongoClient(
-            host=environ.get(GLOBAL_CONFIG['DB_SERVER'], 'localhost'),
-            port=GLOBAL_CONFIG['DB_PORT'],
-            authSource=GLOBAL_CONFIG['DATABASE'],
-            serverSelectionTimeoutMS=GLOBAL_CONFIG['DB_MAX_MILLISECONDS_WAIT'],
-            username=GLOBAL_CONFIG['DB_USERNAME'],
-            password=GLOBAL_CONFIG['DB_PASSWORD'],
-            authMechanism=GLOBAL_CONFIG['DB_AUTH_MECHANISM'])
+            host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
+            port=GLOBAL_CONFIG['MONGODB_PORT'],
+            authSource=GLOBAL_CONFIG['MONGODB_DATABASE'],
+            serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+            username=GLOBAL_CONFIG['MONGODB_USERNAME'],
+            password=GLOBAL_CONFIG['MONGODB_PASSWORD'],
+            authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'])
         self._client.server_info()  # Checks valid connection.
-        self.collection = self._client.get_database(GLOBAL_CONFIG['DATABASE']).get_collection(collection_name)
+        self.collection = self._client.get_database(GLOBAL_CONFIG['MONGODB_DATABASE']).get_collection(collection_name)
 
     def is_closed(self) -> bool:
         """
@@ -153,7 +155,7 @@ class MongoDBCollection:
             return
         elif self._collection_name != collection_name:
             self.close()
-        self.collection = self._client.get_database(GLOBAL_CONFIG['DATABASE']).get_collection(
+        self.collection = self._client.get_database(GLOBAL_CONFIG['MONGODB_DATABASE']).get_collection(
             collection_name if collection_name else self._collection_name)
 
     def find(self, fields=None, conditions={}, start_index=None, count=None, sort=None) -> dict:

@@ -1,11 +1,12 @@
 import argparse
 import sys
 
+from data_gathering_subsystem.config.config import DGS_CONFIG
 from global_config.global_config import GLOBAL_CONFIG
 from os import environ
 from pymongo.errors import DuplicateKeyError
 from unittest import TestLoader, TextTestRunner
-from utilities.db_util import create_application_user, create_authorized_user, drop_application_database
+from utilities.db_util import create_application_user, drop_application_database
 from utilities.import_dir import import_modules
 from utilities.log_util import get_logger
 from utilities.util import remove_all_under_directory
@@ -52,8 +53,8 @@ def deploy(log_to_file=True, log_to_stdout=True):
             args = argparse.Namespace(all=True, with_tests=False)
 
         # Dynamically, recursively imports all Python modules under base directory (and returns them in a list)
-        modules = import_modules(GLOBAL_CONFIG['DATA_MODULES_PATH'], recursive=True,
-                                 base_package=GLOBAL_CONFIG['DATA_COLLECTOR_BASE_PACKAGE'])
+        modules = import_modules(DGS_CONFIG['DATA_MODULES_PATH'], recursive=True,
+                                 base_package=DGS_CONFIG['DATA_COLLECTOR_BASE_PACKAGE'])
 
         # 1. Ensuring database is brand new.
         if args.all or args.drop_database:
@@ -91,7 +92,7 @@ def deploy(log_to_file=True, log_to_stdout=True):
         if args.with_tests:
             logger.info('Running all the Data Gathering Subsystem tests.')
             loader = TestLoader()
-            suite = loader.discover(GLOBAL_CONFIG['ROOT_DATA_GATHERING_SUBSYSTEM_FOLDER'])
+            suite = loader.discover(DGS_CONFIG['ROOT_DATA_GATHERING_SUBSYSTEM_FOLDER'])
             runner = TextTestRunner(failfast=True, verbosity=2)
             results = runner.run(suite)
             sys.stderr.flush()
@@ -111,9 +112,9 @@ def deploy(log_to_file=True, log_to_stdout=True):
             except FileNotFoundError:
                 logger.info('Log base directory does not exist, so it cannot be removed.')
             try:
-                logger.info('Removing .state files\' base directory: %s' % (GLOBAL_CONFIG[
+                logger.info('Removing .state files\' base directory: %s' % (DGS_CONFIG[
                         'DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER']))
-                remove_all_under_directory(GLOBAL_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
+                remove_all_under_directory(DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
             except FileNotFoundError:
                 logger.info('.state files\' base directory does not exist, so it cannot be removed.')
 

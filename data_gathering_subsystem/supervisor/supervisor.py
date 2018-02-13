@@ -1,6 +1,7 @@
 import builtins
 import data_gathering_subsystem.data_collector.data_collector as dc
 from copy import deepcopy
+from data_gathering_subsystem.config.config import DGS_CONFIG
 from global_config.global_config import GLOBAL_CONFIG
 from json import dumps
 from pymongo import InsertOne, UpdateOne
@@ -40,7 +41,7 @@ class Supervisor:
         self._condition = condition
         self.logger = get_logger(__file__, 'SupervisorLogger', to_file=log_to_file, to_stdout=log_to_stdout)
         self.config = get_config(__file__)
-        self.module_name = get_module_name(GLOBAL_CONFIG['DB_STATS_COLLECTION'])
+        self.module_name = get_module_name(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
         self.collection = MongoDBCollection(self.module_name)
         self.execution_report = {'last_execution': self.config['STATE_STRUCT']['last_execution'], 'aggregated':
                 self.collection.get_last_elements(amount=1, filter={'_id': {'$eq': 'aggregated'}})}
@@ -149,9 +150,12 @@ class Supervisor:
                 modules_with_pending_work[dc.module_name] = {'collected_elements': dc.state['data_elements'],
                                                              'saved_elements': dc.state['inserted_elements']}
                 self.execution_report['aggregated']['per_module'][dc.module_name]['executions_with_pending_work'] += 1
+        if not modules_with_pending_work:
+            modules_with_pending_work = None
         # Current execution statistics
         self.execution_report['last_execution']['_id']['execution_id'] = builtins.EXECUTION_ID
-        self.execution_report['last_execution']['subsystem_version'] = GLOBAL_CONFIG['SUBSYSTEM_VERSION']
+        self.execution_report['last_execution']['_id']['subsystem_id'] = DGS_CONFIG['SUBSYSTEM_INSTANCE_ID']
+        self.execution_report['last_execution']['subsystem_version'] = DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_VERSION']
         self.execution_report['last_execution']['timestamp'] = current_date_in_millis()
         self.execution_report['last_execution']['duration'] = duration
         self.execution_report['last_execution']['execution_succeeded'] = execution_succeeded
@@ -162,6 +166,7 @@ class Supervisor:
         self.execution_report['last_execution']['modules_succeeded'] = modules_succeeded
         self.execution_report['last_execution']['modules_failed']['amount'] = modules_failed
         # Aggregated executions
+        self.execution_report['aggregated']['_id']['subsystem_id'] = DGS_CONFIG['SUBSYSTEM_INSTANCE_ID']
         self.execution_report['aggregated']['executions'] += 1
         self.execution_report['aggregated']['last_execution_id'] = builtins.EXECUTION_ID
         self.execution_report['aggregated']['timestamp'] = self.execution_report['last_execution']['timestamp']
@@ -199,5 +204,7 @@ class Supervisor:
         del copy['aggregated']['_id']
         del copy['aggregated']['last_execution_id']
         del copy['aggregated']['timestamp']
+        copy['last_execution']['subsystem_id'] = DGS_CONFIG['SUBSYSTEM_INSTANCE_ID']
+        copy['aggregated']['subsystem_id'] = DGS_CONFIG['SUBSYSTEM_INSTANCE_ID']
         copy['last_execution']['execution_id'] = builtins.EXECUTION_ID
         self.logger.debug('Execution results:\n%s' % (dumps(copy, indent=4, separators=(',', ': '))))

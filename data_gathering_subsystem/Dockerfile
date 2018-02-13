@@ -15,7 +15,7 @@ RUN apt-get update
 RUN pip install --upgrade pip setuptools
 RUN pip3 install --upgrade pip setuptools
 
-# Reading configuration from 'docker_global_config.config' instead of 'dev_global_config.config'
+# Reading configuration from 'docker_config.config' instead of 'dev_config.config'
 ENV DOCKER_MODE=true
 
 # Adding project code to the image.

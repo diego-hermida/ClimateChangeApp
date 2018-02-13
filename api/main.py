@@ -1,9 +1,9 @@
-from api.settings import MODULES_CACHE_TIME, API_ALIVE_CACHE_TIME
+from api.settings import API_ALIVE_CACHE_TIME
 from eve import Eve
 from eve.auth import TokenAuth
+from global_config.global_config import GLOBAL_CONFIG
 from flask import json, request
 from functools import wraps
-from global_config.global_config import GLOBAL_CONFIG
 from os import environ
 from utilities.db_util import MongoDBCollection, ping_database
 from utilities.log_util import get_logger
@@ -20,15 +20,21 @@ class _AppTokenAuth(TokenAuth):
         HTTP requests must contain an 'Authorization' header.
     """
     def check_auth(self, token, allowed_roles, resource, method):
-        return app.data.driver.db[GLOBAL_CONFIG['DB_API_AUTHORIZED_USERS_COLLECTION']].find_one(
-                {'token': token}) is not None
+        global _scope
+        user = app.data.driver.db[GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION']].find_one(
+                {'token': token})
+        if user:
+            try:
+                _scope = user['scope']
+            except KeyError:
+                _scope = None
+        return user is not None
 
 
 app = Eve(auth=_AppTokenAuth)
-_modules = None
-_modules_last_update = None
 _api_alive = True
 _api_alive_last_update = None
+_scope = None
 
 
 def require_auth(f):
@@ -72,6 +78,30 @@ def require_validation(f):
     return wrapped
 
 
+def require_scope(f):
+    """
+        By decorating an API endpoint with this, all API calls are required of a token scope. If no scope is provided,
+        a 400 Bad Request response will be automatically sent.
+        :param f: Function to be wrapped.
+        :return: Everything that the wrapped function returns, or a 400 Bad Request response.
+    """
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        global _scope
+        try:
+            if _scope:
+                result = f(*args, **kwargs)
+                _scope = None
+                return result
+            else:
+                return app.response_class(response=_dumps({"_status": "ERR", "_error": {"code": 400, "message":
+                    "A token scope is required and your token does not have one. If this is not your fault, contact "
+                    "the API developer."}}), status=400, mimetype='application/json')
+        except ValidationError as error:
+            return error.message
+    return wrapped
+
+
 def validate_integer(param_name, only_positive=False, required=False) -> int:
     """
         Validates an integer from the parameters contained in the HTTP request.
@@ -100,17 +130,12 @@ def validate_integer(param_name, only_positive=False, required=False) -> int:
 
 def _set_module_names():
     """
-        Internal function that queries MongoDB in order to retrieve all valid module names. It has a cache-mechanism.
+        Internal function that queries MongoDB in order to retrieve all valid module names.
     """
-    global _modules
-    global _modules_last_update
-    time = current_date_in_millis()
-    if _modules is None or _modules_last_update is None or _modules_last_update + MODULES_CACHE_TIME < time:
-        collection = MongoDBCollection(GLOBAL_CONFIG['DB_STATS_COLLECTION'])
-        result = collection.collection.find_one(filter={'_id': 'aggregated'})
-        collection.close()
-        _modules = list(result['per_module'].keys()) if result else []
-        _modules_last_update = time
+    collection = MongoDBCollection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
+    result = collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})
+    collection.close()
+    return list(result['per_module'].keys()) if result else []
 
 
 def _alive():
@@ -141,6 +166,7 @@ def _dumps(obj) -> str:
 
 @app.route('/modules')
 @require_auth
+@require_scope
 def modules():
     """
         API endpoint. Retrieves all module name(s), i.e. all DataCollector(s).
@@ -153,14 +179,14 @@ def modules():
         Errors: 401 Unauthorized, if the user did not provide the "Authentication" header with a valid token inside the
                 HTTP request.
     """
-    _set_module_names()
-    result = {'modules': _modules, 'updated': _modules_last_update}
+    result = {'modules': _set_module_names(), 'updated': current_date_in_millis()}
     return app.response_class(response=_dumps(result), status=200, mimetype='application/json')
 
 
 @app.route('/executionStats')
-@require_validation
 @require_auth
+@require_scope
+@require_validation
 def execution_stats():
     """
         API endpoint. Retrieves statistics from an execution. This endpoint accepts the
@@ -180,19 +206,22 @@ def execution_stats():
               has not been set; or there are no data for such execution ID.
     """
     execution_id = validate_integer('executionId', only_positive=True, required=False)
-    collection = MongoDBCollection(GLOBAL_CONFIG['DB_STATS_COLLECTION'])
+    collection = MongoDBCollection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
     if execution_id is None:
         try:
-            execution_id = collection.collection.find_one({'_id': 'aggregated'})['last_execution_id']
+            execution_id = collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})[
+                'last_execution_id']
         except TypeError:
             return app.response_class(response=_dumps({'stats': None, 'reason': 'The Data Gathering Subsystem '
                     'has not yet been executed.', 'last_execution_id': None}), status=404, mimetype='application/json')
-    result = collection.collection.find_one(filter={'_id': {'execution_id': execution_id, 'type': 'last_execution'}})
+    result = collection.collection.find_one(filter={'_id': {'subsystem_id': _scope, 'execution_id': execution_id,
+            'type': 'last_execution'}})
     if result:
         return app.response_class(response=_dumps(result), status=200, mimetype='application/json')
     else:
         try:
-            execution_id = collection.collection.find_one({'_id': 'aggregated'})['last_execution_id']
+            execution_id = collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})[
+                'last_execution_id']
         except TypeError:
             return app.response_class(response=_dumps({'stats': None, 'reason': 'The Data Gathering Subsystem '
                     'has not yet been executed.'}), status=404, mimetype='application/json')
@@ -201,8 +230,9 @@ def execution_stats():
 
 
 @app.route('/data/<module_name>')
-@require_validation
 @require_auth
+@require_scope
+@require_validation
 def data(module_name: str):
     """
         API endpoint. Retrieves collected data from a module. This endpoint accepts the following parameters:
@@ -227,7 +257,7 @@ def data(module_name: str):
     count = validate_integer('limit', only_positive=True)
     execution_id = validate_integer('executionId', only_positive=True)
     _set_module_names()
-    if module_name not in _modules:
+    if module_name not in _set_module_names():
         return app.response_class(response=_dumps(
                 {"_status": "ERR", "_error": {"code": 404, "message": "Such module does not exist. Make a call to the "
                 "'/modules' endpoint in order to retrieve valid modules."}}), status=404, mimetype='application/json')
@@ -258,7 +288,7 @@ def main(log_to_stdout=True, log_to_file=True):
     logger = get_logger(__file__, name='APILogger', to_file=log_to_file, to_stdout=log_to_stdout, is_subsystem=False)
 
     # This provisional solution FIXES [BUG-015]
-    if not environ.get('LOCALHOST_IP', True) or environ.get('LOCALHOST_IP') is None:
+    if environ.get('LOCALHOST_IP') is None:
         logger.critical('LOCALHOST_IP must exist as an ENVIRONMENT VARIABLE at execution time. Aborting Subsystem.')
         exit(1)
     else:
