@@ -87,10 +87,9 @@ class TestUtil(TestCase):
         remove(config_file)
 
     def test_map_data_collector_path_to_state_file_path(self):
-        file = '/foo/bar/baz/script.py'
-        self.assertEqual(DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'] + 'script.state',
-                         utilities.util.map_data_collector_path_to_state_file_path(file,
-                         root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER']))
+        file = '/temp/ClimateChangeApp/data_gathering_subsystem/data_modules/module/module.py'
+        self.assertEqual('/temp/state/module.state', utilities.util.map_data_collector_path_to_state_file_path(file,
+                         root_dir='/temp/state/'))
 
     def test_create_state_file(self):
         from os import remove

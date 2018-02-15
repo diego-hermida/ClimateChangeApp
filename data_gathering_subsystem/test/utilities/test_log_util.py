@@ -1,10 +1,10 @@
 from logging import DEBUG, INFO, StreamHandler
 from logging.handlers import RotatingFileHandler
 from os.path import exists
-from shutil import rmtree
 from unittest import TestCase, mock
 
 import utilities.log_util
+from utilities.util import remove_all_under_directory
 from global_config.global_config import GLOBAL_CONFIG
 
 
@@ -17,7 +17,7 @@ class TestLogUtil(TestCase):
     def test_log_util(self):
         # Ensuring logger exists and is well configured
         file = GLOBAL_CONFIG['ROOT_PROJECT_FOLDER'] + '/data_modules/my_module/my_module.py'
-        expected = GLOBAL_CONFIG['ROOT_LOG_FOLDER'] + 'data_modules/my_module/my_module.log'
+        expected = GLOBAL_CONFIG['ROOT_LOG_FOLDER'] + 'my_module.log'
         logger = utilities.log_util.get_logger(file, 'TestLogger', to_file=True, to_stdout=True)
         self.assertTrue(exists(expected))
         self.assertEqual(2, len(logger.logger.handlers))
@@ -35,7 +35,7 @@ class TestLogUtil(TestCase):
     def test_email_sent(self, mock_login, mock_sendmail):
         # setUp
         file = GLOBAL_CONFIG['ROOT_PROJECT_FOLDER'] + '/data_modules/my_module/my_module.py'
-        expected_dir = GLOBAL_CONFIG['ROOT_LOG_FOLDER'] + 'data_modules/my_module/'
+        expected_dir = GLOBAL_CONFIG['ROOT_LOG_FOLDER']
         # Invocation
         logger = utilities.log_util.get_logger(file, 'TestLogger', to_file=True, to_stdout=False)
         for i in range((int(4096 / 200) + 3) * utilities.log_util.CONFIG['MAX_BACKUP_FILES']):
@@ -45,7 +45,7 @@ class TestLogUtil(TestCase):
         self.assertTrue(mock_login.called)
         self.assertTrue(mock_sendmail.called)
         # tearDown
-        rmtree(expected_dir)
+        remove_all_under_directory(expected_dir)
 
     def test_handlers_are_removed(self):
         # Ensuring logger exists and is well configured

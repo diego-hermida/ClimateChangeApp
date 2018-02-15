@@ -108,7 +108,7 @@ def deploy(log_to_file=True, log_to_stdout=True):
         if args.all or args.remove_files:
             logger.info('Removing log base directory: %s' % (GLOBAL_CONFIG['ROOT_LOG_FOLDER']))
             try:
-                remove_all_under_directory(GLOBAL_CONFIG['ROOT_LOG_FOLDER'])
+                remove_all_under_directory(DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
             except FileNotFoundError:
                 logger.info('Log base directory does not exist, so it cannot be removed.')
             try:

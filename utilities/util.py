@@ -97,12 +97,12 @@ def get_config(path: str) -> dict:
 
 def map_data_collector_path_to_state_file_path(path: str, root_dir: str) -> str:
     """
-    Given the path to a file, returns the path to a '.state' file (with the same name as the original one) under the
-    STATE_FILES_ROOT_FOLDER (from config.config.CONFIG).
-    :param path: Path to the target file.
-    :param root_dir: Depending on this parameter, the root directory for '.state' files will be different.
-    :return: Path to the '.state' file, under STATE_FILES_ROOT_FOLDER.
-    :rtype: str
+        Given the path to a file, returns the path to a '.state' file (with the same name as the original one) under the
+        STATE_FILES_ROOT_FOLDER (from config.config.CONFIG).
+        :param path: Path to the target file.
+        :param root_dir: Depending on this parameter, the root directory for '.state' files will be different.
+        :return: Path to the '.state' file, under STATE_FILES_ROOT_FOLDER.
+        :rtype: str
     """
     return root_dir + get_module_name(path) + '.state'
 

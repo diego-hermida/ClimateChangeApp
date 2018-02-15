@@ -34,7 +34,7 @@ ENV PYTHONPATH /ClimateChangeApp:/ClimateChangeApp/code
 VOLUME /ClimateChangeApp/log
 
 # Subsystem '.state' files will be generated under this directory.
-VOLUME /ClimateChangeApp/state/data_gathering_subsystem
+VOLUME /ClimateChangeApp/state
 
 # Deploy script which performs necessary operations before running the Subsystem for the first time.
 RUN ["pypy3", "deploy.py"]

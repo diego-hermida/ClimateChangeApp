@@ -39,7 +39,9 @@ class Supervisor:
 
         self._channel = channel
         self._condition = condition
-        self.logger = get_logger(__file__, 'SupervisorLogger', to_file=log_to_file, to_stdout=log_to_stdout)
+        self.logger = get_logger(__file__, 'SupervisorLogger', to_file=log_to_file, to_stdout=log_to_stdout,
+                subsystem_id=DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'],
+                root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
         self.config = get_config(__file__)
         self.module_name = get_module_name(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
         self.collection = MongoDBCollection(self.module_name)

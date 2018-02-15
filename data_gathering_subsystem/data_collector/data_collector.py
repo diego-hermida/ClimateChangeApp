@@ -286,7 +286,7 @@ class DataCollector(ABC):
         except FileNotFoundError:
             pass
         try:
-            remove_log_file(self._file_path)
+            remove_log_file(self._file_path, root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
         except FileNotFoundError:
             pass
 
@@ -344,7 +344,9 @@ class DataCollector(ABC):
         self._file_path = file_path
         self.module_name = get_module_name(self._file_path)
         # Needs to be initialized to log errors.
-        self.logger = get_logger(file_path, self.module_name, to_stdout=log_to_stdout, to_file=log_to_file)
+        self.logger = get_logger(file_path, self.module_name, to_stdout=log_to_stdout, to_file=log_to_file,
+                                 subsystem_id=DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'],
+                                 root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
         self._transition_state = self._CREATED
         try:
             self._state_transitions = []

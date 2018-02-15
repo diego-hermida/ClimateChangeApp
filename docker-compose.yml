@@ -9,7 +9,7 @@ services:
         image: diegohermida/data_gathering_subsystem:2.0
         volumes:
             - ~/ClimateChangeApp/log:/ClimateChangeApp/log
-            - ~/ClimateChangeApp/state/data_gathering_subsystem:/ClimateChangeApp/state/data_gathering_subsystem
+            - ~/ClimateChangeApp/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
         links:

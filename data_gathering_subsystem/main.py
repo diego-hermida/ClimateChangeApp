@@ -28,7 +28,8 @@ def main(log_to_file=True, log_to_stdout=True):
     builtins.EXECUTION_ID = None
 
     # Getting logger instance
-    __logger = get_logger(__file__, 'MainLogger', to_stdout=log_to_stdout, to_file=log_to_file)
+    __logger = get_logger(__file__, 'MainLogger', to_stdout=log_to_stdout, to_file=log_to_file, subsystem_id=
+            DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'], root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
 
     # This provisional solution FIXES [BUG-015]
     if environ.get('LOCALHOST_IP') is None:
@@ -42,7 +43,8 @@ def main(log_to_file=True, log_to_stdout=True):
     try:
         ping_database()
         builtins.EXECUTION_ID = get_and_increment_execution_id()
-        __logger = get_logger(__file__, 'MainLogger', to_stdout=log_to_stdout, to_file=log_to_file)
+        __logger = get_logger(__file__, 'MainLogger', to_stdout=log_to_stdout, to_file=log_to_file, subsystem_id=
+                DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'], root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
         __logger.debug('MongoDB daemon is up and reachable.')
     except EnvironmentError:
         __logger.critical('The MongoDB server is down. The Subsystem will be exit now, since it\'s useless to collect '
