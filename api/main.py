@@ -81,7 +81,7 @@ def require_validation(f):
 def require_scope(f):
     """
         By decorating an API endpoint with this, all API calls are required of a token scope. If no scope is provided,
-        a 400 Bad Request response will be automatically sent.
+        a 403 Access Forbidden response will be automatically sent.
         :param f: Function to be wrapped.
         :return: Everything that the wrapped function returns, or a 400 Bad Request response.
     """
@@ -94,9 +94,9 @@ def require_scope(f):
                 _scope = None
                 return result
             else:
-                return app.response_class(response=_dumps({"_status": "ERR", "_error": {"code": 400, "message":
+                return app.response_class(response=_dumps({"_status": "ERR", "_error": {"code": 403, "message":
                     "A token scope is required and your token does not have one. If this is not your fault, contact "
-                    "the API developer."}}), status=400, mimetype='application/json')
+                    "the API developer."}}), status=403, mimetype='application/json')
         except ValidationError as error:
             return error.message
     return wrapped
@@ -176,8 +176,11 @@ def modules():
         Response code: HTTP 200 OK
         Content type: application/json
         Content example: {"modules": [module1, module2, module3], "updated": 1518032300957}
-        Errors: 401 Unauthorized, if the user did not provide the "Authentication" header with a valid token inside the
-                HTTP request.
+        Errors:
+            - 401 Unauthorized, if the user did not provide the "Authentication" header with a valid token inside the
+              HTTP request.
+            - 403 Access Forbidden, if the token scope is missing.
+            - 503 Service Unavailable, if the database is down.
     """
     result = {'modules': _set_module_names(), 'updated': current_date_in_millis()}
     return app.response_class(response=_dumps(result), status=200, mimetype='application/json')
@@ -202,8 +205,10 @@ def execution_stats():
             - 400 Bad Request, if parameters are invalid (bad types/values).
             - 401 Unauthorized, if the user did not provide the "Authentication" header with a valid token inside the
               HTTP request.
+            - 403 Access Forbidden, if the token scope is missing.
             - 404 Not Found, if the Data Gathering Subsystem has not yet been executed and, therefore, the execution ID
               has not been set; or there are no data for such execution ID.
+            - 503 Service Unavailable, if the database is down.
     """
     execution_id = validate_integer('executionId', only_positive=True, required=False)
     collection = MongoDBCollection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
@@ -251,7 +256,9 @@ def data(module_name: str):
             - 400 Bad Request, if parameters are invalid (bad types/values).
             - 401 Unauthorized, if the user did not provide the "Authentication" header with a valid token inside the
               HTTP request.
+            - 403 Access Forbidden, if the token scope is missing.
             - 404 Not Found, if the module name does not refer to an existing module.
+            - 503 Service Unavailable, if the database is down.
     """
     start_index = validate_integer('startIndex', only_positive=True)
     count = validate_integer('limit', only_positive=True)
@@ -276,14 +283,15 @@ def alive():
         Response code: HTTP 200 OK
         Content type: application/json
         Content format: {'alive': true|false, 'updated': 1518032300957}
-        Errors: 503 Service Unavailable, if the database is down.
+        Errors:
+            - 503 Service Unavailable, if the database is down.
     """
     _alive()
     return app.response_class(response=_dumps({'alive': _api_alive, 'updated': _api_alive_last_update}),
                               status=200 if _api_alive else 503, mimetype='application/json')
 
 
-def main(log_to_stdout=True, log_to_file=True):
+def main(log_to_stdout=True, log_to_file=False):
     # Getting logger instance
     logger = get_logger(__file__, name='APILogger', to_file=log_to_file, to_stdout=log_to_stdout, is_subsystem=False)
 

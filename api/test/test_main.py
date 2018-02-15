@@ -281,11 +281,11 @@ class TestMain(TestCase):
 
     def test_calls_fail_if_token_has_no_scope(self):
         r = self.app.get('/modules', headers={'Authorization': 'Bearer test_token_with_no_scope'})
-        self.assertEqual(400, r.status_code)
+        self.assertEqual(403, r.status_code)
         r = self.app.get('/data/module', headers={'Authorization': 'Bearer test_token_with_no_scope'})
-        self.assertEqual(400, r.status_code)
+        self.assertEqual(403, r.status_code)
         r = self.app.get('/executionStats', headers={'Authorization': 'Bearer test_token_with_no_scope'})
-        self.assertEqual(400, r.status_code)
+        self.assertEqual(403, r.status_code)
         # Scope does not affect the open endpoints
         r = self.app.get('/alive', headers={'Authorization': 'Bearer test_token_with_no_scope'})
         self.assertEqual(200, r.status_code)
