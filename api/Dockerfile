@@ -2,8 +2,8 @@
 FROM pypy:latest
 
 # Provisional solution to [BUG-015]
-ARG LOCALHOST_IP
-ENV LOCALHOST_IP=$LOCALHOST_IP
+ARG MONGODB_IP
+ENV MONGODB_IP=$MONGODB_IP
 
 # Allows setting custom args to execute the deploy script. Use --build-arg DEPLOY_ARGS=<args> when building the API
 # service with docker-compose.
@@ -31,7 +31,7 @@ WORKDIR /ClimateChangeApp/code/api
 ENV PYTHONPATH /ClimateChangeApp:/ClimateChangeApp/code
 
 # API log files will be generated under this directory.
-VOLUME /ClimateChangeApp/log
+VOLUME /ClimateChangeApp/log/api
 
 # Deployment script which performs necessary operations before running the Subsystem for the first time.
 RUN ["pypy3", "deploy.py"]

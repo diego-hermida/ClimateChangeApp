@@ -1,4 +1,5 @@
 from api.config.config import API_CONFIG
+from pymongo.errors import DuplicateKeyError
 from unittest import TestCase, mock
 from unittest.mock import Mock
 
@@ -17,6 +18,7 @@ class TestDeploy(TestCase):
     @mock.patch('api.deploy.TextTestRunner')
     @mock.patch('api.deploy.TestLoader', Mock())
     @mock.patch('api.deploy.bulk_create_authorized_users')
+    @mock.patch('api.deploy.create_data_gathering_subsystem_api_user', Mock())
     @mock.patch('api.deploy.ping_database', Mock())
     @mock.patch('argparse.ArgumentParser')
     def test_all_with_tests_everything_ok(self, mock_args, mock_auth_users, mock_test_runner):
@@ -24,9 +26,15 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = True
-        with open(API_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
+        args.all = True
+        args.db_user = False
+        args.add_users = False
+        args.remove_files = False
+        with open(API_CONFIG['AUTHORIZED_USERS_FILEPATH'], 'r', encoding='utf-8') as f:
             users = yaml.load(f)
         mock_auth_users.return_value = len(users['authorized_users'].keys())
+        mock_test_runner.return_value.run = results = Mock()
+        results.return_value.wasSuccessful.return_value = True
         deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
         self.assertTrue(mock_auth_users.called)
@@ -35,36 +43,50 @@ class TestDeploy(TestCase):
     @mock.patch('api.deploy.TextTestRunner')
     @mock.patch('api.deploy.TestLoader', Mock())
     @mock.patch('api.deploy.bulk_create_authorized_users')
+    @mock.patch('api.deploy.create_data_gathering_subsystem_api_user', Mock())
     @mock.patch('api.deploy.ping_database', Mock())
-    @mock.patch('api.deploy.environ', {'DEPLOY_ARGS': '--with-tests'})
+    @mock.patch('api.deploy.environ', {'DEPLOY_ARGS': '--all --with-tests'})
     def test_all_with_tests_everything_ok_with_args_from_env_variable(self, mock_auth_users, mock_test_runner):
         import yaml
-        with open(API_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
+        with open(API_CONFIG['AUTHORIZED_USERS_FILEPATH'], 'r', encoding='utf-8') as f:
             users = yaml.load(f)
         mock_auth_users.return_value = len(users['authorized_users'].keys())
         deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_auth_users.called)
         self.assertTrue(mock_test_runner.called)
 
-    @mock.patch('api.deploy.TextTestRunner')
-    @mock.patch('api.deploy.TestLoader', Mock())
-    @mock.patch('api.deploy.bulk_create_authorized_users')
+    @mock.patch('api.deploy.create_data_gathering_subsystem_api_user',
+                Mock(side_effect=DuplicateKeyError('User already exists')))
     @mock.patch('api.deploy.ping_database', Mock())
     @mock.patch('argparse.ArgumentParser')
-    def test_tests_failed(self, mock_args, mock_auth_users, mock_test_runner):
-        import yaml
+    def test_create_api_user_when_it_does_already_exist(self, mock_args):
         mock_args.return_value.parse_args.return_value = args = Mock()
-        args.with_tests = True
         args.skip_all = False
-        with open(API_CONFIG['ROOT_API_FOLDER'] + 'doc/authorized_users.config', 'r', encoding='utf-8') as f:
-            users = yaml.load(f)
-        mock_auth_users.return_value = len(users['authorized_users'].keys())
+        args.with_tests = False
+        args.all = False
+        args.db_user = True
+        args.add_users = False
+        args.remove_files = False
+        deploy.deploy(log_to_file=False, log_to_stdout=False)
+        self.assertTrue(mock_args.called)
+
+    @mock.patch('api.deploy.TextTestRunner')
+    @mock.patch('api.deploy.TestLoader', Mock())
+    @mock.patch('api.deploy.ping_database', Mock())
+    @mock.patch('argparse.ArgumentParser')
+    def test_tests_failed(self, mock_args, mock_test_runner):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.skip_all = False
+        args.with_tests = True
+        args.all = False
+        args.db_user = False
+        args.add_users = False
+        args.remove_files = False
         mock_test_runner.return_value.run = results = Mock()
         results.return_value.wasSuccessful.return_value = False
         with self.assertRaises(SystemExit):
             deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
-        self.assertTrue(mock_auth_users.called)
         self.assertTrue(mock_test_runner.called)
 
     @mock.patch('argparse.ArgumentParser', Mock(side_effect=Exception(
@@ -78,6 +100,10 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = True
         args.with_tests = False
+        args.all = False
+        args.db_user = False
+        args.add_users = False
+        args.remove_files = False
         with self.assertRaises(SystemExit):
             deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
@@ -94,7 +120,11 @@ class TestDeploy(TestCase):
     def test_deploy_aborts_if_not_all_authorized_users_are_inserted(self, mock_args):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
-        args.with_tests = True
+        args.with_tests = False
+        args.all = False
+        args.db_user = False
+        args.add_users = True
+        args.remove_files = False
         with self.assertRaises(SystemExit):
             deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
@@ -105,7 +135,11 @@ class TestDeploy(TestCase):
     def test_deploy_aborts_if_authorized_users_do_not_have_scope(self, mock_args):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
-        args.with_tests = True
+        args.with_tests = False
+        args.all = False
+        args.db_user = False
+        args.add_users = True
+        args.remove_files = False
         with self.assertRaises(SystemExit):
             deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)
@@ -116,7 +150,11 @@ class TestDeploy(TestCase):
     def test_deploy_aborts_if_authorized_users_do_not_have_token(self, mock_args):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
-        args.with_tests = True
+        args.with_tests = False
+        args.all = False
+        args.db_user = False
+        args.add_users = True
+        args.remove_files = False
         with self.assertRaises(SystemExit):
             deploy.deploy(log_to_file=False, log_to_stdout=False)
         self.assertTrue(mock_args.called)

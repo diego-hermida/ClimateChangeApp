@@ -26,13 +26,13 @@ def create_application_user():
                 serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
                 username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
                 authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM']).get_database(GLOBAL_CONFIG['MONGODB_DATABASE']).\
-        command('createUser', GLOBAL_CONFIG['MONGODB_USERNAME'], pwd=GLOBAL_CONFIG['MONGODB_PASSWORD'], roles=[{"role":
-                "dbOwner", "db": GLOBAL_CONFIG['MONGODB_DATABASE']}])
+        command('createUser', GLOBAL_CONFIG['MONGODB_USERNAME'], pwd=GLOBAL_CONFIG['MONGODB_USER_PASSWORD'],
+                roles=[{"role": "dbOwner", "db": GLOBAL_CONFIG['MONGODB_DATABASE']}])
 
 
-def drop_application_user():
+def create_data_gathering_subsystem_api_user():
     """
-        Drops the admin user, who owns the Subsystem database on MongoDB.
+        Creates an API user, who only has read/write permissions on the Subsystem database on MongoDB.
     """
     MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
                 port=GLOBAL_CONFIG['MONGODB_PORT'],
@@ -40,14 +40,30 @@ def drop_application_user():
                 serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
                 username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
                 authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM']).get_database(GLOBAL_CONFIG['MONGODB_DATABASE']).\
-        command('dropUser', GLOBAL_CONFIG['MONGODB_USERNAME'])
+        command('createUser', GLOBAL_CONFIG['MONGODB_API_USERNAME'], pwd=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
+                roles=[{"role": "readWrite", "db": GLOBAL_CONFIG['MONGODB_DATABASE']}])
+
+
+def drop_application_user(username=GLOBAL_CONFIG['MONGODB_USERNAME']):
+    """
+        Drops the admin user, who owns the Subsystem database on MongoDB.
+        :param username: User to be removed.
+    """
+    MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
+                port=GLOBAL_CONFIG['MONGODB_PORT'],
+                authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM']).get_database(GLOBAL_CONFIG['MONGODB_DATABASE']).\
+        command('dropUser', username)
 
 
 def create_authorized_user(username: str, token: str, scope: int):
     """
         Creates an authorized user, granting him/her access to the Subsystem API.
     """
-    c = MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'])
+    c = MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'], username=
+            GLOBAL_CONFIG['MONGODB_API_USERNAME'], password=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'])
     c.collection.update_one({'_id': username}, {'$setOnInsert': {'_id': username, 'token': token, 'scope': scope}},
             upsert=True)
 
@@ -55,7 +71,7 @@ def create_authorized_user(username: str, token: str, scope: int):
 def bulk_create_authorized_users(users: list) -> int:
     """
         Creates N authorized users, given a list of users.
-        If an user was already authorized, this operation updates its data, just in case its token has been modified.
+        If an user was already authorized, this operation does NOT update its data --> avoiding DoS.
         :param users: List of users. Each user must be a JSON serializable object, with the following structure:
                                           {'_id': <username>, 'token': <token>}
         :return: The number of successfully upserted users.
@@ -63,8 +79,10 @@ def bulk_create_authorized_users(users: list) -> int:
     from pymongo import UpdateOne
     ops = []
     for user in users:
-        ops.append(UpdateOne({'_id': user['_id']}, update={'$set': user}, upsert=True))
-    c = MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'])
+        # Changing "$set" to "$setOnInsert" FIXES [BUG-029].
+        ops.append(UpdateOne({'_id': user['_id']}, update={'$setOnInsert': user}, upsert=True))
+    c = MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'], username=
+            GLOBAL_CONFIG['MONGODB_API_USERNAME'], password=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'])
     result = c.collection.bulk_write(ops)
     return result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] + result.bulk_api_result['nUpserted']
 
@@ -108,13 +126,16 @@ class MongoDBCollection:
         This class acts as an abstraction to a MongoDB Collection. It provides a wrapper interface for some operations,
         such as initialization and closure of connections, search operations...
     """
-    def __init__(self, collection_name):
+    def __init__(self, collection_name, username=GLOBAL_CONFIG['MONGODB_USERNAME'],
+                 password=GLOBAL_CONFIG['MONGODB_USER_PASSWORD']):
         """
             Initializes a collection to perform database operations. The actual PyMongo collection is the only exposed
             attribute, in order to perform all its operations.
             Instantiation will fail if the database is down, since the connection is validated at this point.
             Postcondition: A valid connection with the collection has been established.
             :param collection_name: Name of the collection to be connected to.
+            :param username: User name.
+            :param password: User password.
         """
         self._collection_name = collection_name
         self._client = MongoClient(
@@ -122,8 +143,8 @@ class MongoDBCollection:
             port=GLOBAL_CONFIG['MONGODB_PORT'],
             authSource=GLOBAL_CONFIG['MONGODB_DATABASE'],
             serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-            username=GLOBAL_CONFIG['MONGODB_USERNAME'],
-            password=GLOBAL_CONFIG['MONGODB_PASSWORD'],
+            username=username,
+            password=password,
             authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'])
         self._client.server_info()  # Checks valid connection.
         self.collection = self._client.get_database(GLOBAL_CONFIG['MONGODB_DATABASE']).get_collection(collection_name)

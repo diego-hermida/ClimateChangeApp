@@ -152,7 +152,7 @@ def get_logger(path: str, name: str, root_dir: str = GLOBAL_CONFIG['ROOT_LOG_FOL
         logger.addHandler(file_handler)
     elif not to_file:
         _remove_rotating_file_handlers(logger)
-    logger.setLevel(level if level <= stdout_level else stdout_level)  # Logger must have the minimum level
+    logger.setLevel(min(level, stdout_level))  # Logger must have the minimum level
     # Getting execution ID to display it in all log records
     if is_subsystem:
         try:

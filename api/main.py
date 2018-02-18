@@ -1,3 +1,4 @@
+from api.config.config import API_CONFIG
 from api.settings import API_ALIVE_CACHE_TIME
 from eve import Eve
 from eve.auth import TokenAuth
@@ -21,11 +22,13 @@ class _AppTokenAuth(TokenAuth):
     """
     def check_auth(self, token, allowed_roles, resource, method):
         global _scope
+        global _token
         user = app.data.driver.db[GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION']].find_one(
                 {'token': token})
         if user:
             try:
                 _scope = user['scope']
+                _token = user['token']
             except KeyError:
                 _scope = None
         return user is not None
@@ -35,6 +38,9 @@ app = Eve(auth=_AppTokenAuth)
 _api_alive = True
 _api_alive_last_update = None
 _scope = None
+_token = None
+_collection = None
+_logger = None
 
 
 def require_auth(f):
@@ -53,6 +59,8 @@ def require_auth(f):
             if app.auth.authorized(None, None, None):
                 return f(*args, **kwargs)
             else:
+                if _logger:
+                    _logger.error('Unauthorized call. Endpoint: %s\tToken: %s' % (request.path, _token))
                 return app.response_class(response=_dumps({"_status": "ERR", "_error": {"code": 401, "message":
                         "Please provide proper credentials"}}), status=401, mimetype='application/json')
         else:
@@ -94,12 +102,34 @@ def require_scope(f):
                 _scope = None
                 return result
             else:
+                if _logger:
+                    _logger.warning('API call with no scope provided. Endpoint: %s\tToken: %s' % (request.path, _token))
                 return app.response_class(response=_dumps({"_status": "ERR", "_error": {"code": 403, "message":
                     "A token scope is required and your token does not have one. If this is not your fault, contact "
                     "the API developer."}}), status=403, mimetype='application/json')
         except ValidationError as error:
             return error.message
     return wrapped
+
+
+def same_connection(collection_name: str):
+    """
+        By decorating an API endpoint with this, all API calls will use the same MongoDBCollection, if possible.
+        :param collection_name: Name of the MongoDBCollection.
+        :return: Everything that the wrapped function returns, or the error message contained in the exception.
+    """
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            global _collection
+            try:
+                _collection.connect(collection_name=collection_name)
+            except Exception:
+                _collection = MongoDBCollection(collection_name=collection_name, username=GLOBAL_CONFIG[
+                        'MONGODB_API_USERNAME'], password=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'])
+            return f(*args, **kwargs)
+        return wrapped
+    return wrapper
 
 
 def validate_integer(param_name, only_positive=False, required=False) -> int:
@@ -128,13 +158,12 @@ def validate_integer(param_name, only_positive=False, required=False) -> int:
     return param
 
 
-def _set_module_names():
+@same_connection(collection_name=GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
+def _get_module_names():
     """
         Internal function that queries MongoDB in order to retrieve all valid module names.
     """
-    collection = MongoDBCollection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
-    result = collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})
-    collection.close()
+    result = _collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})
     return list(result['per_module'].keys()) if result else []
 
 
@@ -151,6 +180,8 @@ def _alive():
             _api_alive = True
         except EnvironmentError:
             _api_alive = False
+            if _logger:
+                _logger.exception('API is not alive.')
         finally:
             _api_alive_last_update = time
 
@@ -182,7 +213,7 @@ def modules():
             - 403 Access Forbidden, if the token scope is missing.
             - 503 Service Unavailable, if the database is down.
     """
-    result = {'modules': _set_module_names(), 'updated': current_date_in_millis()}
+    result = {'modules': _get_module_names(), 'updated': current_date_in_millis()}
     return app.response_class(response=_dumps(result), status=200, mimetype='application/json')
 
 
@@ -190,6 +221,7 @@ def modules():
 @require_auth
 @require_scope
 @require_validation
+@same_connection(collection_name=GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
 def execution_stats():
     """
         API endpoint. Retrieves statistics from an execution. This endpoint accepts the
@@ -211,21 +243,20 @@ def execution_stats():
             - 503 Service Unavailable, if the database is down.
     """
     execution_id = validate_integer('executionId', only_positive=True, required=False)
-    collection = MongoDBCollection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
     if execution_id is None:
         try:
-            execution_id = collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})[
+            execution_id = _collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})[
                 'last_execution_id']
         except TypeError:
             return app.response_class(response=_dumps({'stats': None, 'reason': 'The Data Gathering Subsystem '
                     'has not yet been executed.', 'last_execution_id': None}), status=404, mimetype='application/json')
-    result = collection.collection.find_one(filter={'_id': {'subsystem_id': _scope, 'execution_id': execution_id,
+    result = _collection.collection.find_one(filter={'_id': {'subsystem_id': _scope, 'execution_id': execution_id,
             'type': 'last_execution'}})
     if result:
         return app.response_class(response=_dumps(result), status=200, mimetype='application/json')
     else:
         try:
-            execution_id = collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})[
+            execution_id = _collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})[
                 'last_execution_id']
         except TypeError:
             return app.response_class(response=_dumps({'stats': None, 'reason': 'The Data Gathering Subsystem '
@@ -263,15 +294,73 @@ def data(module_name: str):
     start_index = validate_integer('startIndex', only_positive=True)
     count = validate_integer('limit', only_positive=True)
     execution_id = validate_integer('executionId', only_positive=True)
-    _set_module_names()
-    if module_name not in _set_module_names():
+    if module_name not in _get_module_names():
         return app.response_class(response=_dumps(
                 {"_status": "ERR", "_error": {"code": 404, "message": "Such module does not exist. Make a call to the "
                 "'/modules' endpoint in order to retrieve valid modules."}}), status=404, mimetype='application/json')
-    collection = MongoDBCollection(module_name)
+    collection = MongoDBCollection(collection_name=module_name, username=GLOBAL_CONFIG[
+                        'MONGODB_API_USERNAME'], password=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'])
     result = collection.find(conditions={'_execution_id': execution_id} if execution_id else {}, sort='_id',
             start_index=start_index, count=count)
     return app.response_class(response=_dumps(result), status=200, mimetype='application/json')
+
+
+@app.route('/pendingWork/<module_name>')
+@require_auth
+@require_scope
+@require_validation
+@same_connection(collection_name=GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
+def pending_work(module_name: str):
+    """
+        API endpoint. Determines if a module had pending work for an execution. This endpoint accepts the following
+        parameters:
+            - executionId: If this parameter is present, determines if the module had pending work for the execution
+                           with such ID. Otherwise, it will determine pending work from the last execution.
+        HTTP Method: GET
+        Requires authorization: Yes
+        Response code: HTTP 200 OK
+        Content type: application/json
+        Content example: {"execution_id": 96742, "updated": 1518032300957}
+        Errors:
+            - 400 Bad Request, if parameters are invalid (bad types/values).
+            - 401 Unauthorized, if the user did not provide the "Authentication" header with a valid token inside the
+              HTTP request.
+            - 403 Access Forbidden, if the token scope is missing.
+            - 404 Not Found, if the Data Gathering Subsystem has not yet been executed and, therefore, the execution ID
+              has not been set; or there are no data for such execution ID; or the module does not exist.
+            - 503 Service Unavailable, if the database is down.
+    """
+    execution_id = validate_integer('executionId', only_positive=True, required=False)
+    if module_name not in _get_module_names():
+        return app.response_class(response=_dumps(
+                {"_status": "ERR", "_error": {"code": 404, "message": "Such module does not exist. Make a call to the "
+                 "'/modules' endpoint in order to retrieve valid modules."}}), status=404, mimetype='application/json')
+    if execution_id is None:
+        try:
+            execution_id = _collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})[
+                'last_execution_id']
+        except TypeError:
+            return app.response_class(response=_dumps({'pending_work': None, 'reason': 'The Data Gathering Subsystem '
+                    'has not yet been executed.', 'last_execution_id': None}), status=404, mimetype='application/json')
+    result = _collection.collection.find_one(filter={'_id': {'subsystem_id': _scope, 'execution_id': execution_id,
+            'type': 'last_execution'}})
+    if result:
+        module_info = result['modules_with_pending_work'].get(module_name)
+        if module_info is not None:
+            return app.response_class(response=_dumps({'pending_work': True, 'saved_elements': module_info[
+                    'saved_elements']}), status=200, mimetype='application/json')
+        else:
+            return app.response_class(response=_dumps({'pending_work': False, 'saved_elements': None}), status=200,
+                    mimetype='application/json')
+    else:
+        try:
+            execution_id = _collection.collection.find_one({'_id': {'subsystem_id': _scope, 'type': 'aggregated'}})[
+                'last_execution_id']
+        except TypeError:
+            return app.response_class(response=_dumps({'pending_work': None, 'reason': 'The Data Gathering Subsystem '
+                    'has not yet been executed.'}), status=404, mimetype='application/json')
+        return app.response_class(response=_dumps({'pending_work': None, 'reason': 'Unable to determine pending work '
+                'for the given execution ID.', 'last_execution_id': execution_id}), status=404, mimetype='application/json')
 
 
 @app.route('/alive')
@@ -291,19 +380,24 @@ def alive():
                               status=200 if _api_alive else 503, mimetype='application/json')
 
 
-def main(log_to_stdout=True, log_to_file=False):
+def main(log_to_stdout=True, log_to_file=True):
     # Getting logger instance
-    logger = get_logger(__file__, name='APILogger', to_file=log_to_file, to_stdout=log_to_stdout, is_subsystem=False)
+    global _logger
+    _logger = get_logger(__file__, name='APILogger', to_file=log_to_file, to_stdout=log_to_stdout, is_subsystem=False,
+                        root_dir=API_CONFIG['API_LOG_FILES_ROOT_FOLDER'])
 
     # This provisional solution FIXES [BUG-015]
-    if environ.get('LOCALHOST_IP') is None:
-        logger.critical('LOCALHOST_IP must exist as an ENVIRONMENT VARIABLE at execution time. Aborting Subsystem.')
+    if environ.get('MONGODB_IP') is None:
+        _logger.critical('MONGODB_IP must exist as an ENVIRONMENT VARIABLE at execution time. Aborting Subsystem.')
         exit(1)
     else:
-        logger.debug('Environment variable LOCALHOST_IP found, with value: "%s". To override it, use --env '
-                     'LOCALHOST_IP=<IP> when invoking "docker run".' % (environ.get('LOCALHOST_IP')))
+        _logger.info('Environment variable MONGODB_IP found, with value: "%s". To override it, use --env '
+                     'MONGODB_IP=<IP> when invoking "docker run".' % (environ.get('MONGODB_IP')))
+    _logger.info('Current API version is: %s' % API_CONFIG['API_VERSION'])
+    _logger.info('API docs are available at: %s' % API_CONFIG['API_DOCS_URL'])
+    _logger.info('Awaiting for incoming connections from any host on port %d.' % GLOBAL_CONFIG['API_PORT'])
     # Launching API
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=GLOBAL_CONFIG['API_PORT'])
 
 
 if __name__ == '__main__':
