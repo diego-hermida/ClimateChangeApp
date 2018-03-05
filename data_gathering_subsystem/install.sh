@@ -64,7 +64,7 @@ if [ "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS" != "null" ] && [ "$SKIP_DEPLOY" == 
     message 3 "[WARNING] Parameter DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS has been set, but SKIP_DEPLOY is true.
               The value will be overridden to \"--skip-all\".";
     elif [ "$SKIP_DEPLOY" == "true" ]; then
-        message -1 "[INFO] Deploy operations will be skipped for the API component.";
+        message -1 "[INFO] Deploy operations will be skipped for the Data Gathering Subsystem component.";
         DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--skip-all"
     elif [ "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS" == "null" ]; then
         message -1 "[INFO] Using default values for DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS.";
@@ -75,7 +75,7 @@ fi
 if [ "$MONGODB_IP" == "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
         ([ "$EXTERNAL_MONGODB_SERVER" != "true" ] && [ "$EXTERNAL_MONGODB_SERVER" != "false" ]); then
      exit_with_message 1 "> usage: install.sh MONGODB_IP=xxx.xxx.xxx.xxx [EXTERNAL_MONGODB_SERVER=true] [SKIP_DEPLOY=false]
-                         [RUN_API=true] [DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=<args>]
+                         [DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=<args>]
                          \n\t- MONGODB_IP: IP address of the machine containing the MongoDB service.
                          \n\t- EXTERNAL_MONGODB_SERVER: indicates that the MongoDB server is externally provided,
                                and does not create a Docker container. Defaults to \"false\".

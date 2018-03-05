@@ -30,7 +30,6 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = False
         args.remove_files = False
-        args.adapt_legacy_data = False
         with open(API_CONFIG['AUTHORIZED_USERS_FILEPATH'], 'r', encoding='utf-8') as f:
             users = yaml.load(f)
         mock_auth_users.return_value = len(users['authorized_users'].keys())
@@ -68,7 +67,6 @@ class TestDeploy(TestCase):
         args.db_user = True
         args.add_users = False
         args.remove_files = False
-        args.adapt_legacy_data = False
         deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertTrue(mock_args.called)
 
@@ -84,7 +82,6 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = False
         args.remove_files = False
-        args.adapt_legacy_data = False
         mock_test_runner.return_value.run = results = Mock()
         results.return_value.wasSuccessful.return_value = False
         with self.assertRaises(SystemExit) as e:
@@ -109,7 +106,6 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = False
         args.remove_files = False
-        args.adapt_legacy_data = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertEqual(0, e.exception.code)
@@ -133,7 +129,6 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = True
         args.remove_files = False
-        args.adapt_legacy_data = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertEqual(1, e.exception.code)
@@ -150,7 +145,6 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = True
         args.remove_files = False
-        args.adapt_legacy_data = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertEqual(1, e.exception.code)
@@ -167,85 +161,7 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = True
         args.remove_files = False
-        args.adapt_legacy_data = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertEqual(1, e.exception.code)
         self.assertTrue(mock_args.called)
-
-    @mock.patch('api.deploy.MongoDBCollection')
-    @mock.patch('api.deploy.get_and_increment_execution_id', Mock(return_value=4249))
-    @mock.patch('api.deploy.get_module_names', Mock(return_value=['module1', 'module2', 'module3']))
-    @mock.patch('argparse.ArgumentParser')
-    def test_adapt_legacy_data_everything_ok(self, mock_args, mock_collection):
-        mock_args.return_value.parse_args.return_value = args = Mock()
-        args.skip_all = False
-        args.with_tests = False
-        args.all = False
-        args.db_user = False
-        args.add_users = False
-        args.remove_files = False
-        args.adapt_legacy_data = True
-        mock_collection.return_value.collection.count.return_value = 20
-        mock_collection.return_value.collection.update_many.return_value = result = Mock()
-        result.matched_count = 20
-        result.modified_count = 20
-        deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
-        self.assertEqual(3, mock_collection.return_value.collection.count.call_count)
-        self.assertEqual(3, mock_collection.return_value.collection.update_many.call_count)
-
-    @mock.patch('api.deploy.MongoDBCollection')
-    @mock.patch('api.deploy.get_and_increment_execution_id', Mock(return_value=4249))
-    @mock.patch('api.deploy.get_module_names', Mock(return_value=['module1', 'module2', 'module3']))
-    @mock.patch('argparse.ArgumentParser')
-    def test_adapt_legacy_data_zero_elements(self, mock_args, mock_collection):
-        mock_args.return_value.parse_args.return_value = args = Mock()
-        args.skip_all = False
-        args.with_tests = False
-        args.all = False
-        args.db_user = False
-        args.add_users = False
-        args.remove_files = False
-        args.adapt_legacy_data = True
-        mock_collection.return_value.collection.count.return_value = 0
-        deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
-        self.assertEqual(3, mock_collection.return_value.collection.count.call_count)
-        self.assertEqual(0, mock_collection.return_value.collection.update_many.call_count)
-
-    @mock.patch('api.deploy.MongoDBCollection')
-    @mock.patch('api.deploy.get_and_increment_execution_id', Mock(return_value=4249))
-    @mock.patch('api.deploy.get_module_names', Mock(return_value=['module1', 'module2', 'module3']))
-    @mock.patch('argparse.ArgumentParser')
-    def test_adapt_legacy_data_missing_elements(self, mock_args, mock_collection):
-        mock_args.return_value.parse_args.return_value = args = Mock()
-        args.skip_all = False
-        args.with_tests = False
-        args.all = False
-        args.db_user = False
-        args.add_users = False
-        args.remove_files = False
-        args.adapt_legacy_data = True
-        mock_collection.return_value.collection.count.return_value = 20
-        mock_collection.return_value.collection.update_many.return_value = result = Mock()
-        result.matched_count = 20
-        result.modified_count = 15
-        with self.assertRaises(SystemExit) as e:
-            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
-        self.assertEqual(1, e.exception.code)
-        self.assertEqual(3, mock_collection.return_value.collection.count.call_count)
-        self.assertEqual(3, mock_collection.return_value.collection.update_many.call_count)
-
-    @mock.patch('api.deploy.get_module_names', Mock(return_value=[]))
-    @mock.patch('argparse.ArgumentParser')
-    def test_adapt_legacy_data_no_modules(self, mock_args):
-        mock_args.return_value.parse_args.return_value = args = Mock()
-        args.skip_all = False
-        args.with_tests = False
-        args.all = False
-        args.db_user = False
-        args.add_users = False
-        args.remove_files = False
-        args.adapt_legacy_data = True
-        with self.assertRaises(SystemExit) as e:
-            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
-        self.assertEqual(0, e.exception.code)
