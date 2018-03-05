@@ -18,7 +18,7 @@ class TestDeploy(TestCase):
     @mock.patch('api.deploy.TextTestRunner')
     @mock.patch('api.deploy.TestLoader', Mock())
     @mock.patch('api.deploy.bulk_create_authorized_users')
-    @mock.patch('api.deploy.create_data_gathering_subsystem_api_user', Mock())
+    @mock.patch('api.deploy.create_user', Mock())
     @mock.patch('api.deploy.ping_database', Mock())
     @mock.patch('argparse.ArgumentParser')
     def test_all_with_tests_everything_ok(self, mock_args, mock_auth_users, mock_test_runner):
@@ -30,12 +30,13 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = False
         args.remove_files = False
+        args.adapt_legacy_data = False
         with open(API_CONFIG['AUTHORIZED_USERS_FILEPATH'], 'r', encoding='utf-8') as f:
             users = yaml.load(f)
         mock_auth_users.return_value = len(users['authorized_users'].keys())
         mock_test_runner.return_value.run = results = Mock()
         results.return_value.wasSuccessful.return_value = True
-        deploy.deploy(log_to_file=False, log_to_stdout=False)
+        deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertTrue(mock_args.called)
         self.assertTrue(mock_auth_users.called)
         self.assertTrue(mock_test_runner.called)
@@ -43,7 +44,7 @@ class TestDeploy(TestCase):
     @mock.patch('api.deploy.TextTestRunner')
     @mock.patch('api.deploy.TestLoader', Mock())
     @mock.patch('api.deploy.bulk_create_authorized_users')
-    @mock.patch('api.deploy.create_data_gathering_subsystem_api_user', Mock())
+    @mock.patch('api.deploy.create_user', Mock())
     @mock.patch('api.deploy.ping_database', Mock())
     @mock.patch('api.deploy.environ', {'DEPLOY_ARGS': '--all --with-tests'})
     def test_all_with_tests_everything_ok_with_args_from_env_variable(self, mock_auth_users, mock_test_runner):
@@ -51,11 +52,11 @@ class TestDeploy(TestCase):
         with open(API_CONFIG['AUTHORIZED_USERS_FILEPATH'], 'r', encoding='utf-8') as f:
             users = yaml.load(f)
         mock_auth_users.return_value = len(users['authorized_users'].keys())
-        deploy.deploy(log_to_file=False, log_to_stdout=False)
+        deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertTrue(mock_auth_users.called)
         self.assertTrue(mock_test_runner.called)
 
-    @mock.patch('api.deploy.create_data_gathering_subsystem_api_user',
+    @mock.patch('api.deploy.create_user',
                 Mock(side_effect=DuplicateKeyError('User already exists')))
     @mock.patch('api.deploy.ping_database', Mock())
     @mock.patch('argparse.ArgumentParser')
@@ -67,7 +68,8 @@ class TestDeploy(TestCase):
         args.db_user = True
         args.add_users = False
         args.remove_files = False
-        deploy.deploy(log_to_file=False, log_to_stdout=False)
+        args.adapt_legacy_data = False
+        deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertTrue(mock_args.called)
 
     @mock.patch('api.deploy.TextTestRunner')
@@ -82,18 +84,21 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = False
         args.remove_files = False
+        args.adapt_legacy_data = False
         mock_test_runner.return_value.run = results = Mock()
         results.return_value.wasSuccessful.return_value = False
-        with self.assertRaises(SystemExit):
-            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(1, e.exception.code)
         self.assertTrue(mock_args.called)
         self.assertTrue(mock_test_runner.called)
 
     @mock.patch('argparse.ArgumentParser', Mock(side_effect=Exception(
             'Test error (to verify anomalous exit). This is OK.')))
     def test_anomalous_exit(self):
-        with self.assertRaises(SystemExit):
-            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(1, e.exception.code)
 
     @mock.patch('argparse.ArgumentParser')
     def test_skip_all(self, mock_args):
@@ -104,15 +109,18 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = False
         args.remove_files = False
-        with self.assertRaises(SystemExit):
-            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        args.adapt_legacy_data = False
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(0, e.exception.code)
         self.assertTrue(mock_args.called)
 
     @mock.patch('api.deploy.ping_database',
                 Mock(side_effect=EnvironmentError('Test error to verify deploy is aborted.')))
     def test_deploy_aborts_if_database_down(self):
-        with self.assertRaises(SystemExit):
-            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(1, e.exception.code)
 
     @mock.patch('api.deploy.bulk_create_authorized_users', Mock(return_value=0))
     @mock.patch('api.deploy.ping_database', Mock())
@@ -125,8 +133,10 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = True
         args.remove_files = False
-        with self.assertRaises(SystemExit):
-            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        args.adapt_legacy_data = False
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(1, e.exception.code)
         self.assertTrue(mock_args.called)
 
     @mock.patch('yaml.load', Mock(return_value={'authorized_users': {'user1': {'token': 'test_token'}}}))
@@ -140,8 +150,10 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = True
         args.remove_files = False
-        with self.assertRaises(SystemExit):
-            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        args.adapt_legacy_data = False
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(1, e.exception.code)
         self.assertTrue(mock_args.called)
 
     @mock.patch('yaml.load', Mock(return_value={'authorized_users': {'user1': {'scope': 1}}}))
@@ -155,6 +167,85 @@ class TestDeploy(TestCase):
         args.db_user = False
         args.add_users = True
         args.remove_files = False
-        with self.assertRaises(SystemExit):
-            deploy.deploy(log_to_file=False, log_to_stdout=False)
+        args.adapt_legacy_data = False
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(1, e.exception.code)
         self.assertTrue(mock_args.called)
+
+    @mock.patch('api.deploy.MongoDBCollection')
+    @mock.patch('api.deploy.get_and_increment_execution_id', Mock(return_value=4249))
+    @mock.patch('api.deploy.get_module_names', Mock(return_value=['module1', 'module2', 'module3']))
+    @mock.patch('argparse.ArgumentParser')
+    def test_adapt_legacy_data_everything_ok(self, mock_args, mock_collection):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.skip_all = False
+        args.with_tests = False
+        args.all = False
+        args.db_user = False
+        args.add_users = False
+        args.remove_files = False
+        args.adapt_legacy_data = True
+        mock_collection.return_value.collection.count.return_value = 20
+        mock_collection.return_value.collection.update_many.return_value = result = Mock()
+        result.matched_count = 20
+        result.modified_count = 20
+        deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(3, mock_collection.return_value.collection.count.call_count)
+        self.assertEqual(3, mock_collection.return_value.collection.update_many.call_count)
+
+    @mock.patch('api.deploy.MongoDBCollection')
+    @mock.patch('api.deploy.get_and_increment_execution_id', Mock(return_value=4249))
+    @mock.patch('api.deploy.get_module_names', Mock(return_value=['module1', 'module2', 'module3']))
+    @mock.patch('argparse.ArgumentParser')
+    def test_adapt_legacy_data_zero_elements(self, mock_args, mock_collection):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.skip_all = False
+        args.with_tests = False
+        args.all = False
+        args.db_user = False
+        args.add_users = False
+        args.remove_files = False
+        args.adapt_legacy_data = True
+        mock_collection.return_value.collection.count.return_value = 0
+        deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(3, mock_collection.return_value.collection.count.call_count)
+        self.assertEqual(0, mock_collection.return_value.collection.update_many.call_count)
+
+    @mock.patch('api.deploy.MongoDBCollection')
+    @mock.patch('api.deploy.get_and_increment_execution_id', Mock(return_value=4249))
+    @mock.patch('api.deploy.get_module_names', Mock(return_value=['module1', 'module2', 'module3']))
+    @mock.patch('argparse.ArgumentParser')
+    def test_adapt_legacy_data_missing_elements(self, mock_args, mock_collection):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.skip_all = False
+        args.with_tests = False
+        args.all = False
+        args.db_user = False
+        args.add_users = False
+        args.remove_files = False
+        args.adapt_legacy_data = True
+        mock_collection.return_value.collection.count.return_value = 20
+        mock_collection.return_value.collection.update_many.return_value = result = Mock()
+        result.matched_count = 20
+        result.modified_count = 15
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(1, e.exception.code)
+        self.assertEqual(3, mock_collection.return_value.collection.count.call_count)
+        self.assertEqual(3, mock_collection.return_value.collection.update_many.call_count)
+
+    @mock.patch('api.deploy.get_module_names', Mock(return_value=[]))
+    @mock.patch('argparse.ArgumentParser')
+    def test_adapt_legacy_data_no_modules(self, mock_args):
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.skip_all = False
+        args.with_tests = False
+        args.all = False
+        args.db_user = False
+        args.add_users = False
+        args.remove_files = False
+        args.adapt_legacy_data = True
+        with self.assertRaises(SystemExit) as e:
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        self.assertEqual(0, e.exception.code)

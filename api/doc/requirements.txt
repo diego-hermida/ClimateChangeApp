@@ -1,5 +1,6 @@
 argparse
 Eve==0.7.6
+python-telegram-bot==9.0.0
 pytz
 pyYAML
 requests

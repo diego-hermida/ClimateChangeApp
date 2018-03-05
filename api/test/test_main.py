@@ -1,46 +1,59 @@
+import global_config.global_config
+import api.main as main
 import json
 from pymongo.errors import DuplicateKeyError
 from unittest import TestCase, mock
 from unittest.mock import Mock
-from utilities.db_util import create_data_gathering_subsystem_api_user, create_authorized_user, \
-    drop_application_database, drop_application_user
+from utilities.db_util import create_user, bulk_create_authorized_users, drop_user, drop_database
+
+
+database = 'test_database'
+global_config.global_config.GLOBAL_CONFIG['MONGODB_DATABASE'] = database
+main.GLOBAL_CONFIG['MONGODB_DATABASE'] = database
 
 
 class TestMain(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        import global_config.global_config
-        global_config.global_config.GLOBAL_CONFIG['MONGODB_DATABASE'] += '_test'
         try:
-            create_data_gathering_subsystem_api_user()
+            create_user(global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
+                    global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
+                    roles=[{'role': 'dbOwner', 'db': database}], database=database)
         except DuplicateKeyError:
             pass
-        create_authorized_user('test_user', 'test_token', scope=1)
-        create_authorized_user('test_user2', 'test_token2', scope=2)
-        create_authorized_user('test_user3', 'test_token_with_no_scope', scope=None)
+        bulk_create_authorized_users([{'_id': 'test_user', 'token': 'test_token', 'scope': 1},
+                {'_id': 'test_user2', 'token': 'test_token2', 'scope': 2}, {'_id': 'test_user3', 'token':
+                'test_token_with_no_scope', 'scope': None}], database=database)
+        main._stats_collection = main.MongoDBCollection(
+            collection_name=global_config.global_config.GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'],
+            username=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
+            password=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
+            database=database)
+        main._auth_collection = main.MongoDBCollection(
+            collection_name=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'],
+            username=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
+            password=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
+            database=database)
 
     def setUp(self):
-        from api import main
         main._api_alive = None
         main._api_alive_last_update = None
-        main._collection = None
         self.app = main.app.test_client()
 
     @classmethod
     def tearDownClass(cls):
-        from global_config.global_config import GLOBAL_CONFIG
-        drop_application_user(GLOBAL_CONFIG['MONGODB_API_USERNAME'])
-        drop_application_database()
+        drop_user(global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'], database=database)
+        drop_database(global_config.global_config.GLOBAL_CONFIG['MONGODB_DATABASE'])
 
     def test_execution_fails_if_environment_variable_does_not_exist(self):
         from os import environ
-        from api import main
         localhost_ip = environ.get('MONGODB_IP')
         if localhost_ip:
             del environ['MONGODB_IP']
-        with self.assertRaises(SystemExit):
-            main.main(log_to_stdout=False, log_to_file=False)
+        with self.assertRaises(SystemExit) as e:
+            main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
+        self.assertEqual(1, e.exception.code)
         if localhost_ip is not None:
             environ['MONGODB_IP'] = localhost_ip
 
@@ -62,34 +75,31 @@ class TestMain(TestCase):
         r = self.app.get('/modules')
         self.assertEqual(401, r.status_code)
 
-    @mock.patch('api.main.MongoDBCollection')
-    def test_modules_endpoint(self, mock_collection):
-        mock_collection.return_value.collection.find_one.return_value = {'_id': 'aggregated',
-                'per_module': {'air_pollution': {}, 'countries': {}}}
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value={'_id': 'aggregated', 'per_module':
+                {'air_pollution': {}, 'countries': {}}}))
+    def test_modules_endpoint(self):
         r = self.app.get('/modules', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(200, r.status_code)
         self.assertListEqual(['air_pollution', 'countries'], data['modules'])
 
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
     def test_modules_endpoint_with_no_modules(self):
         r = self.app.get('/modules', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(200, r.status_code)
         self.assertListEqual([], data['modules'])
 
-    @mock.patch('api.main.MongoDBCollection')
-    def test_execution_stats_endpoint_last_execution(self, mock_collection):
-        mock_collection.return_value.collection.find_one = Mock(
-                side_effect=[{'_id': 'aggregated', 'last_execution_id': 1},
-                             {"more_values": "should_go_here", "execution_id": 1}])
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
+            'last_execution_id': 1}, {"more_values": "should_go_here", "execution_id": 1}]))
+    def test_execution_stats_endpoint_last_execution(self):
         r = self.app.get('/executionStats', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(200, r.status_code)
         self.assertEqual(1, data['execution_id'])
 
-    @mock.patch('api.main.MongoDBCollection')
-    def test_execution_stats_endpoint_last_execution_and_subsystem_not_executed(self, mock_collection):
-        mock_collection.return_value.collection.find_one.return_value = None
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
+    def test_execution_stats_endpoint_last_execution_and_subsystem_not_executed(self):
         r = self.app.get('/executionStats', headers={'Authorization': 'Bearer test_token'})
         self.assertEqual(404, r.status_code)
 
@@ -101,23 +111,22 @@ class TestMain(TestCase):
         r = self.app.get('/executionStats?executionId=-1', headers={'Authorization': 'Bearer test_token'})
         self.assertEqual(400, r.status_code)
 
-    @mock.patch('api.main.MongoDBCollection')
-    def test_execution_stats_endpoint_with_execution_id_non_existing_but_subsystem_executed(self, mock_collection):
-        mock_collection.return_value.collection.find_one = Mock(
-                side_effect=[None, {'_id': 'aggregated', 'last_execution_id': 1}])
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[None, {'_id': 'aggregated',
+            'last_execution_id': 1}]))
+    def test_execution_stats_endpoint_with_execution_id_non_existing_but_subsystem_executed(self):
         r = self.app.get('/executionStats?executionId=2', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(404, r.status_code)
         self.assertEqual(1, data['last_execution_id'])
 
-    @mock.patch('api.main.MongoDBCollection')
-    def test_execution_stats_endpoint_with_execution_id_non_existing_and_subsystem_not_executed(self, mock_collection):
-        mock_collection.return_value.collection.find_one.return_value = None
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
+    def test_execution_stats_endpoint_with_execution_id_non_existing_and_subsystem_not_executed(self):
         r = self.app.get('/executionStats?executionId=2', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(404, r.status_code)
         self.assertIsNone(data.get('last_execution_id'))
 
+    @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
     @mock.patch('api.main.MongoDBCollection')
     def test_data_endpoint_no_parameters(self, mock_collection):
         data = []
@@ -135,6 +144,7 @@ class TestMain(TestCase):
         r = self.app.get('/data/module?startIndex=foo', headers={'Authorization': 'Bearer test_token'})
         self.assertEqual(400, r.status_code)
 
+    @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
     @mock.patch('api.main.MongoDBCollection')
     def test_data_endpoint_with_last_index_compatible_datatype(self, mock_collection):
         data = []
@@ -143,7 +153,7 @@ class TestMain(TestCase):
         mock_collection.return_value.find.return_value = {'data': data}
         mock_collection.return_value.collection.find_one.return_value = {'_id': 'aggregated',
                 'per_module': {'module': {}}}
-        r = self.app.get('/data/module?startIndex=4', headers={'Authorization': 'Bearer test_token'})
+        r = self.app.get('/data/module?startIndex=0', headers={'Authorization': 'Bearer test_token'})
         result = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(200, r.status_code)
         self.assertListEqual(data, result['data'])
@@ -163,11 +173,10 @@ class TestMain(TestCase):
         self.assertEqual(400, r.status_code)
 
     def test_data_endpoint_with_execution_id_invalid_value(self):
-        r1 = self.app.get('/data/module?executionId=0', headers={'Authorization': 'Bearer test_token'})
         r2 = self.app.get('/data/module?executionId=-1', headers={'Authorization': 'Bearer test_token'})
-        self.assertEqual(400, r1.status_code)
         self.assertEqual(400, r2.status_code)
 
+    @mock.patch('api.main._get_module_names', Mock(return_value=['other_module']))
     @mock.patch('api.main.MongoDBCollection')
     def test_data_endpoint_with_invalid_module(self, mock_collection):
         mock_collection.return_value.collection.find_one.return_value = {'_id': 'aggregated',
@@ -194,8 +203,7 @@ class TestMain(TestCase):
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertFalse(data['alive'])
 
-    @mock.patch('api.main.ping_database',
-                Mock(side_effect=Exception('Test error (to verify anomalous exit). This is OK.')))
+    @mock.patch('api.main.ping_database', Mock(side_effect=Exception('Test error (to verify anomalous exit). This is OK.')))
     def test_alive_endpoint_with_inactive_database_uncaught_exception(self):
         r = self.app.get('/alive')
         self.assertEqual(500, r.status_code)
@@ -217,7 +225,7 @@ class TestMain(TestCase):
         self.assertEqual(r1_data, r2_data)
 
     @mock.patch('api.main.ping_database')
-    @mock.patch('api.main.API_ALIVE_CACHE_TIME', -1)
+    @mock.patch('api.main.API_CONFIG', {'API_ALIVE_CACHE_TIME': -1})
     def test_alive_endpoint_distant_requests_do_not_use_cache(self, mock_ping):
         r1 = self.app.get('/alive')
         r1_data = json.loads(r1.get_data().decode('utf-8'))
@@ -231,22 +239,17 @@ class TestMain(TestCase):
         self.assertNotEqual(r1_data['updated'], r2_data['updated'])
 
     def test_scopes(self):
-        from api.main import MongoDBCollection
-        import global_config.global_config
-        collection = MongoDBCollection(global_config.global_config.GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'],
-                                       global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
-                                       global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'])
         try:
-            collection.collection.insert_one({'_id': {'subsystem_id': 1, 'type': 'aggregated'}, 'per_module': {
-                    'module1': {}, 'module2': {}, 'module3': {}}, 'last_execution_id': 4})
-            collection.collection.insert_one({'_id': {'subsystem_id': 2, 'type': 'aggregated'},'per_module': {
-                    'module4': {}, 'module5': {}}, 'last_execution_id': 1})
-            collection.collection.insert_one({'_id': {'subsystem_id': 1, 'execution_id': 3, 'type': 'last_execution'},
-                                              'modules_with_pending_work': {'module1': {}, 'module2': {}}})
-            collection.collection.insert_one({'_id': {'subsystem_id': 1, 'execution_id': 4, 'type': 'last_execution'},
-                                              'modules_with_pending_work': None})
-            collection.collection.insert_one({'_id': {'subsystem_id': 2, 'execution_id': 1, 'type': 'last_execution'},
-                                              'modules_with_pending_work': {'module4': {}}})
+            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 1, 'type': 'aggregated'},
+                    'per_module': {'module1': {}, 'module2': {}, 'module3': {}}, 'last_execution_id': 4})
+            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 2, 'type': 'aggregated'},
+                    'per_module': {'module4': {}, 'module5': {}}, 'last_execution_id': 1})
+            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 1, 'execution_id': 3, 'type':
+                    'last_execution'}, 'modules_with_pending_work': {'module1': {}, 'module2': {}}})
+            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 1, 'execution_id': 4, 'type':
+                    'last_execution'}, 'modules_with_pending_work': None})
+            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 2, 'execution_id': 1, 'type':
+                    'last_execution'}, 'modules_with_pending_work': {'module4': {}}})
 
             # Testing module access
             r1 = self.app.get('/modules', headers={'Authorization': 'Bearer test_token'})
@@ -280,9 +283,11 @@ class TestMain(TestCase):
             self.assertIsNone(r1_data['modules_with_pending_work'])
             self.assertDictEqual({'module4': {}}, r2_data['modules_with_pending_work'])
         except Exception as e:
-            collection.remove_all()
+            main._stats_collection.remove_all()
             raise e
-        
+
+    @mock.patch('api.main._user', {'_id': 'test_user3', 'token': 'test_token_with_no_scope', 'scope': None})
+    @mock.patch('api.main._AppTokenAuth.authorized', Mock(return_value=True))
     def test_calls_fail_if_token_has_no_scope(self):
         r = self.app.get('/modules', headers={'Authorization': 'Bearer test_token_with_no_scope'})
         self.assertEqual(403, r.status_code)
@@ -295,53 +300,47 @@ class TestMain(TestCase):
         self.assertEqual(200, r.status_code)
 
     def test_calls_to_endpoints_which_use_statistics_collection_use_the_same_MongoDBCollection(self):
-        import api.main
         self.app.get('/executionStats', headers={'Authorization': 'Bearer test_token'})
-        collection = api.main._collection
+        collection = main._stats_collection
         self.app.get('/modules', headers={'Authorization': 'Bearer test_token'})
-        collection2 = api.main._collection
+        collection2 = main._stats_collection
         self.app.get('/pendingWork/module/', headers={'Authorization': 'Bearer test_token'})
-        collection3 = api.main._collection
+        collection3 = main._stats_collection
         self.assertIs(collection, collection2)
         self.assertIs(collection2, collection3)
 
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
-    @mock.patch('api.main.MongoDBCollection')
-    def test_pending_work_endpoint_last_execution_module_had_pending_work_and_data_saved(self, mock_collection):
-        mock_collection.return_value.collection.find_one = Mock(
-                side_effect=[{'_id': 'aggregated', 'last_execution_id': 1},
-                             {"modules_with_pending_work": {'module': {'saved_elements': 100}}, "execution_id": 1}])
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
+            'last_execution_id': 1}, {"modules_with_pending_work": {'module': {'saved_elements': 100}},
+            "execution_id": 1}]))
+    def test_pending_work_endpoint_last_execution_module_had_pending_work_and_data_saved(self):
         r = self.app.get('/pendingWork/module/', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(200, r.status_code)
         self.assertDictEqual({'pending_work': True, 'saved_elements': 100}, data)
 
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
-    @mock.patch('api.main.MongoDBCollection')
-    def test_pending_work_endpoint_last_execution_module_had_pending_work_but_data_not_saved(self, mock_collection):
-        mock_collection.return_value.collection.find_one = Mock(
-                side_effect=[{'_id': 'aggregated', 'last_execution_id': 1},
-                             {"modules_with_pending_work": {'module': {'saved_elements': 0}}, "execution_id": 1}])
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
+            'last_execution_id': 1}, {"modules_with_pending_work": {'module': {'saved_elements': 0}},
+            "execution_id": 1}]))
+    def test_pending_work_endpoint_last_execution_module_had_pending_work_but_data_not_saved(self):
         r = self.app.get('/pendingWork/module/', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(200, r.status_code)
         self.assertDictEqual({'pending_work': True, 'saved_elements': 0}, data)
 
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
-    @mock.patch('api.main.MongoDBCollection')
-    def test_pending_work_endpoint_last_execution_module_no_pending_work(self, mock_collection):
-        mock_collection.return_value.collection.find_one = Mock(
-                side_effect=[{'_id': 'aggregated', 'last_execution_id': 1},
-                             {"modules_with_pending_work": {}, "execution_id": 1}])
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
+            'last_execution_id': 1}, {"modules_with_pending_work": {}, "execution_id": 1}]))
+    def test_pending_work_endpoint_last_execution_module_no_pending_work(self):
         r = self.app.get('/pendingWork/module/', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(200, r.status_code)
         self.assertDictEqual({'pending_work': False, 'saved_elements': None}, data)
 
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
     @mock.patch('api.main._get_module_names', Mock(return_value=[]))
-    @mock.patch('api.main.MongoDBCollection')
-    def test_pending_work_endpoint_last_execution_and_subsystem_not_executed(self, mock_collection):
-        mock_collection.return_value.collection.find_one.return_value = None
+    def test_pending_work_endpoint_last_execution_and_subsystem_not_executed(self):
         r = self.app.get('/pendingWork/module/', headers={'Authorization': 'Bearer test_token'})
         self.assertEqual(404, r.status_code)
 
@@ -355,20 +354,18 @@ class TestMain(TestCase):
         r = self.app.get('/pendingWork/module?executionId=-1', headers={'Authorization': 'Bearer test_token'})
         self.assertEqual(400, r.status_code)
 
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[None, {'_id': 'aggregated',
+            'last_execution_id': 1}]))
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
-    @mock.patch('api.main.MongoDBCollection')
-    def test_pending_work_endpoint_with_execution_id_non_existing_but_subsystem_executed(self, mock_collection):
-        mock_collection.return_value.collection.find_one = Mock(
-                side_effect=[None, {'_id': 'aggregated', 'last_execution_id': 1}])
+    def test_pending_work_endpoint_with_execution_id_non_existing_but_subsystem_executed(self):
         r = self.app.get('/pendingWork/module?executionId=2', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(404, r.status_code)
         self.assertEqual(1, data['last_execution_id'])
 
+    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
-    @mock.patch('api.main.MongoDBCollection')
-    def test_pending_work_endpoint_with_execution_id_non_existing_and_subsystem_not_executed(self, mock_collection):
-        mock_collection.return_value.collection.find_one.return_value = None
+    def test_pending_work_endpoint_with_execution_id_non_existing_and_subsystem_not_executed(self):
         r = self.app.get('/pendingWork/module?executionId=2', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(404, r.status_code)
