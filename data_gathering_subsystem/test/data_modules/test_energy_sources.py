@@ -35,7 +35,7 @@ class TestEnergySources(TestCase):
 
     @classmethod
     def setUp(cls):
-        energy_sources.instance(log_to_stdout=False).remove_files()
+        energy_sources.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -53,7 +53,7 @@ class TestEnergySources(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = DATA
         # Actual execution
-        self.data_collector = energy_sources.instance(log_to_stdout=False)
+        self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -77,7 +77,7 @@ class TestEnergySources(TestCase):
         response.status_code = 429
         response.content = '{"message": "API rate limit exceeded"}'.encode()
         # Actual execution
-        self.data_collector = energy_sources.instance(log_to_stdout=False)
+        self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -97,7 +97,7 @@ class TestEnergySources(TestCase):
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
-        self.data_collector = energy_sources.instance(log_to_stdout=False)
+        self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -121,7 +121,7 @@ class TestEnergySources(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = INVALID_DATA
         # Actual execution
-        self.data_collector = energy_sources.instance(log_to_stdout=False)
+        self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -145,7 +145,7 @@ class TestEnergySources(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = ERROR
         # Actual execution
-        self.data_collector = energy_sources.instance(log_to_stdout=False)
+        self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -171,7 +171,7 @@ class TestEnergySources(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = DATA
         # Actual execution
-        self.data_collector = energy_sources.instance(log_to_stdout=False)
+        self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
 
         self.assertTrue(mock_collection.called)
@@ -197,7 +197,7 @@ class TestEnergySources(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = DATA
         # Actual execution
-        self.data_collector = energy_sources.instance(log_to_stdout=False)
+        self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
 
         self.assertTrue(mock_collection.called)

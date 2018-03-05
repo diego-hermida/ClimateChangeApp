@@ -9,7 +9,7 @@ class TestAirPollution(TestCase):
 
     @classmethod
     def setUp(cls):
-        air_pollution.instance(log_to_stdout=False).remove_files()
+        air_pollution.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -33,7 +33,7 @@ class TestAirPollution(TestCase):
              "iaqi": {"h": {"v": 63}, "no2": {"v": 3.8}, "o3": {"v": 24.8}, "p": {"v": 1026}, "pm25": {"v": 13},
              "t": {"v": -20.85}}, "time": {"s": "2017-12-31 05:00:00", "tz": "-05:00", "v": 1514696400}}}).encode()
         # Actual execution
-        self.data_collector = air_pollution.instance(log_to_stdout=False)
+        self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -66,7 +66,7 @@ class TestAirPollution(TestCase):
              "iaqi": {"h": {"v": 63}, "no2": {"v": 3.8}, "o3": {"v": 24.8}, "p": {"v": 1026}, "pm25": {"v": 13},
              "t": {"v": -20.85}}, "time": {"s": "2017-12-31 05:00:00", "tz": "-05:00", "v": 1514696400}}}).encode()
         # Actual execution
-        self.data_collector = air_pollution.instance(log_to_stdout=False)
+        self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -89,7 +89,7 @@ class TestAirPollution(TestCase):
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
-        self.data_collector = air_pollution.instance(log_to_stdout=False)
+        self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -115,7 +115,7 @@ class TestAirPollution(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = dumps({'data': ['invalid', 'data', 'structure']}).encode()
         # Actual execution
-        self.data_collector = air_pollution.instance(log_to_stdout=False)
+        self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -142,7 +142,7 @@ class TestAirPollution(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = dumps({"status": "error", "message": "Over quota"}).encode()
         # Actual execution
-        self.data_collector = air_pollution.instance(log_to_stdout=False)
+        self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -176,7 +176,7 @@ class TestAirPollution(TestCase):
              "iaqi": {"h": {"v": 63}, "no2": {"v": 3.8}, "o3": {"v": 24.8}, "p": {"v": 1026}, "pm25": {"v": 13},
              "t": {"v": -20.85}}, "time": {"s": "2017-12-31 05:00:00", "tz": "-05:00", "v": 1514696400}}}).encode()
         # Actual execution
-        self.data_collector = air_pollution.instance(log_to_stdout=False)
+        self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)
@@ -210,7 +210,7 @@ class TestAirPollution(TestCase):
              "iaqi": {"h": {"v": 63}, "no2": {"v": 3.8}, "o3": {"v": 24.8}, "p": {"v": 1026}, "pm25": {"v": 13},
              "t": {"v": -20.85}}, "time": {"s": "2017-12-31 05:00:00", "tz": "-05:00", "v": 1514696400}}}).encode()
         # Actual execution
-        self.data_collector = air_pollution.instance(log_to_stdout=False)
+        self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_requests.called)

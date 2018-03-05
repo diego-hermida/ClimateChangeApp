@@ -9,7 +9,7 @@ from unittest import TestCase, mock
 from unittest.mock import Mock
 from utilities.util import time_limit
 
-PREVIOUS_LOCALHOST_IP = environ.get('LOCALHOST_IP')
+PREVIOUS_LOCALHOST_IP = environ.get('MONGODB_IP')
 
 
 def sleep5(*args, **kwargs):
@@ -19,15 +19,15 @@ def sleep5(*args, **kwargs):
 class TestMain(TestCase):
 
     def setUp(self):
-        environ['LOCALHOST_IP'] = '0.0.0.0 (test IP)'
+        environ['MONGODB_IP'] = '0.0.0.0 (test IP)'
 
     @classmethod
     def tearDownClass(cls):
         if PREVIOUS_LOCALHOST_IP is not None:
-            environ['LOCALHOST_IP'] = PREVIOUS_LOCALHOST_IP
+            environ['MONGODB_IP'] = PREVIOUS_LOCALHOST_IP
         else:
             try:
-                del environ['LOCALHOST_IP']
+                del environ['MONGODB_IP']
             except KeyError:
                 pass
 
@@ -39,7 +39,7 @@ class TestMain(TestCase):
         start = timer()
         with self.assertRaises(TimeoutError):
             with time_limit(1):
-                main.main(log_to_stdout=False, log_to_file=False)
+                main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
         end = timer()
         self.assertTrue(mock_import.called)
         self.assertLessEqual(1.0, end - start)
@@ -55,12 +55,12 @@ class TestMain(TestCase):
         mock_collection.return_value.get_last_elements.return_value = None
         mock_module1 = Mock()
         mock_module1.instance.return_value = SimpleDataCollector(fail_on='_save_data', log_to_file=False,
-                log_to_stdout=False)
+                log_to_stdout=False, log_to_telegram=False)
         mock_module2 = Mock()
-        mock_module2.instance.return_value = SimpleDataCollector(fail_on='_check_execution', log_to_stdout=False,
+        mock_module2.instance.return_value = SimpleDataCollector(fail_on='_check_execution', log_to_stdout=False, log_to_telegram=False,
                 log_to_file=False)
         mock_modules.return_value = [mock_module1, mock_module2]
-        main.main(log_to_stdout=False, log_to_file=False)
+        main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
         self.assertTrue(mock_modules.called)
         self.assertTrue(mock_collection.called)
         self.assertFalse(mock_module1.instance().successful_execution())
@@ -68,11 +68,13 @@ class TestMain(TestCase):
 
     @mock.patch('data_gathering_subsystem.main.ping_database', Mock(side_effect=EnvironmentError('Database is down!')))
     def test_execution_fails_if_database_down(self):
-        with self.assertRaises(SystemExit):
-            main.main(log_to_stdout=False, log_to_file=False)
+        with self.assertRaises(SystemExit) as e:
+            main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
+        self.assertEqual(1, e.exception.code)
 
     def test_execution_fails_if_environment_variable_doesnt_exist(self):
         from os import environ
-        del environ['LOCALHOST_IP']
-        with self.assertRaises(SystemExit):
-            main.main(log_to_stdout=False, log_to_file=False)
+        del environ['MONGODB_IP']
+        with self.assertRaises(SystemExit) as e:
+            main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
+        self.assertEqual(1, e.exception.code)

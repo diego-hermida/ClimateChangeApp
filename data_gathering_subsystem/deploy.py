@@ -6,33 +6,34 @@ from global_config.global_config import GLOBAL_CONFIG
 from os import environ
 from pymongo.errors import DuplicateKeyError
 from unittest import TestLoader, TextTestRunner
-from utilities.db_util import create_application_user, drop_application_database
+from utilities.db_util import create_user, drop_database, ping_database, MongoDBCollection
 from utilities.import_dir import import_modules
 from utilities.log_util import get_logger
-from utilities.util import remove_all_under_directory
+from utilities.util import remove_all_under_directory, get_config
 
 
-def deploy(log_to_file=True, log_to_stdout=True):
+def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
 
     # Getting a logger instance
     logger = get_logger(__file__, 'DeployDataGatheringSubsystemLogger', to_file=log_to_file, to_stdout=log_to_stdout,
-            is_subsystem=False)
+            is_subsystem=False, component=DGS_CONFIG['COMPONENT'], to_telegram=log_to_telegram)
     try:
         # Parsing command line arguments
         parser = argparse.ArgumentParser()
-        group = parser.add_argument_group()
-        parser.add_argument('-a', '--all', help='executes all deploy actions. This is the default option. If chosen, the '
+        parser.add_argument('--all', help='executes all deploy actions. This is the default option. If chosen, all '
                 'other options will be ignored. Tests are not executed by default.', required=False, action='store_true')
-        group.add_argument('-u', '--db-user', help='creates the application MongoDB user', required=False,
+        parser.add_argument('--db-user', help='creates the Data Gathering Subsystem MongoDB user', required=False,
                 action='store_true')
-        group.add_argument('-d', '--drop-database', help='drops all contents in application database', required=False,
+        parser.add_argument('--drop-database', help='drops all contents in application database', required=False,
                 action='store_true')
-        group.add_argument('-v', '--verify-modules', help='verifies all modules are instantiable and runnable',
+        parser.add_argument('--create-indexes', help='creates indexes specified in the "deploy.config" file',
+                            required=False, action='store_true')
+        parser.add_argument('--verify-modules', help='verifies all modules are instantiable and runnable',
                 required=False, action='store_true')
-        group.add_argument('-r', '--remove-files', help='removes all .log and .state files (and its directories)',
+        parser.add_argument('--remove-files', help='removes all .log and .state files (and its directories)',
                 required=False, action='store_true')
-        parser.add_argument('-t', '--with-tests', help='executes all the Subsystem tests', required=False, action='store_true')
-        parser.add_argument('-s', '--skip-all', help='does not execute any deploy step', required=False,
+        parser.add_argument('--with-tests', help='executes all the Subsystem tests', required=False, action='store_true')
+        parser.add_argument('--skip-all', help='does not execute any deploy step', required=False,
                             action='store_true')
 
         # Deploy args can be added from the "install.sh" script using environment variables.
@@ -46,34 +47,65 @@ def deploy(log_to_file=True, log_to_stdout=True):
         if args.skip_all:
             logger.info('Deploy operations have been skipped.')
             exit(0)
-        if args.all and (args.db_user or args.drop_database or args.verify_modules or args.remove_files):
+        if args.all and any([args.db_user, args.drop_database, args.verify_modules, args.remove_files]):
             logger.info('Since "--all" option has been passed, any other option is excluded.')
-        elif not sys.argv[1:]:
+        elif not any([args.all, args.db_user, args.drop_database, args.verify_modules, args.remove_files,
+                args.with_tests]) and not sys.argv[1:]:
             logger.info('Since no option has been passed, using "--all" as the default option.')
             args = argparse.Namespace(all=True, with_tests=False)
 
-        # Dynamically, recursively imports all Python modules under base directory (and returns them in a list)
-        modules = import_modules(DGS_CONFIG['DATA_MODULES_PATH'], recursive=True,
-                                 base_package=DGS_CONFIG['DATA_COLLECTOR_BASE_PACKAGE'])
+        # 1. [Default] Verifying MongoDB is up (required both for deploy operations and tests).
+        try:
+            ping_database()
+            logger.info('MongoDB daemon is up and reachable.')
+        except EnvironmentError:
+            logger.error(
+                'MongoDB service is down. Deploy will be aborted, since an active MongoDB service is required '
+                'for this operations.')
+            exit(1)
 
         # 1. Ensuring database is brand new.
         if args.all or args.drop_database:
             logger.info('Deleting previous database content.')
-            drop_application_database()
+            drop_database()
             logger.info('Database has been cleared.')
 
         # 2. Creating MongoDB user.
         if args.all or args.db_user:
-            logger.info('Creating Data Gathering Subsystem database owner.')
+            logger.info('Creating Data Gathering Subsystem user, the database owner.')
             try:
-                create_application_user()
+                create_user(username=GLOBAL_CONFIG['MONGODB_USERNAME'], password=GLOBAL_CONFIG['MONGODB_USER_PASSWORD'],
+                            roles=[{"role": "dbOwner", "db": GLOBAL_CONFIG['MONGODB_DATABASE']}])
                 logger.info('Successfully created user.')
             except DuplicateKeyError:
                 logger.warning('User was not created because it did already exist in database.')
 
-        # 3. Verifying all modules are instantiable and runnable.
+        # 3. Creating MongoDB indexes.
+        logger.info('Creating database indexes. Configuration is read from the "deploy.config" file.')
+        index_info = get_config(__file__)['MONGODB_INDEXES']
+        for collection_name in index_info:
+            keys = []
+            unique = index_info[collection_name].get('unique', False)
+            name = index_info[collection_name].get('name')
+            if name is None:
+                name = collection_name + '__index_on__'
+                _keys = [list(x.keys())[0] for x in index_info[collection_name]['keys']]
+                for k in _keys:
+                    name += k + '__'
+                name = name[:-2]
+            for i in index_info[collection_name]['keys']:
+                keys.append(list(i.items())[0])
+            c = MongoDBCollection(collection_name=collection_name, use_pool=True)
+            c.collection.create_index(keys=keys, unique=unique, name=name)
+            if name in c.collection.index_information():
+                logger.info('Index "%s" has been successfully created.' % name)
+
+        # 4. Verifying all modules are instantiable and runnable.
         if args.all or args.verify_modules:
             logger.info('Verifying DataCollector(s) are instantiable.')
+            # Dynamically, recursively imports all Python modules under base directory (and returns them in a list)
+            modules = import_modules(DGS_CONFIG['DATA_MODULES_PATH'], recursive=True,
+                                     base_package=DGS_CONFIG['DATA_COLLECTOR_BASE_PACKAGE'])
             failed = []
             for module in modules:
                 data_collector = module.instance(log_to_stdout=False, log_to_file=False)
@@ -88,7 +120,7 @@ def deploy(log_to_file=True, log_to_stdout=True):
             else:
                 logger.info('All DataCollector class(es) are instantiable and runnable.')
 
-        # 4. Executing all tests
+        # 5. Executing all tests
         if args.with_tests:
             logger.info('Running all the Data Gathering Subsystem tests.')
             loader = TestLoader()
@@ -97,16 +129,18 @@ def deploy(log_to_file=True, log_to_stdout=True):
             results = runner.run(suite)
             sys.stderr.flush()
             logger = get_logger(__file__, 'DeployDataGatheringSubsystemLogger', to_file=log_to_file,
-                    to_stdout=log_to_stdout, is_subsystem=False)
+                                to_stdout=log_to_stdout, is_subsystem=False, component=DGS_CONFIG['COMPONENT'],
+                                to_telegram=log_to_telegram)
             if results.wasSuccessful():
                 logger.info('All tests passed.')
             else:
                 logger.error('Some tests did not pass. Further info is available in the command line output.')
                 exit(1)
 
-        # 5. Emptying Subsystem's logs and '.state' files.
+        # 6. Emptying Subsystem's logs and '.state' files.
         if args.all or args.remove_files:
-            logger.info('Removing log base directory: %s' % (GLOBAL_CONFIG['ROOT_LOG_FOLDER']))
+            logger.info('Removing log base directory: %s' % (DGS_CONFIG[
+                    'DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER']))
             try:
                 remove_all_under_directory(DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
             except FileNotFoundError:
@@ -124,4 +158,4 @@ def deploy(log_to_file=True, log_to_stdout=True):
 
 
 if __name__ == '__main__':
-    deploy(log_to_file=False, log_to_stdout=True)
+    deploy(log_to_file=False, log_to_stdout=True, log_to_telegram=None)

@@ -9,17 +9,19 @@ from utilities.util import date_to_millis_since_epoch, current_timestamp_utc
 _singleton = None
 
 
-def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataCollector:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _EnergySourcesDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        _singleton = _EnergySourcesDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                                                 log_to_telegram=log_to_telegram)
     return _singleton
 
 
 class _EnergySourcesDataCollector(DataCollector):
 
-    def __init__(self, log_to_file=True, log_to_stdout=True):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                         log_to_telegram=log_to_telegram)
 
     def _collect_data(self):
         """
@@ -52,8 +54,10 @@ class _EnergySourcesDataCollector(DataCollector):
                         self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
                     break  # Stopping current data collection (but allowing saving previous data if present)
                 # Adding only verified data
+                # Removing the "_id" field FIXES [BUG-032].
                 if temp['status'] == 'ok' and temp['data']:
-                    temp['_id'] = {'country_id': country['_id'], 'time_utc': date}
+                    temp['country_id'] = country['_id']
+                    temp['time_utc'] = date
                     try:
                         del temp['countryCode']
                         del temp['status']
@@ -92,7 +96,8 @@ class _EnergySourcesDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'_id': value['_id']}, update={'$setOnInsert': value}, upsert=True))
+                operations.append(UpdateOne({'country_id': value['country_id'], 'time_utc': value['time_utc']},
+                        update={'$setOnInsert': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']

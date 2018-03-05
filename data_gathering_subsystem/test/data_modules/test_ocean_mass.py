@@ -9,7 +9,7 @@ class TestOceanMass(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        ocean_mass.instance(log_to_stdout=False).remove_files()
+        ocean_mass.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -32,7 +32,7 @@ class TestOceanMass(TestCase):
 
         mock_Reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_FTP.called)
@@ -68,7 +68,7 @@ class TestOceanMass(TestCase):
 
         mock_Reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_FTP.called)
@@ -103,7 +103,7 @@ class TestOceanMass(TestCase):
 
         mock_Reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         last_request = serialize_date(
                 deserialize_date('20170801221800.1234', self.data_collector.config['FTP_DATE_FORMAT']))
         self.data_collector.config['STATE_STRUCT']['ocean']['last_modified'] = last_request
@@ -131,7 +131,7 @@ class TestOceanMass(TestCase):
                                                    'greenland_mass_200204_201701.txt', 'ocean_mass_200204_201701.txt']
         mock_FTP.return_value.sendcmd.return_value = '123420170801221800'
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         last_request = serialize_date(
                 deserialize_date('20170801221800.1234', self.data_collector.config['FTP_DATE_FORMAT']))
         self.data_collector.config['STATE_STRUCT']['antarctica']['last_modified'] = last_request
@@ -159,7 +159,7 @@ class TestOceanMass(TestCase):
                                                    'greenland_mass_200204_201701.txt', 'ocean_mass_200204_201701.txt']
         mock_FTP.return_value.sendcmd.return_value = '123420170801221800'
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         last_request = serialize_date(
                 deserialize_date('20170801221800.1234', self.data_collector.config['FTP_DATE_FORMAT']))
         self.data_collector.config['STATE_STRUCT']['antarctica']['last_modified'] = last_request
@@ -189,7 +189,7 @@ class TestOceanMass(TestCase):
         mock_FTP.return_value.sendcmd.return_value = '123420170801221800'
         mock_Reader.return_value.get_data.return_value = ['Invalid data', 'Cannot be parsed']
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_FTP.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -220,7 +220,7 @@ class TestOceanMass(TestCase):
 
         mock_Reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_FTP.called)
@@ -260,7 +260,7 @@ class TestOceanMass(TestCase):
 
         mock_Reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_FTP.called)
@@ -295,7 +295,7 @@ class TestOceanMass(TestCase):
 
         mock_Reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = ocean_mass.instance(log_to_stdout=False)
+        self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(mock_FTP.called)

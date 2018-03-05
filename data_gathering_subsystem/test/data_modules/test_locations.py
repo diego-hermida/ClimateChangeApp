@@ -20,7 +20,7 @@ class TestLocations(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        locations.instance(log_to_stdout=False).remove_files()
+        locations.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -75,7 +75,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -151,7 +151,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	100.666668	75.216667	IN\n261481	New Delhi	25.612820	75.231140	IN\n530597	Mexico City	1.428471	-21.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -219,7 +219,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -251,7 +251,7 @@ class TestLocations(TestCase):
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.config['STATE_STRUCT']['last_modified'] = '2018-01-02T02:13:24.0001Z'
         self.data_collector.run()
@@ -316,7 +316,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -385,7 +385,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -456,7 +456,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -505,7 +505,7 @@ class TestLocations(TestCase):
                 'HDR\n1273294	Delhi	28.666668	77.216667	IN\n261481	New Delhi	28.612820	77.231140	IN\n530597	Mexico City	19.428471	-99.127663	MX\n138958	Kabul	34.528130	69.172333	AF\n598132	Guatemala City	14.640720	-90.513268	GT\n60630	Cairo	30.062630	31.249670	EG\n')
         response.content.decode = Mock(side_effect=side_effect)
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = dict(LOCATIONS)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -539,7 +539,7 @@ class TestLocations(TestCase):
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
-        self.data_collector = locations.instance(log_to_stdout=False)
+        self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = dict(LOCATIONS)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)

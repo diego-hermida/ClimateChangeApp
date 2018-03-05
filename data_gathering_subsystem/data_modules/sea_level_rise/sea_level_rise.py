@@ -7,17 +7,19 @@ from utilities.util import decimal_date_to_millis_since_epoch, serialize_date, d
 _singleton = None
 
 
-def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataCollector:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _SeaLevelDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        _singleton = _SeaLevelDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                                            log_to_telegram=log_to_telegram)
     return _singleton
 
 
 class _SeaLevelDataCollector(DataCollector):
 
-    def __init__(self, log_to_file=True, log_to_stdout=True):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                         log_to_telegram=log_to_telegram)
 
     def _restore_state(self):
         """
@@ -82,7 +84,7 @@ class _SeaLevelDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'_id': value['_id']}, update={'$setOnInsert': value}, upsert=True))
+                operations.append(UpdateOne({'time_utc': value['time_utc']}, update={'$setOnInsert': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
@@ -119,7 +121,8 @@ class _SeaLevelDataCollector(DataCollector):
         for line in data:
             fields = line.split()
             altimeter = 'dual_frequency' if fields[0] == 0 else 'single_frequency'
-            measure = {'_id': decimal_date_to_millis_since_epoch(float(fields[2])), 'altimeter': altimeter, 
+            # Removing the "_id" field FIXES [BUG-032].
+            measure = {'time_utc': decimal_date_to_millis_since_epoch(float(fields[2])), 'altimeter': altimeter,
                     'observations': fields[3], 'weighted_observations': fields[4], 'measures': {}, 
                     'units': MeasureUnits.mm}
             measure['measures']['variation'] = fields[5]

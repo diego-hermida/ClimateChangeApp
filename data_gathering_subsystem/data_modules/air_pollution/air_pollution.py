@@ -9,17 +9,19 @@ from utilities.util import current_timestamp_utc
 _singleton = None
 
 
-def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataCollector:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _AirPollutionDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        _singleton = _AirPollutionDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout, 
+                                                log_to_telegram=log_to_telegram)
     return _singleton
 
 
 class _AirPollutionDataCollector(DataCollector):
 
-    def __init__(self, log_to_file=True, log_to_stdout=True):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                         log_to_telegram=log_to_telegram)
 
     def _collect_data(self):
         """
@@ -42,9 +44,11 @@ class _AirPollutionDataCollector(DataCollector):
             try:
                 temp = json.loads(r.content.decode('utf-8', errors='replace'))
                 # Adding only verified data
+                # Removing the "_id" field FIXES [BUG-032].
                 if temp['status'] == 'ok':
                     temp['location_id'] = location['_id']
-                    temp['_id'] = {'station_id': location['waqi_station_id'], 'time_utc': int(temp['data']['time']['v']) * 1000}
+                    temp['station_id'] = location['waqi_station_id']
+                    temp['time_utc'] = int(temp['data']['time']['v']) * 1000
                     self.data.append(temp)
                 else:
                     unmatched.append(location['name'])
@@ -77,7 +81,8 @@ class _AirPollutionDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'_id': value['_id']}, update={'$setOnInsert': value}, upsert=True))
+                operations.append(UpdateOne({'station_id': value['station_id'], 'time_utc': value['time_utc']},
+                        update={'$setOnInsert': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']

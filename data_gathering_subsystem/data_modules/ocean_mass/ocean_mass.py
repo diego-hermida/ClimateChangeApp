@@ -9,17 +9,19 @@ from utilities.util import deserialize_date, serialize_date, decimal_date_to_mil
 _singleton = None
 
 
-def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataCollector:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _OceanMassDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        _singleton = _OceanMassDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                                             log_to_telegram=log_to_telegram)
     return _singleton
 
 
 class _OceanMassDataCollector(DataCollector):
 
-    def __init__(self, log_to_file=True, log_to_stdout=True):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                         log_to_telegram=log_to_telegram)
 
     def _restore_state(self):
         """
@@ -103,7 +105,8 @@ class _OceanMassDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'_id': value['_id']}, update={'$setOnInsert': value}, upsert=True))
+                operations.append(UpdateOne({'type': value['type'], 'time_utc': value['time_utc']},
+                        update={'$setOnInsert': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
@@ -146,7 +149,8 @@ class _OceanMassDataCollector(DataCollector):
             for line in data:
                 fields = line.split()
                 date = decimal_date_to_millis_since_epoch(float(fields[0]))
-                measure = {'_id': {'type': data_type, 'utc_date': date}, 'measures': []}
+                # Removing the "_id" field FIXES [BUG-032].
+                measure = {'type': data_type, 'time_utc': date, 'measures': []}
                 measure['measures'].append({'height': fields[1], 'units': MeasureUnits.mm})
                 measure['measures'].append({'uncertainty': fields[2], 'units': MeasureUnits.mm})
                 measure['measures'].append({'height_deseasoned': fields[3], 'units': MeasureUnits.mm})
@@ -155,7 +159,8 @@ class _OceanMassDataCollector(DataCollector):
             for line in data:
                 fields = line.split()
                 date = decimal_date_to_millis_since_epoch(float(fields[0]))
-                measure = {'_id': {'type': data_type, 'utc_date': date}, 'measures': []}
+                # Removing the "_id" field FIXES [BUG-032].
+                measure = {'type': data_type, 'time_utc': date, 'measures': []}
                 measure['measures'].append({'mass': fields[1], 'units': MeasureUnits.Gt})
                 measure['measures'].append({'uncertainty': fields[2], 'units': MeasureUnits.Gt})
                 json_data.append(measure)

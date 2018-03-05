@@ -11,17 +11,19 @@ from utilities.util import date_to_millis_since_epoch, current_timestamp_utc
 _singleton = None
 
 
-def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataCollector:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _HistoricalWeatherDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        _singleton = _HistoricalWeatherDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                                                     log_to_telegram=log_to_telegram)
     return _singleton
 
 
 class _HistoricalWeatherDataCollector(DataCollector):
 
-    def __init__(self, log_to_file=True, log_to_stdout=True):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                         log_to_telegram=log_to_telegram)
         self.location_changed = False
 
     def _restore_state(self):
@@ -147,13 +149,13 @@ class _HistoricalWeatherDataCollector(DataCollector):
                             r = requests.get(url)
                             try:
                                 temp = json.loads(r.content.decode('utf-8', errors='replace'))
+                                # Removing the "_id" field FIXES [BUG-032].
                                 if temp['history']['observations'] and temp['history']['dailysummary']:
                                     temp['location_id'] = location['_id']
                                     date = datetime.datetime(year=int(temp['history']['date']['year']), month=int(temp[
                                             'history']['date']['mon']), day=int(temp['history']['date']['mday']),
                                             hour=0, minute=0, second=0, microsecond=0, tzinfo=UTC)
-                                    temp['_id'] = {'loc_id': location['_id'],
-                                                   'date_utc': date_to_millis_since_epoch(date)}
+                                    temp['date_utc'] = date_to_millis_since_epoch(date)
                                     self.data.append(temp)
                                     # A new value resets unmeasured days. FIXES [BUG-018]
                                     self.state['consecutive_unmeasured_days'] = 0
@@ -209,7 +211,8 @@ class _HistoricalWeatherDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'_id': value['_id']}, update={'$setOnInsert': value}, upsert=True))
+                operations.append(UpdateOne({'location_id': value['location_id'], 'date_utc': value['date_utc']},
+                        update={'$setOnInsert': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']

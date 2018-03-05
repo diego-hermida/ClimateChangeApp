@@ -55,7 +55,7 @@ class TestHistoricalWeather(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        historical_weather.instance(log_to_stdout=False).remove_files()
+        historical_weather.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -101,7 +101,7 @@ class TestHistoricalWeather(TestCase):
                                               "330521663b1024c9": {"daily_requests": 1, "usable": False},
                                               "9309f4166988f1e3": {"daily_requests": 1, "usable": False},
                                               "5e1dd9d990fef0f8": {"daily_requests": 1, "usable": False}}}
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = 1
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -129,7 +129,7 @@ class TestHistoricalWeather(TestCase):
         mock_collection.return_value.find.return_value = {
             'data': [{'location_id': 1}, {'location_id': 1}, {'location_id': 1}, {'location_id': 2}]}
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_check'] = True
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -150,7 +150,7 @@ class TestHistoricalWeather(TestCase):
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 2
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_check'] = True
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -170,7 +170,7 @@ class TestHistoricalWeather(TestCase):
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 0
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_check'] = True
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -187,7 +187,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_correct_data_collection(self, mock_collection, mock_requests):
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
@@ -224,7 +224,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_correct_data_collection_max_daily_reached(self, mock_collection, mock_requests):
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = self.data_collector.config[
                                                                          'MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] - 5
         # Mocking MongoDBCollection: initialization and operations
@@ -267,7 +267,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_correct_data_collection_max_daily_reached_from_the_beginning(self, mock_collection, mock_requests):
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
@@ -302,7 +302,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_update_frequency_is_reset_when_tokens_are_usable_again(self, mock_collection, mock_requests):
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT'] = {'update_frequency': {'value': 1, 'units': 'day'},
                                                       'last_request': None, 'data_elements': 0, 'inserted_elements': 0,
                                                       'restart_required': False, 'last_error': None, 'error': None,
@@ -343,7 +343,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_data_collection_unparseable_data_but_not_all(self, mock_collection, mock_requests):
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 1
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
@@ -381,7 +381,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_data_collection_unmeasured_days_gets_reseted(self, mock_collection, mock_requests):
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 1
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
@@ -430,7 +430,7 @@ class TestHistoricalWeather(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = dumps({'unparseable': True}).encode()
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -462,7 +462,7 @@ class TestHistoricalWeather(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = dumps({'unparseable': True}).encode()
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1]
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -480,7 +480,7 @@ class TestHistoricalWeather(TestCase):
 
     def test_data_collection_with_no_locations_will_schedule_check(self):
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
@@ -496,7 +496,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.historical_weather.historical_weather.MongoDBCollection')
     def test_data_collection_parseable_data_missing_fields(self, mock_collection, mock_requests):
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
@@ -533,7 +533,7 @@ class TestHistoricalWeather(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = DATA
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -560,7 +560,7 @@ class TestHistoricalWeather(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = DATA
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -587,7 +587,7 @@ class TestHistoricalWeather(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = DATA
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
@@ -618,7 +618,7 @@ class TestHistoricalWeather(TestCase):
         response.content.decode = Mock(
                 side_effect=[data, data, data, data, data, data, unparseable, unparseable, unparseable, data])
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 1
         self.data_collector.config['MAX_DAY_COUNT'] = 3
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
@@ -649,7 +649,7 @@ class TestHistoricalWeather(TestCase):
         mock_requests.return_value = response = Mock()
         response.content = DATA
         # Actual execution
-        self.data_collector = historical_weather.instance(log_to_stdout=False)
+        self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1]
         self.data_collector.run()
         self.assertTrue(mock_collection.called)

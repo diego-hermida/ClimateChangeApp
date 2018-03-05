@@ -32,7 +32,8 @@ class DataCollectorThread(Thread):
     """
         The purpose of this class is to run a DataCollector inside its own thread.
     """
-    def __init__(self, data_module, channel: Queue, condition: Condition, log_to_stdout=True, log_to_file=True):
+    def __init__(self, data_module, channel: Queue, condition: Condition, log_to_stdout=True, log_to_file=True, 
+                 log_to_telegram=None):
         """
             Creates a Thread instance. Name is set as <DataCollector>Thread, being <DataCollector> the name of the
             DataCollector class.
@@ -44,7 +45,8 @@ class DataCollectorThread(Thread):
         """
         self._channel = channel
         self._condition = condition
-        self._data_collector = data_module.instance(log_to_stdout=log_to_stdout, log_to_file=log_to_file)
+        self._data_collector = data_module.instance(log_to_stdout=log_to_stdout, log_to_file=log_to_file, 
+                                                    log_to_telegram=log_to_telegram)
         Thread.__init__(self)
         self.setDaemon(True)
         self.setName(self._data_collector.__str__() + 'Thread')
@@ -319,7 +321,7 @@ class DataCollector(ABC):
         self._close_db_resources()
         self.logger.info(self._pretty_format_transitions() + '\n')
 
-    def __init__(self, file_path, log_to_stdout=True, log_to_file=True):
+    def __init__(self, file_path, log_to_stdout=True, log_to_file=True, log_to_telegram=None):
         """
             This method can be overridden, and MUST invoke super().__init__ before performing further actions.
             Any DataCollector which inherits from this class has the following (public) attributes:
@@ -345,8 +347,9 @@ class DataCollector(ABC):
         self.module_name = get_module_name(self._file_path)
         # Needs to be initialized to log errors.
         self.logger = get_logger(file_path, self.module_name, to_stdout=log_to_stdout, to_file=log_to_file,
-                                 subsystem_id=DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'],
-                                 root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
+                                 subsystem_id=DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'], component=DGS_CONFIG['COMPONENT'],
+                                 root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'], 
+                                 to_telegram=log_to_telegram)
         self._transition_state = self._CREATED
         try:
             self._state_transitions = []
@@ -436,7 +439,7 @@ class DataCollector(ABC):
                 self.collection.close()
         else:
             for data in self.data:
-                data['_execution_id'] = builtins.EXECUTION_ID
+                data[DGS_CONFIG['EXECUTION_ID_DOCUMENT_FIELD']] = builtins.EXECUTION_ID
             if self.collection:
                 self.collection.connect(self.module_name)
             else:
@@ -466,13 +469,8 @@ class DataCollector(ABC):
                 if self.advisedly_no_data_collected:
                     self.logger.info('Data collection has been deliberately omitted. This is OK.')
                     self.check_result = True
-                elif self.state['data_elements'] > 0 and self.state['inserted_elements'] == 0:
+                elif self.state['data_elements'] > 0 and not self.state['inserted_elements']:
                     self.logger.warning('Data was collected, but not saved.')
-                else:
-                    self.logger.warning('No error was detected. All the same, there was pending work but no data '
-                            'has been saved. This issue should be revised.')
-                    self.state['error'] = {'class': 'PendingWorkAndNoDataCollectedError', 'message': 'There is pending '
-                            'work but no data has been collected.'}
         else:
             self.logger.info('There is no pending work. Execution was successful.')
             self.check_result = True
@@ -493,6 +491,9 @@ class DataCollector(ABC):
             else:
                 self.state['backoff_time'] = MIN_BACKOFF
             self.state['last_error'] = self.state['error']
+        else:
+            # FIXES [BUG-033].
+            self.state['backoff_time'] = MIN_BACKOFF
         self.state['last_request'] = serialize_date(self.state['last_request'])
         write_state(self.state, self._file_path, DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
         self.logger.info('Successfully serialized state.')

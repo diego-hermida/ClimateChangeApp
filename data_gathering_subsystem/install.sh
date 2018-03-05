@@ -3,7 +3,8 @@
 # ---------- Definitions ---------- #
 
 # Setting default values
-LOCALHOST_IP=null;
+MONGODB_IP=null;
+EXTERNAL_MONGODB_SERVER=false;
 SKIP_DEPLOY=true;
 DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=null;
 
@@ -44,9 +45,10 @@ do
     KEY=$(echo $ARGUMENT | cut -f1 -d=)
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)
     case "$KEY" in
-            LOCALHOST_IP)                           LOCALHOST_IP=${VALUE} ;;
+            MONGODB_IP)                             MONGODB_IP=${VALUE} ;;
             SKIP_DEPLOY)                            SKIP_DEPLOY=${VALUE} ;;
             DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS)   DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=${VALUE} ;;
+            EXTERNAL_MONGODB_SERVER)                EXTERNAL_MONGODB_SERVER=${VALUE} ;;
             *)
     esac
 done
@@ -54,24 +56,34 @@ done
 # Setting variables to lower case
 SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=echo "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS" | tr '[:upper:]' '[:lower:]';
+EXTERNAL_MONGODB_SERVER=echo "$EXTERNAL_MONGODB_SERVER" | tr '[:upper:]' '[:lower:]';
+
 
 # Warnings
 if [ "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS" != "null" ] && [ "$SKIP_DEPLOY" == "true" ]; then
-    message 3 "[WARNING] Parameter DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS has been set, but SKIP_DEPLOY is true. The
-              value will be overridden to \"--skip-all\".";
-    DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
+    message 3 "[WARNING] Parameter DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS has been set, but SKIP_DEPLOY is true.
+              The value will be overridden to \"--skip-all\".";
+    elif [ "$SKIP_DEPLOY" == "true" ]; then
+        message -1 "[INFO] Deploy operations will be skipped for the API component.";
+        DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--skip-all"
     elif [ "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS" == "null" ]; then
         message -1 "[INFO] Using default values for DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS.";
         DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
 fi
 
-# Ensuring variables contain legit values
-if [ "$LOCALHOST_IP" == "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]); then
-     exit_with_message 1 "> usage: install.sh LOCALHOST_IP=xxx.xxx.xxx.xxx [SKIP_DEPLOY=false]
-                         [RUN_API=true] [API_BUILD_ARGS=<args>] [DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=<args>]
-                         \n\t- SKIP_DEPLOY takes the value \"true\" by default (affects all components but MongoDB)
-                         \n\t- DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS takes the value \"--all --with-tests\" by default
-                         \nIMPORTANT: DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS parameter require to use SKIP_DEPLOY=false." 1;
+
+if [ "$MONGODB_IP" == "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
+        ([ "$EXTERNAL_MONGODB_SERVER" != "true" ] && [ "$EXTERNAL_MONGODB_SERVER" != "false" ]); then
+     exit_with_message 1 "> usage: install.sh MONGODB_IP=xxx.xxx.xxx.xxx [EXTERNAL_MONGODB_SERVER=true] [SKIP_DEPLOY=false]
+                         [RUN_API=true] [DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=<args>]
+                         \n\t- MONGODB_IP: IP address of the machine containing the MongoDB service.
+                         \n\t- EXTERNAL_MONGODB_SERVER: indicates that the MongoDB server is externally provided,
+                               and does not create a Docker container. Defaults to \"false\".
+                         \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
+                         \n\t- DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS: enables \"Expert Mode\", allowing to pass custom
+                               args to the deploy script. Defaults to \"--all --with-tests\".
+                         \nIMPORTANT: DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS must be used in conjunction with
+                                      SKIP_DEPLOY=false." 1;
 fi
 
 
@@ -80,17 +92,21 @@ fi
 # MongoDB component
 message 4 "[COMPONENT] Building and launching the MongoDB service.";
 
-# Deleting the MongoDB service if it was already been created: Brand-new container.
-if [ "$(docker ps -aq -f name=mongodb)" ]; then
-    message -1 "[INFO] Removing previous MongoDB container.";
-    docker stop mongodb;
-    docker rm mongodb;
-fi
-# Launching the MongoDB service
-message -1 "[INFO] Launching the MongoDB service.";
-docker-compose up -d mongodb;
-if [ $? != 0 ]; then
-    exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." $?;
+if [ "$EXTERNAL_MONGODB_SERVER" == "false" ]; then
+    # Deleting the MongoDB service if it was already been created: Brand-new container.
+    if [ "$(docker ps -aq -f name=mongodb)" ]; then
+        message -1 "[INFO] Removing previous MongoDB container.";
+        docker stop mongodb;
+        docker rm mongodb;
+    fi
+    # Launching the MongoDB service
+    message -1 "[INFO] Launching the MongoDB service.";
+    docker-compose up -d mongodb;
+    if [ $? != 0 ]; then
+        exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." $?;
+    fi
+else
+    message -1 "[INFO] MongoDB server has been tagged as \"external\". Thus, the MongoDB Docker service won't be launched.";
 fi
 
 
@@ -98,14 +114,17 @@ fi
 message 4 "[COMPONENT] Building the Data Gathering Subsystem.";
 
 # Building the Data Gathering Subsystem component
-docker-compose build --build-arg LOCALHOST_IP=${LOCALHOST_IP} --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" data_gathering_subsystem
+docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" data_gathering_subsystem
 if [ $? != 0 ]; then
     exit_with_message 1 "> The Data Gathering Subsystem image could not be built." $?;
 fi
 
 
 # Displaying installation summary
-message 2 "[SUCCESS] Installation results:";
-message 2 "- MongoDB: up";
+echo "";
+if [ "$EXTERNAL_MONGODB_SERVER" == "true" ]; then
+    message 2 "- MongoDB: external";
+    else message 2 "- MongoDB: up";
+fi
 message 2 "- Data Gathering Subsystem: built";
 echo "";

@@ -8,17 +8,19 @@ from utilities.util import current_timestamp_utc
 _singleton = None
 
 
-def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataCollector:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _WeatherForecastDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        _singleton = _WeatherForecastDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                                                   log_to_telegram=log_to_telegram)
     return _singleton
 
 
 class _WeatherForecastDataCollector(DataCollector):
 
-    def __init__(self, log_to_file=True, log_to_stdout=True):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                         log_to_telegram=log_to_telegram)
 
     def _collect_data(self):
         """
@@ -42,9 +44,10 @@ class _WeatherForecastDataCollector(DataCollector):
             r = requests.get(url)
             try:
                 temp = json.loads(r.content.decode('utf-8', errors='replace'))
+                # Removing the "_id" field FIXES [BUG-032].
                 if temp['cnt'] > 0 and temp['list']:
                     temp['location_id'] = location['_id']
-                    temp['_id'] = {'station_id': temp['city']['id']}
+                    temp['station_id'] = temp['city']['id']
                     self.data.append(temp)
             # Adding json.decoder.JSONDecodeError FIXES [BUG-020]
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
@@ -75,7 +78,7 @@ class _WeatherForecastDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'_id': value['_id']}, update={'$set': value}, upsert=True))
+                operations.append(UpdateOne({'station_id': value['station_id']}, update={'$set': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']

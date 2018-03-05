@@ -8,7 +8,7 @@ class TestFutureEmissions(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        future_emissions.instance(log_to_stdout=False).remove_files()
+        future_emissions.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
         self.data_collector.remove_files()
@@ -21,7 +21,7 @@ class TestFutureEmissions(TestCase):
         mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': x} for x in range(2221)]
         # Actual execution
-        self.data_collector = future_emissions.instance(log_to_stdout=False)
+        self.data_collector = future_emissions.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -34,7 +34,7 @@ class TestFutureEmissions(TestCase):
 
     def test_data_collection_with_missing_file(self):
         # Actual execution
-        self.data_collector = future_emissions.instance(log_to_stdout=False)
+        self.data_collector = future_emissions.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['DATA_DIR'] = './foo/bar/baz/'
         self.data_collector.run()
         self.assertTrue(self.data_collector.finished_execution())
@@ -52,7 +52,7 @@ class TestFutureEmissions(TestCase):
         mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': x} for x in range(1999)]
         # Actual execution
-        self.data_collector = future_emissions.instance(log_to_stdout=False)
+        self.data_collector = future_emissions.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -70,7 +70,7 @@ class TestFutureEmissions(TestCase):
         mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': x} for x in range(1998)]
         # Actual execution
-        self.data_collector = future_emissions.instance(log_to_stdout=False)
+        self.data_collector = future_emissions.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.run()
         self.assertTrue(mock_collection.called)
         self.assertTrue(self.data_collector.finished_execution())

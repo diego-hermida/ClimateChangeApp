@@ -2,8 +2,8 @@
 FROM pypy:latest
 
 # Provisional solution to [BUG-015]
-ARG LOCALHOST_IP
-ENV LOCALHOST_IP=$LOCALHOST_IP
+ARG MONGODB_IP
+ENV MONGODB_IP=$MONGODB_IP
 
 # Allows setting custom args to execute the deploy script. Use --build-arg DEPLOY_ARGS=<args> when building the Subsystem
 # service with docker-compose.

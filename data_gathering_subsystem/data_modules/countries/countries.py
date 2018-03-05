@@ -7,17 +7,19 @@ from utilities.util import current_timestamp_utc
 _singleton = None
 
 
-def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataCollector:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _CountriesDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        _singleton = _CountriesDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                                             log_to_telegram=log_to_telegram)
     return _singleton
 
 
 class _CountriesDataCollector(DataCollector):
 
-    def __init__(self, log_to_file=True, log_to_stdout=True):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                         log_to_telegram=log_to_telegram)
 
     def _collect_data(self):
         """

@@ -18,8 +18,10 @@ class SupervisorThread(Thread):
         This class allows a Supervisor instance to be executed in its own thread.
         The thread is set as a Daemon thread, as we want the thread to be stopped when Main component exits.
     """
-    def __init__(self, queue: Queue, condition: Condition, log_to_file=True, log_to_stdout=True):
-        self.supervisor = Supervisor(queue, condition, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, queue: Queue, condition: Condition, log_to_file=True, log_to_stdout=True,
+                 log_to_telegram=None):
+        self.supervisor = Supervisor(queue, condition, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                                     log_to_telegram=log_to_telegram)
         Thread.__init__(self)
         self.setDaemon(True)
         self.setName('SupervisorThread')
@@ -33,23 +35,19 @@ class SupervisorThread(Thread):
 
 class Supervisor:
 
-    def __init__(self, channel: Queue, condition: Condition, log_to_file=True, log_to_stdout=True):
+    def __init__(self, channel: Queue, condition: Condition, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         super().__init__()
         from utilities.log_util import get_logger
 
         self._channel = channel
         self._condition = condition
         self.logger = get_logger(__file__, 'SupervisorLogger', to_file=log_to_file, to_stdout=log_to_stdout,
-                subsystem_id=DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'],
-                root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
+                subsystem_id=DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'], component=DGS_CONFIG['COMPONENT'],
+                root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'], to_telegram=log_to_telegram)
         self.config = get_config(__file__)
         self.module_name = get_module_name(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'])
-        self.collection = MongoDBCollection(self.module_name)
-        self.execution_report = {'last_execution': self.config['STATE_STRUCT']['last_execution'], 'aggregated':
-                self.collection.get_last_elements(amount=1, filter={'_id': {'$eq': 'aggregated'}})}
-        if not self.execution_report['aggregated']:
-            self.execution_report = self.config['STATE_STRUCT']
-        self.collection.close()
+        self.collection = None
+        self.execution_report = None
         self.registered = 0
         self.unregistered = 0
         self.registered_data_collectors = []
@@ -119,6 +117,22 @@ class Supervisor:
             self.logger.exception('An error occurred while verifying "%s" execution.' % (data_collector))
 
     def generate_report(self, duration: float):
+        # Fetching last execution report. This operation has been moved from the constructor method -> optimization.
+        self.logger.info('Fetching the last execution report from database.')
+        self.collection = MongoDBCollection(collection_name=self.module_name, use_pool=True)
+        self.execution_report = {'last_execution': self.config['STATE_STRUCT']['last_execution'],
+                'aggregated': self.collection.get_last_elements(amount=1, filter={'_id': {'subsystem_id':
+                DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'], 'type': 'aggregated'}})}
+        if not self.execution_report['aggregated']:
+            self.logger.warning('The last execution report could not be fetched. This will be indicated in the current '
+                    'execution report by setting the flag "last_report_not_fetched" to "true".')
+            self.execution_report = self.config['STATE_STRUCT']
+            self.execution_report['last_execution']['last_report_not_fetched'] = True
+        else:
+            self.logger.debug('Execution report successfully fetched from database.')
+        self.collection.close()
+
+        # Composing execution report
         failed_modules = []
         modules_with_pending_work = {}
         modules_succeeded = 0

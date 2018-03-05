@@ -1,5 +1,6 @@
 import datetime
 from unittest import TestCase, mock
+from unittest.mock import Mock
 
 from copy import deepcopy
 from pytz import UTC
@@ -20,9 +21,10 @@ class SimpleDataCollector(data_collector.DataCollector):
 
     def __init__(self, fail_on='', pending_work=True, data_collected=None, data_inserted=None,
                  update_frequency={'value': 0, 'units': 's'}, restart_required=False, backoff_time=None,
-                 log_to_file=True, log_to_stdout=False):
+                 log_to_file=True, log_to_stdout=False, log_to_telegram=False):
         fake_file_path = DGS_CONFIG['DATA_MODULES_PATH'] + 'test/simple_data_collector/simple_data_collector.py'
-        super().__init__(fake_file_path, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        super().__init__(fake_file_path, log_to_file=log_to_file, log_to_stdout=log_to_stdout, 
+                         log_to_telegram=log_to_telegram)
         self.fail_on = fail_on
         self._pending_work = pending_work
         self._update_frequency = update_frequency
@@ -75,13 +77,14 @@ class SimpleDataCollector(data_collector.DataCollector):
 class TestDataCollector(TestCase):
 
     def create_run(self, fail_on='', pending_work=True, data_collected=0, data_inserted=0,
-                   update_frequency={'value': 0, 'units': 's'}):
+                   update_frequency={'value': 0, 'units': 's'}, log_to_file=False, log_to_stdout=False, 
+                   log_to_telegram=False):
         with mock.patch('data_gathering_subsystem.data_collector.data_collector.get_config') as mock_config:
             mock_config.return_value = deepcopy(CONFIG)
             CONFIG['STATE_STRUCT']['last_request'] = None
             self.data_collector = SimpleDataCollector(fail_on=fail_on, pending_work=pending_work,
-                                                      data_collected=data_collected, data_inserted=data_inserted,
-                                                      update_frequency=update_frequency)
+                    data_collected=data_collected, data_inserted=data_inserted, update_frequency=update_frequency,
+                    log_to_file=log_to_file, log_to_stdout=log_to_stdout, log_to_telegram=log_to_telegram)
             self.data_collector.run()
 
     @classmethod
@@ -232,21 +235,6 @@ class TestDataCollector(TestCase):
         self.assertEqual(0, self.data_collector.state['inserted_elements'])
         self.assertListEqual(expected, transitions)
 
-    def test_abnormal_execution_pending_work_collected_unknown(self):
-        supervisor = Supervisor(None, None)
-        self.create_run(data_collected=1000, data_inserted=None)
-        transitions = self.data_collector.expose_transition_states(supervisor)
-        expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, DATA_SAVED,
-                    EXECUTION_CHECKED, STATE_SAVED, FINISHED]
-        self.assertTrue(self.data_collector.pending_work)
-        self.assertFalse(self.data_collector.check_result)
-        self.assertEqual('PendingWorkAndNoDataCollectedError', self.data_collector.state['error'])
-        self.assertTrue(self.data_collector.finished_execution())
-        self.assertFalse(self.data_collector.successful_execution())
-        self.assertIsNotNone(self.data_collector.state['data_elements'])
-        self.assertIsNone(self.data_collector.state['inserted_elements'])
-        self.assertEqual(1000, self.data_collector.state['data_elements'])
-        self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_failure_INITIALIZED(self):
         supervisor = Supervisor(None, None)
@@ -388,6 +376,13 @@ class TestDataCollector(TestCase):
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, DATA_SAVED,
                     EXECUTION_CHECKED, STATE_SAVED, FINISHED]
         self.assertListEqual(expected, transitions)
+
+        # Checking a module with big exponential backoff and successful execution restarts backoff.
+        self.data_collector = SimpleDataCollector(pending_work=True, restart_required=False, backoff_time=2000,
+                                                  data_collected=1, data_inserted=1)
+        self.data_collector.run()
+        self.assertTrue(self.data_collector.successful_execution())
+        self.assertDictEqual(data_collector.MIN_BACKOFF, self.data_collector.state['backoff_time'])
 
     def test_reader(self):
         r = data_collector.Reader()

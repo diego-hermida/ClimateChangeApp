@@ -9,17 +9,19 @@ from utilities.util import current_timestamp_utc
 _singleton = None
 
 
-def instance(log_to_file=True, log_to_stdout=True) -> DataCollector:
+def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataCollector:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _CurrentConditionsDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+        _singleton = _CurrentConditionsDataCollector(log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                                                     log_to_telegram=log_to_telegram)
     return _singleton
 
 
 class _CurrentConditionsDataCollector(DataCollector):
 
-    def __init__(self, log_to_file=True, log_to_stdout=True):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout)
+    def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
+                         log_to_telegram=log_to_telegram)
 
     def _collect_data(self):
         """
@@ -43,9 +45,12 @@ class _CurrentConditionsDataCollector(DataCollector):
             r = requests.get(url)
             try:
                 temp = json.loads(r.content.decode('utf-8', errors='replace'))
+                # Removing the "_id" field FIXES [BUG-032].
                 if temp['coord'] and temp['weather'] and temp['main'] and temp['wind'] and temp['sys']:
                     temp['location_id'] = location['_id']
-                    temp['_id'] = {'station_id': temp['id'], 'time': temp['dt']}
+                    temp['station_id'] = temp['id']
+                    temp['time_utc'] = int(temp['dt']) * 1000
+                    del temp['id']
                     self.data.append(temp)
             # Adding json.decoder.JSONDecodeError FIXES [BUG-020]
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
@@ -76,7 +81,8 @@ class _CurrentConditionsDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'_id': value['_id']}, update={'$set': value}, upsert=True))
+                operations.append(UpdateOne({'station_id': value['station_id'], 'time_utc': value['time_utc']},
+                        update={'$set': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
@@ -90,3 +96,7 @@ class _CurrentConditionsDataCollector(DataCollector):
         else:
             self.logger.info('No elements were saved because no elements have been collected.')
             self.state['inserted_elements'] = 0
+
+
+if __name__ == '__main__':
+    instance().run()
