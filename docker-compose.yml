@@ -12,6 +12,17 @@ services:
             - ~/ClimateChangeApp/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
+    data_conversion_subsystem:
+        build:
+            context: .
+            dockerfile: ./data_conversion_subsystem/Dockerfile
+        container_name: data_conversion_subsystem
+        image: diegohermida/data_conversion_subsystem:1.0
+        volumes:
+            - ~/ClimateChangeApp/log:/ClimateChangeApp/log
+            - ~/ClimateChangeApp/state:/ClimateChangeApp/state
+        environment:
+            - PYTHONUNBUFFERED=1
     api:
         build:
             context: .
@@ -24,6 +35,14 @@ services:
             - ~/ClimateChangeApp/log/api:/ClimateChangeApp/log/api
         ports:
             - 5000:5000
+    telegram_bot:
+        build:
+            context: .
+            dockerfile: ./telegram_bot/Dockerfile
+        container_name: telegram_bot
+        image: diegohermida/telegram_bot:1.0
+        environment:
+            - PYTHONUNBUFFERED=1
     mongodb:
         image: mongo:latest
         container_name: mongodb
