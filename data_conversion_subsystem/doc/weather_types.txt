@@ -1,0 +1,516 @@
+# https://openweathermap.org/weather-conditions
+WEATHER_TYPES:
+
+    # Day
+    -
+        id: 200
+        description: Thunderstom with light rain
+        icon: 11d
+    -
+        id: 201
+        description: Thunderstom with rain
+        icon: 11d
+    -
+        id: 202
+        description: Thunderstom with heavy rain
+        icon: 11d
+    -
+        id: 210
+        description: Light thunderstorm
+        icon: 11d
+    -
+        id: 211
+        description: Thunderstom
+        icon: 11d
+    -
+        id: 212
+        description: Heavy thunderstorm
+        icon: 11d
+    -
+        id: 221
+        description: Ragged thunderstorm
+        icon: 11d
+    -
+        id: 230
+        description: Thunderstorm with light drizzle
+        icon: 11d
+    -
+        id: 231
+        description: Thunderstorm with drizzle
+        icon: 11d
+    -
+        id: 232
+        description: Thunderstorm with heavy drizzle
+        icon: 11d
+    -
+        id: 300
+        description: Light intensity drizzle
+        icon: 09d
+    -
+        id: 301
+        description: Drizzle
+        icon: 09d
+    -
+        id: 302
+        description: Heavy intensity drizzle
+        icon: 09d
+    -
+        id: 310
+        description: Light intensity drizzle rail
+        icon: 09d
+    -
+        id: 311
+        description: Drizzle rain
+        icon: 09d
+    -
+        id: 312
+        description: Heavy intensity drizzle rain
+        icon: 09d
+    -
+        id: 313
+        description: Shower rain and drizzle
+        icon: 09d
+    -
+        id: 314
+        description: Heavy shower rain and drizzle
+        icon: 09d
+    -
+        id: 321
+        description: Shower drizzle
+        icon: 09d
+    -
+        id: 500
+        description: Light rain
+        icon: 10d
+    -
+        id: 501
+        description: Moderate rain
+        icon: 10d
+    -
+        id: 502
+        description: Heavy intensity rain
+        icon: 10d
+    -
+        id: 503
+        description: Very heavy rain
+        icon: 10d
+    -
+        id: 504
+        description: Extreme rain
+        icon: 10d
+    -
+        id: 511
+        description: Freezing rain
+        icon: 13d
+    -
+        id: 520
+        description: Light intensity shower rain
+        icon: 09d
+    -
+        id: 521
+        description: Shower rain
+        icon: 09d
+    -
+        id: 522
+        description: Heavy intensity shower rain
+        icon: 09d
+    -
+        id: 531
+        description: Ragged shower rain
+        icon: 09d
+    -
+        id: 600
+        description: Light snow
+        icon: 13d
+    -
+        id: 601
+        description: Snow
+        icon: 13d
+    -
+        id: 602
+        description: Heavy snow
+        icon: 13d
+    -
+        id: 611
+        description: Sleet
+        icon: 13d
+    -
+        id: 612
+        description: Shower sleet
+        icon: 13d
+    -
+        id: 615
+        description: Light rain and snow
+        icon: 13d
+    -
+        id: 616
+        description: Rain and snow
+        icon: 13d
+    -
+        id: 620
+        description: Light shower snow
+        icon: 13d
+    -
+        id: 621
+        description: Shower snow
+        icon: 13d
+    -
+        id: 622
+        description: Heavy shower snow
+        icon: 13d
+    -
+        id: 701
+        description: Mist
+        icon: 50d
+    -
+        id: 711
+        description: Smoke
+        icon: 50d
+    -
+        id: 721
+        description: Haze
+        icon: 50d
+    -
+        id: 731
+        description: Sand, dust whirls
+        icon: 50d
+    -
+        id: 741
+        description: Fog
+        icon: 50d
+    -
+        id: 751
+        description: Sand
+        icon: 50d
+    -
+        id: 761
+        description: Dust
+        icon: 50d
+    -
+        id: 762
+        description: Volcanic ash
+        icon: 50d
+    -
+        id: 771
+        description: Squalls
+        icon: 50d
+    -
+        id: 781
+        description: Tornado
+        icon: 50d
+    -
+        id: 800
+        description: Clear sky
+        icon: 01d
+    -
+        id: 801
+        description: Few clouds
+        icon: 02d
+    -
+        id: 802
+        description: Scattered clouds
+        icon: 03d
+    -
+        id: 803
+        description: Broken clouds
+        icon: 04d
+    -
+        id: 804
+        description: Overcast clouds
+        icon: 04d
+        
+    # Night
+    -
+        id: -200
+        description: Thunderstom with light rain
+        icon: 11n
+    -
+        id: -201
+        description: Thunderstom with rain
+        icon: 11n
+    -
+        id: -202
+        description: Thunderstom with heavy rain
+        icon: 11n
+    -
+        id: -210
+        description: Light thunderstorm
+        icon: 11n
+    -
+        id: -211
+        description: Thunderstom
+        icon: 11n
+    -
+        id: -212
+        description: Heavy thunderstorm
+        icon: 11n
+    -
+        id: -221
+        description: Ragged thunderstorm
+        icon: 11n
+    -
+        id: -230
+        description: Thunderstorm with light drizzle
+        icon: 11n
+    -
+        id: -231
+        description: Thunderstorm with drizzle
+        icon: 11n
+    -
+        id: -232
+        description: Thunderstorm with heavy drizzle
+        icon: 11n
+    -
+        id: -300
+        description: Light intensity drizzle
+        icon: 09n
+    -
+        id: -301
+        description: Drizzle
+        icon: 09n
+    -
+        id: -302
+        description: Heavy intensity drizzle
+        icon: 09n
+    -
+        id: -310
+        description: Light intensity drizzle rail
+        icon: 09n
+    -
+        id: -311
+        description: Drizzle rain
+        icon: 09n
+    -
+        id: -312
+        description: Heavy intensity drizzle rain
+        icon: 09n
+    -
+        id: -313
+        description: Shower rain and drizzle
+        icon: 09n
+    -
+        id: -314
+        description: Heavy shower rain and drizzle
+        icon: 09n
+    -
+        id: -321
+        description: Shower drizzle
+        icon: 09n
+    -
+        id: -500
+        description: Light rain
+        icon: 10n
+    -
+        id: -501
+        description: Moderate rain
+        icon: 10n
+    -
+        id: -502
+        description: Heavy intensity rain
+        icon: 10n
+    -
+        id: -503
+        description: Very heavy rain
+        icon: 10n
+    -
+        id: -504
+        description: Extreme rain
+        icon: 10n
+    -
+        id: -511
+        description: Freezing rain
+        icon: 13n
+    -
+        id: -520
+        description: Light intensity shower rain
+        icon: 09n
+    -
+        id: -521
+        description: Shower rain
+        icon: 09n
+    -
+        id: -522
+        description: Heavy intensity shower rain
+        icon: 09n
+    -
+        id: -531
+        description: Ragged shower rain
+        icon: 09n
+    -
+        id: -600
+        description: Light snow
+        icon: 13n
+    -
+        id: -601
+        description: Snow
+        icon: 13n
+    -
+        id: -602
+        description: Heavy snow
+        icon: 13n
+    -
+        id: -611
+        description: Sleet
+        icon: 13n
+    -
+        id: -612
+        description: Shower sleet
+        icon: 13n
+    -
+        id: -615
+        description: Light rain and snow
+        icon: 13n
+    -
+        id: -616
+        description: Rain and snow
+        icon: 13n
+    -
+        id: -620
+        description: Light shower snow
+        icon: 13n
+    -
+        id: -621
+        description: Shower snow
+        icon: 13n
+    -
+        id: -622
+        description: Heavy shower snow
+        icon: 13n
+    -
+        id: -700
+        description: Mist
+        icon: 50n
+    -
+        id: -711
+        description: Smoke
+        icon: 50n
+    -
+        id: -721
+        description: Haze
+        icon: 50n
+    -
+        id: -731
+        description: Sand, dust whirls
+        icon: 50n
+    -
+        id: -741
+        description: Fog
+        icon: 50n
+    -
+        id: -751
+        description: Sand
+        icon: 50n
+    -
+        id: -761
+        description: Dust
+        icon: 50n
+    -
+        id: -762
+        description: Volcanic ash
+        icon: 50n
+    -
+        id: -771
+        description: Squalls
+        icon: 50n
+    -
+        id: -781
+        description: Tornado
+        icon: 50n
+    -
+        id: -800
+        description: Clear sky
+        icon: 01n
+    -
+        id: -801
+        description: Few clouds
+        icon: 02n
+    -
+        id: -802
+        description: Scattered clouds
+        icon: 03n
+    -
+        id: -803
+        description: Broken clouds
+        icon: 04n
+    -
+        id: -804
+        description: Overcast clouds
+        icon: 04n
+    
+    # Others
+    -
+        id: 900
+        description: Tornado
+        icon: null
+    -
+        id: 901
+        description: Tropical storm
+        icon: null
+    -
+        id: 902
+        description: Hurricane
+        icon: null
+    -
+        id: 903
+        description: Cold
+        icon: null
+    -
+        id: 904
+        description: Hot
+        icon: null
+    -
+        id: 905
+        description: Windy
+        icon: null
+    -
+        id: 906
+        description: Hail
+        icon: null
+    -
+        id: 951
+        description: Calm
+        icon: null
+    -
+        id: 952
+        description: Light breeze
+        icon: null
+    -
+        id: 953
+        description: Gentle breeze
+        icon: null
+    -
+        id: 954
+        description: Moderate breeze
+        icon: null
+    -
+        id: 955
+        description: Fresh breeze
+        icon: null
+    -
+        id: 956
+        description: Strong breeze
+        icon: null
+    -
+        id: 957
+        description: High wind, near gale
+        icon: null
+    -
+        id: 958
+        description: Gale
+        icon: null
+    -
+        id: 959
+        description: Severe gale
+        icon: null
+    -
+        id: 960
+        description: Storm
+        icon: null
+    -
+        id: 961
+        description: Violent storm
+        icon: null
+    -
+        id: 962
+        description: Hurricane
+        icon: null
