@@ -78,7 +78,7 @@ class _WeatherForecastDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'station_id': value['station_id']}, update={'$set': value}, upsert=True))
+                operations.append(UpdateOne({'location_id': value['location_id']}, update={'$set': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']

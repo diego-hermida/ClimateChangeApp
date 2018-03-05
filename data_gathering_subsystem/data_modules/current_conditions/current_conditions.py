@@ -81,7 +81,7 @@ class _CurrentConditionsDataCollector(DataCollector):
         if self.data:
             operations = []
             for value in self.data:
-                operations.append(UpdateOne({'station_id': value['station_id'], 'time_utc': value['time_utc']},
+                operations.append(UpdateOne({'location_id': value['location_id']},
                         update={'$set': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
@@ -96,7 +96,3 @@ class _CurrentConditionsDataCollector(DataCollector):
         else:
             self.logger.info('No elements were saved because no elements have been collected.')
             self.state['inserted_elements'] = 0
-
-
-if __name__ == '__main__':
-    instance().run()

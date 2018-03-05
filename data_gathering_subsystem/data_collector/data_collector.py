@@ -404,7 +404,7 @@ class DataCollector(ABC):
             if self.pending_work:
                 self.state['restart_required'] = False
             else:
-                self.logger.info('Exponential backoff prevented data collection. Current backoff is: %d %s.'%
+                self.logger.info('Exponential backoff prevented data collection. Current backoff is: %d %s.' %
                         (self.state['backoff_time']['value'], self.state['backoff_time']['units']))
         else:
             self.pending_work = date_plus_timedelta_gt_now(self.state['last_request'], self.state['update_frequency'])
@@ -511,7 +511,7 @@ class DataCollector(ABC):
         line = 'Execution States: '
         for transition in self._state_transitions:
             line += transition.name + ' -> '
-        return line[:-4] # Removing last ' -> '
+        return line[:-4]  # Removing last ' -> '
 
     def _close_db_resources(self):
         """

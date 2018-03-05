@@ -155,7 +155,3 @@ class _CountryIndicatorsDataCollector(DataCollector):
         else:
             self.logger.info('No elements were saved because no elements have been collected.')
             self.state['inserted_elements'] = 0
-
-
-if __name__ == '__main__':
-    instance().run()
