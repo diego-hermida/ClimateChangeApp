@@ -1,27 +1,45 @@
+from pymongo.errors import DuplicateKeyError, OperationFailure
 from unittest import TestCase, mock
 from unittest.mock import Mock
-
 import utilities.db_util
 
 collection = None
+collection_name = 'test_collection'
+database = 'test_database'
+username = 'test_user'
+password = 'test_password'
+roles = [{"role": "dbOwner", "db": database}]
 
 
-def get_collection() -> utilities.db_util.MongoDBCollection:
+def get_collection(name=collection_name) -> utilities.db_util.MongoDBCollection:
     global collection
     if not collection or collection.is_closed():
-        collection = utilities.db_util.MongoDBCollection('test_collection')
+        collection = utilities.db_util.MongoDBCollection(username=username, password=password,
+                collection_name=name, database=database, use_pool=False)
+    collection.connect(name)
     return collection
 
 
 class TestDbUtil(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        import os
+        if not os.environ.get('MONGODB_IP'):
+            os.environ['MONGODB_IP'] = 'localhost'
+        try:
+            utilities.db_util.create_user(username, password, roles, database=database)
+            utilities.db_util.create_user(username, password, roles, database='other_database')
+        except DuplicateKeyError:
+            pass
+
     def tearDown(self):
-        get_collection().remove_all()
+        get_collection().collection.drop()
 
     @classmethod
     def tearDownClass(cls):
-        if get_collection():
-            get_collection().collection.drop()
+        utilities.db_util.drop_user(username=username, database=database)
+        utilities.db_util.drop_database(database=database)
 
     def test_close(self):
         self.assertFalse(get_collection().is_closed())
@@ -108,6 +126,8 @@ class TestDbUtil(TestCase):
         self.assertListEqual(expected[4:], last_page['data'])
 
     def test_get_last_elements(self):
+        self.assertIsNone(get_collection().get_last_elements())
+
         for i in range(1, 6):
             get_collection().collection.insert_one({'_id': i, 'data': 'DATA'})
 
@@ -127,16 +147,79 @@ class TestDbUtil(TestCase):
             utilities.db_util.ping_database()
         self.assertTrue(client.called)
 
-    def test_create_authorized_user(self):
-        utilities.db_util.GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'] = 'test_collection'
-        utilities.db_util.create_authorized_user('test_user', 'test_token', scope=1)
-        result = get_collection().collection.find_one(filter={'_id': 'test_user'})
-        self.assertEqual('test_user', result['_id'])
-        self.assertEqual('test_token', result['token'])
-        self.assertEqual(1, result['scope'])
+    def test_get_and_increment_execution_id(self):
+        self.assertEqual(1, utilities.db_util.get_and_increment_execution_id(subsystem_id=1, database=database))
+        self.assertEqual(2, utilities.db_util.get_and_increment_execution_id(subsystem_id=1, database=database))
+        self.assertEqual(1, utilities.db_util.get_and_increment_execution_id(subsystem_id=2, database=database))
 
-    def get_and_increment_execution_id(self):
-        utilities.db_util.GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'] = 'test_collection'
-        self.assertEqual(1, utilities.db_util.get_and_increment_execution_id())
-        self.assertEqual(2, utilities.db_util.get_and_increment_execution_id())
-        self.assertEqual(3, utilities.db_util.get_and_increment_execution_id())
+    def test_drop_database(self):
+        c = get_collection()
+        c.collection.insert_one({'_id': 1, 'data': 'foo'})
+        res = c.find(conditions={'_id': 1})
+        self.assertDictEqual({'_id': 1, 'data': 'foo'}, res['data'][0])
+        utilities.db_util.drop_database(database=database)
+        res = c.find(conditions={'_id': 1})
+        self.assertListEqual([], res['data'])
+
+    def test_create_user(self):
+        try:
+            with self.assertRaises(OperationFailure):
+                utilities.db_util.MongoDBCollection(collection_name, use_pool=False, username='user2',
+                                                        password='password2', database=database)
+            utilities.db_util.create_user('user2', 'password2', [{"role": "read", "db": database}], database=database)
+            c = utilities.db_util.MongoDBCollection(collection_name, use_pool=False, username='user2',
+                                                    password='password2', database=database)
+            self.assertListEqual([], c.find()['data'])
+        except AssertionError:
+            raise
+        finally:
+            utilities.db_util.drop_user('user2', database)
+
+    def test_drop_user(self):
+        try:
+            utilities.db_util.create_user('user2', 'password2', [{"role": "read", "db": database}], database=database)
+            c = utilities.db_util.MongoDBCollection(collection_name, use_pool=False, username='user2',
+                                                    password='password2', database=database)
+            self.assertListEqual([], c.find()['data'])
+            self.assertTrue(utilities.db_util.drop_user('user2', database))
+            with self.assertRaises(OperationFailure):
+                utilities.db_util.MongoDBCollection(collection_name, use_pool=False, username='user2',
+                                                    password='password2', database=database)
+        except AssertionError:
+            raise
+        finally:
+            try:
+                utilities.db_util.drop_user('user2', database)
+            except:
+                pass
+
+    def test_bulk_create_authorized_users(self):
+        from global_config.global_config import GLOBAL_CONFIG
+        res = utilities.db_util.bulk_create_authorized_users([{'_id': 'test_user', 'token': 'test_token', 'scope': 1},
+                {'_id': 'test_user2', 'token': 'test_token2', 'scope': 1}, {'_id': 'test_user3', 'token':
+                'test_token_with_no_scope', 'scope': None}, {'_id': 'test_user', 'token': 'gNJFSAI82', 'scope': 4}],
+                database=database)
+        self.assertEqual(4, res)
+        c = get_collection(name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'])
+        res = c.find()
+        self.assertEqual([{'_id': 'test_user', 'token': 'test_token', 'scope': 1},
+                {'_id': 'test_user2', 'token': 'test_token2', 'scope': 1}, {'_id': 'test_user3', 'token':
+                'test_token_with_no_scope', 'scope': None}], res['data'])
+
+    def test_get_connection_pool(self):
+        self.assertDictEqual({}, utilities.db_util.MongoDBCollection._pools)
+        c = utilities.db_util.MongoDBCollection(collection_name=collection_name, use_pool=True, username=username,
+                                                password=password, database=database)
+        self.assertNotEqual({}, utilities.db_util.MongoDBCollection._pools)
+        self.assertEqual(1, len(utilities.db_util.MongoDBCollection._pools))
+        self.assertIsNotNone(utilities.db_util.MongoDBCollection._pools.get(hash((username, database))))
+        c2 = utilities.db_util.MongoDBCollection(collection_name=collection_name, use_pool=True, username=username,
+                                                password=password, database=database)
+        self.assertIsNot(c, c2)
+        self.assertIs(c._client, c2._client)
+        c3 = utilities.db_util.MongoDBCollection(collection_name=collection_name, use_pool=True, username=username,
+                                                password=password, database='other_database')
+        self.assertEqual(2, len(utilities.db_util.MongoDBCollection._pools))
+        self.assertIsNot(c, c3)
+        self.assertIsNot(c._client, c3._client)
+        self.assertIsNotNone(utilities.db_util.MongoDBCollection._pools.get(hash((username, 'other_database'))))

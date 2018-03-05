@@ -274,7 +274,8 @@ def date_plus_timedelta_gt_now(date: datetime.datetime, frequency: dict) -> bool
         elif frequency['units'] == TimeUnits.NEVER:
             return False
         else:
-            pass # AttributeError will be raised if frequency['units'] is not a valid TimeUnits value.
+            # Raising exception avoids referencing a variable before it's assigned, and FIXES [BUG-031].
+            raise AttributeError('TimeUnits "%s" is unrecognized.' % frequency['units'])
         return result_date <= current_date_in_millis()
 
 
@@ -313,3 +314,93 @@ def time_limit(seconds):
         yield
     finally:
         signal.alarm(0)
+
+
+def parse_float(value: str, nullable=True) -> float:
+    """
+        Parses a "str" object into a "float" object. If the value is already a "float" object, this is a no-op.
+        :param value: String to be parsed.
+        :param nullable: Allows returning None. Defaults to True.
+        :return: The parsed value; or None, if "nullable" is True and the value cannot be parsed.
+        :raises ValueError: If nullable=False, and value cannot be parsed.
+    """
+    if isinstance(value, float):
+        return value
+    elif value is None and nullable:
+        return None
+    elif value is None:
+        raise ValueError('Input must be a "str" object, not None.')
+    try:
+        return float(value)
+    except ValueError:
+        if nullable:
+            return None
+        else:
+            raise
+
+
+def parse_int(value: str, nullable=True) -> int:
+    """
+        Parses a "str" object into a "int" object. If the value is already an "int" object, this is a no-op.
+        :param value: String to be parsed.
+        :param nullable: Allows returning None. Defaults to True.
+        :return: The parsed value; or None, if "nullable" is True and the value cannot be parsed.
+        :raises ValueError: If nullable=False, and value cannot be parsed.
+    """
+    if isinstance(value, int):
+        return value
+    elif value is None and nullable:
+        return None
+    elif value is None:
+        raise ValueError('Input must be a "str" object, not None.')
+    try:
+        return int(value)
+    except ValueError:
+        if nullable:
+            return None
+        else:
+            raise
+
+
+def parse_bool(value: str, nullable=True) -> bool:
+    """
+        Parses a "str" object into a "bool" object. If the value is already a "bool" object, this is a no-op. Examples:
+            - "0" will be evaluated to False.
+            - "2" will be evaluated to True.
+            - "True" will be evaluated to True.
+            - "FalSE" will be evaluated to False.
+            - "foo" will return None (or raise ValueError, if nullable=False).
+        :param value: String to be parsed.
+        :param nullable: Allows returning None. Defaults to True.
+        :return: The parsed value; or None, if "nullable" is True and the value cannot be parsed.
+        :raises ValueError: If nullable=False, and value cannot be parsed.
+    """
+    if isinstance(value, bool):
+        return value
+    elif value is None and nullable:
+        return None
+    elif value is None:
+        raise ValueError('Input must be a "str" object, not None.')
+    try:
+        return int(value) > 0
+    except ValueError:
+        if value.lower() == 'true':
+            return True
+        elif value.lower() == 'false':
+            return False
+        else:
+            if nullable:
+                return None
+            else:
+                raise
+
+
+def compute_wind_direction(wind_degrees: float) -> str:
+    """
+        Given wind degrees, calculates its wind direction.
+        Source: http://snowfence.umn.edu/Components/winddirectionanddegreeswithouttable3.htm
+        :param wind_degrees: Must be a number (int or float), bounded between 0 and 360.
+        :return: None, if the input is None,
+    """
+    return ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"][
+            int((wind_degrees / 22.5) + .5) % 16] if wind_degrees is not None else None

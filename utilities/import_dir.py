@@ -18,20 +18,21 @@ _dirs = []
 _mock_packages_keyword = 'mock'
 
 
-def import_modules(path, recursive=False, base_package=None) -> list:
+def import_modules(path: str, recursive: bool = False, base_package: str = None, matching_names: list = None) -> list:
     """
         Imports all modules residing in directory "path" into a alphabetically sorted list of callable <module> objects.
         :param path: Base directory to be scanned.
         :param recursive: When set to 'True', modules in all subpackages (and so on) are also imported.
         :param base_package: Python base package (use only when absolute path is provided)
+        :param matching_names: List of module names. If present, it will only import modules with such names.
         :return: A list of <module> objects, if 'include_paths' is False (default)
         :rtype: list
     """
-    names = _get_module_names(path, recursive=recursive, base_package=base_package)
+    names = _get_module_names(path, recursive=recursive, base_package=base_package, matching_names=matching_names)
     return [import_module(x) for x in names]
 
 
-def get_module_names(path, recursive=False, base_package=None, only_names=False) -> list:
+def get_module_names(path, recursive=False, base_package=None, only_names=False, matching_names: list = None) -> list:
     """
         Retrieves all module names residing in directory "path", sorted alphabetically.
         :param path: Base directory to be scanned.
@@ -40,41 +41,45 @@ def get_module_names(path, recursive=False, base_package=None, only_names=False)
         :param only_names: If 'True', retrieves only the module names (e.g. my_module). Otherwise, module names also
                            contain their packages (e.g. foo.bar.my_module).
         :return: A list of module names.
+        :param matching_names: List of module names. If present, it will only import modules with such names.
         :rtype: list
     """
     global _dirs
     _dirs = []
-    result = _get_module_names(path, recursive=recursive, base_package=base_package, include_paths=only_names)
+    result = _get_module_names(path, recursive=recursive, base_package=base_package, include_paths=only_names,
+                               matching_names=matching_names)
     return result if not only_names else sorted([get_module_name(x) for x in _dirs])
 
 
-def get_module_paths(path, recursive=False, base_package=None):
+def get_module_paths(path, recursive=False, base_package=None, matching_names: list = None):
     """
         Retrieves all module paths residing in directory "path", sorted alphabetically.
         :param path: Base directory to be scanned.
         :param recursive: When set to 'True', module paths in all subpackages (and so on) are also retrieved.
         :param base_package: Python base package (use only when absolute path is provided)
+        :param matching_names: List of module names. If present, it will only import modules with such names.
         :return: A list of module names.
         :rtype: list
     """
     global _dirs
     _dirs = []
-    _get_module_names(path, recursive=recursive, base_package=base_package, include_paths=True)
+    _get_module_names(path, recursive=recursive, base_package=base_package, include_paths=True,
+                      matching_names=matching_names)
     return sorted(_dirs)
 
 
-def _get_module_names(path, recursive=False, base_package=None, include_paths=False) -> list:
+def _get_module_names(path, recursive=False, base_package=None, include_paths=False, matching_names=None) -> list:
     result = []
     for entry in os.listdir(path):
         if entry == '__pycache__': continue
         full_entry = os.path.join(path, entry)
         if os.path.isdir(full_entry) and recursive:  # searches in subpackages
             result += _get_module_names(full_entry, recursive=recursive, base_package=base_package,
-                                         include_paths=include_paths)
+                                         include_paths=include_paths, matching_names=matching_names)
         elif os.path.isfile(full_entry):
             regexp_result = re.search(_module_file_regexp, full_entry)  # Verifies file is module
             if regexp_result:
-                if '__init__' in full_entry:
+                if '__init__' in full_entry or matching_names and get_module_name(full_entry) not in matching_names:
                     continue
                 # Replaces path separator ('/' or '\') by Python's package separator
                 if include_paths:

@@ -251,9 +251,88 @@ class TestUtil(TestCase):
         with self.assertRaises(AttributeError):
             utilities.util.date_plus_timedelta_gt_now(date, {'value': 1, 'units': TimeUnits.FOO})
 
+        # Negative case: Invalid value, but not TimeUnits.
+        with self.assertRaises(AttributeError):
+            utilities.util.date_plus_timedelta_gt_now(date, {'value': 1, 'units': "foo"})
+
     def test_time_limit(self):
         from time import sleep
 
         with self.assertRaises(TimeoutError):
             with utilities.util.time_limit(1):
                 sleep(5)
+
+    def test_parse_float(self):
+        self.assertEqual(5.1, utilities.util.parse_float(5.1, nullable=True))
+        self.assertEqual(5.1, utilities.util.parse_float(5.1, nullable=False))
+        self.assertAlmostEqual(5.1, utilities.util.parse_float('5.1', nullable=True), 0.001)
+        self.assertAlmostEqual(5.1, utilities.util.parse_float('5.1', nullable=False), 0.001)
+        self.assertIsNone(utilities.util.parse_float('', nullable=True))
+        self.assertIsNone(utilities.util.parse_float(None, nullable=True))
+        with self.assertRaises(ValueError):
+            utilities.util.parse_float('', nullable=False)
+        with self.assertRaises(ValueError):
+            utilities.util.parse_float(None, nullable=False)
+
+    def test_parse_int(self):
+        self.assertEqual(5, utilities.util.parse_int(5, nullable=True))
+        self.assertEqual(5, utilities.util.parse_int(5, nullable=False))
+        self.assertEqual(5, utilities.util.parse_int('5', nullable=True))
+        self.assertEqual(5, utilities.util.parse_int('5', nullable=False))
+        self.assertIsNone(utilities.util.parse_int('', nullable=True))
+        self.assertIsNone(utilities.util.parse_int(None, nullable=True))
+        with self.assertRaises(ValueError):
+            utilities.util.parse_int('', nullable=False)
+        with self.assertRaises(ValueError):
+            utilities.util.parse_int(None, nullable=False)
+
+    def test_parse_bool(self):
+        self.assertEqual(True, utilities.util.parse_bool(True, nullable=True))
+        self.assertEqual(False, utilities.util.parse_bool(False, nullable=False))
+        self.assertTrue(utilities.util.parse_bool('5', nullable=True))
+        self.assertTrue(utilities.util.parse_bool('TrUE', nullable=False))
+        self.assertFalse(utilities.util.parse_bool('0', nullable=True))
+        self.assertFalse(utilities.util.parse_bool('FAlsE', nullable=False))
+        self.assertIsNone(utilities.util.parse_bool('foo', nullable=True))
+        self.assertIsNone(utilities.util.parse_bool(None, nullable=True))
+        with self.assertRaises(ValueError):
+            utilities.util.parse_bool('', nullable=False)
+        with self.assertRaises(ValueError):
+            utilities.util.parse_bool(None, nullable=False)
+
+    def test_compute_wind_direction(self):
+        self.assertEqual('N', utilities.util.compute_wind_direction(349))
+        self.assertEqual('N', utilities.util.compute_wind_direction(360))
+        self.assertEqual('N', utilities.util.compute_wind_direction(0))
+        self.assertEqual('N', utilities.util.compute_wind_direction(11))
+        self.assertEqual('NNE', utilities.util.compute_wind_direction(12))
+        self.assertEqual('NNE', utilities.util.compute_wind_direction(33))
+        self.assertEqual('NE', utilities.util.compute_wind_direction(34))
+        self.assertEqual('NE', utilities.util.compute_wind_direction(56))
+        self.assertEqual('ENE', utilities.util.compute_wind_direction(57))
+        self.assertEqual('ENE', utilities.util.compute_wind_direction(78))
+        self.assertEqual('E', utilities.util.compute_wind_direction(79))
+        self.assertEqual('E', utilities.util.compute_wind_direction(101))
+        self.assertEqual('ESE', utilities.util.compute_wind_direction(102))
+        self.assertEqual('ESE', utilities.util.compute_wind_direction(123))
+        self.assertEqual('SE', utilities.util.compute_wind_direction(124))
+        self.assertEqual('SE', utilities.util.compute_wind_direction(146))
+        self.assertEqual('SSE', utilities.util.compute_wind_direction(147))
+        self.assertEqual('SSE', utilities.util.compute_wind_direction(168))
+        self.assertEqual('S', utilities.util.compute_wind_direction(169))
+        self.assertEqual('S', utilities.util.compute_wind_direction(191))
+        self.assertEqual('SSW', utilities.util.compute_wind_direction(192))
+        self.assertEqual('SSW', utilities.util.compute_wind_direction(213))
+        self.assertEqual('SW', utilities.util.compute_wind_direction(214))
+        self.assertEqual('SW', utilities.util.compute_wind_direction(236))
+        self.assertEqual('WSW', utilities.util.compute_wind_direction(237))
+        self.assertEqual('WSW', utilities.util.compute_wind_direction(258))
+        self.assertEqual('W', utilities.util.compute_wind_direction(259))
+        self.assertEqual('W', utilities.util.compute_wind_direction(281))
+        self.assertEqual('WNW', utilities.util.compute_wind_direction(282))
+        self.assertEqual('WNW', utilities.util.compute_wind_direction(303))
+        self.assertEqual('NW', utilities.util.compute_wind_direction(304))
+        self.assertEqual('NW', utilities.util.compute_wind_direction(326))
+        self.assertEqual('NNW', utilities.util.compute_wind_direction(327))
+        self.assertEqual('NNW', utilities.util.compute_wind_direction(348))
+        self.assertIsNone(utilities.util.compute_wind_direction(None))

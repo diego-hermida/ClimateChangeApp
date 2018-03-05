@@ -7,8 +7,8 @@ from utilities.util import recursive_makedir
 
 class TestImportDir(TestCase):
 
-    def test_import_modules(self):
-
+    @classmethod
+    def setUpClass(cls):
         recursive_makedir('./foo/bar/module_1')
         recursive_makedir('./foo/bar/module_2')
         recursive_makedir('./foo/bar/module_3')
@@ -27,26 +27,42 @@ class TestImportDir(TestCase):
         open('./foo/__init__.py', 'w').close()
         open('./foo/foo.py', 'w').close()
 
-        # Case module names (with packages)
+    @classmethod
+    def tearDownClass(cls):
+        rmtree('./foo')
+
+    def test_import_modules_with_paths(self):
         expected = sorted(['foo.bar.module_1.module_1', 'foo.bar.module_2.module_2', 'foo.bar.module_3.module_3',
                     'foo.module_a.module_a', 'foo.module_b.module_b', 'foo.foo'])
         result = utilities.import_dir.get_module_names('./foo', recursive=True, base_package='foo')
         self.assertEqual(expected, result)
 
-        # Case module names (only module names)
+    def test_import_modules_only_names(self):
         expected = sorted(['module_1', 'module_2', 'module_3',
                            'module_a', 'module_b', 'foo'])
         result = utilities.import_dir.get_module_names('./foo', recursive=True, base_package='foo', only_names=True)
         self.assertEqual(expected, result)
 
-        # Case paths
+    def test_import_modules_only_paths(self):
         expected = sorted(['./foo/bar/module_1/module_1', './foo/bar/module_2/module_2', './foo/bar/module_3/module_3',
                            './foo/module_a/module_a', './foo/module_b/module_b', './foo/foo'])
         result = utilities.import_dir.get_module_paths('./foo', recursive=True, base_package='foo')
         self.assertEqual(expected, result)
 
-        # Case modules
+    def test_import_modules(self):
+        expected = sorted(['./foo/bar/module_1/module_1', './foo/bar/module_2/module_2', './foo/bar/module_3/module_3',
+                           './foo/module_a/module_a', './foo/module_b/module_b', './foo/foo'])
         result = utilities.import_dir.import_modules('./foo', recursive=True, base_package='foo')
         self.assertEqual(len(expected), len(result))
 
-        rmtree('./foo')
+    def test_import_modules_only_paths_matching_names(self):
+        expected = sorted(['./foo/bar/module_1/module_1', './foo/module_a/module_a'])
+        result = utilities.import_dir.get_module_paths('./foo', recursive=True, base_package='foo',
+                                                       matching_names=['module_1', 'module_a'])
+        self.assertEqual(expected, result)
+
+    def test_import_modules_only_names_matching_names(self):
+        expected = sorted(['foo'])
+        result = utilities.import_dir.get_module_names('./foo', recursive=True, base_package='foo', only_names=True,
+                                                       matching_names=['foo'])
+        self.assertEqual(expected, result)
