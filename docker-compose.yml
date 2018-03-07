@@ -6,7 +6,7 @@ services:
             context: .
             dockerfile: ./data_gathering_subsystem/Dockerfile
         container_name: data_gathering_subsystem
-        image: diegohermida/data_gathering_subsystem:2.0
+        image: diegohermida/data_gathering_subsystem:2.0.1
         volumes:
             - ~/ClimateChangeApp/log:/ClimateChangeApp/log
             - ~/ClimateChangeApp/state:/ClimateChangeApp/state
@@ -17,7 +17,7 @@ services:
             context: .
             dockerfile: ./data_conversion_subsystem/Dockerfile
         container_name: data_conversion_subsystem
-        image: diegohermida/data_conversion_subsystem:1.0
+        image: diegohermida/data_conversion_subsystem:1.0.1
         volumes:
             - ~/ClimateChangeApp/log:/ClimateChangeApp/log
             - ~/ClimateChangeApp/state:/ClimateChangeApp/state
