@@ -75,8 +75,7 @@ class TestCurrentConditions(TestCase):
         self.assertTrue(self.data_converter.advisedly_no_data_converted)
         self.assertListEqual([], self.data_converter.data)
 
-    @mock.patch('data_conversion_subsystem.data_converters.current_conditions.current_conditions.'
-                'CurrentConditionsObservation.objects.raw', Mock())
+    @mock.patch('django.db.connection.cursor', Mock())
     @mock.patch('data_conversion_subsystem.data_converters.current_conditions.current_conditions.'
                 'CurrentConditionsObservation.objects.bulk_create', Mock(return_value=[1, 2, 3]))
     def test_save_data(self):

@@ -21,7 +21,7 @@ STATE_SAVED = 70
 FINISHED = 80
 ABORTED = 100
 
-MIN_BACKOFF = {'value': 1, 'units': 's'}
+MIN_BACKOFF = {'value': 60, 'units': 's'}
 MAX_BACKOFF_SECONDS = 86400  # One day
 
 MessageType = enum('register', 'finished', 'report', 'exit')
@@ -340,6 +340,7 @@ class DataCollector(ABC):
             :param file_path: File path to '.py' file. '__file__' should always be passed as the 'file_path' parameter.
             :param log_to_stdout: In True, DataCollector's logger will show log records by console.
             :param log_to_file: If True, DataCollector's logger will save log records to a file.
+            :param log_to_telegram: If True, DataCollector's logger will send CRITICAL log records via Telegram messages.
         """
         from utilities.log_util import get_logger
         self._initialize_states()
@@ -486,10 +487,10 @@ class DataCollector(ABC):
         if self.state['error']:
             self.state['error'] = self.state['error']['class']
             self.state['errors'][self.state['error']] = self.state['errors'].get(self.state['error'], 0) + 1
-            if self.state['error'] == self.state['last_error']:
-                next_exponential_backoff(self.state['backoff_time'], MAX_BACKOFF_SECONDS)
-            else:
+            if self.state['error'] != self.state['last_error']:
                 self.state['backoff_time'] = MIN_BACKOFF
+            value, units = next_exponential_backoff(self.state['backoff_time'], MAX_BACKOFF_SECONDS)
+            self.state['backoff_time'] = {'value': value, 'units': units}
             self.state['last_error'] = self.state['error']
         else:
             # FIXES [BUG-033].

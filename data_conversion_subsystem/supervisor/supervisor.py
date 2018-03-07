@@ -103,7 +103,6 @@ class Supervisor:
                 self.logger.warning('"%s" execution has been ABORTED, but module restart hasn\'t been '
                         'scheduled. This issue will be fixed now.' % data_converter)
                 try:
-                    data_converter.state['restart_required'] = True
                     if data_converter.state['error']:
                         last_state = read_state(data_converter._file_path, data_converter.config['STATE_STRUCT'],
                                 root_dir=DCS_CONFIG['DATA_CONVERSION_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
@@ -112,7 +111,7 @@ class Supervisor:
                         last_state['errors'] = data_converter.state['errors']
                         last_state['last_error'] = data_converter.state['last_error']
                         last_state['backoff_time'] = data_converter.state['backoff_time']
-                        last_state['restart_required'] = data_converter.state['restart_required']
+                        last_state['restart_required'] = True
                         data_converter.state = last_state
                         data_converter.execute_actions(state=dc.EXECUTION_CHECKED, who=self)
                         self.logger.info('Scheduled restart has been set for "%s". Errors and backoff time have been '

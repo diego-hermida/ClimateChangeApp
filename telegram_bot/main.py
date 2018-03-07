@@ -53,7 +53,7 @@ def blue_bold(msg: str) -> str:
 def main():
     # Waiting until the user has established a conversation with the bot.
     try:
-        input('%s\nHit "%s" when done:' % (
+        input('%s\nHit "%s" when done: ' % (
             'Start a chat with the Telegram bot %s.' % blue_bold(TELEGRAM_CONFIG['BOT_NAME']), bold('Enter')))
     except KeyboardInterrupt:
         print('\n\nAborting installation (Ctrl+C).')

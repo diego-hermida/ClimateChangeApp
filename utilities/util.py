@@ -214,22 +214,22 @@ def get_exception_info(exception: BaseException) -> dict:
             'message': exception.__str__()}
 
 
-def next_exponential_backoff(previous_backoff: dict, max_backoff: int):
+def next_exponential_backoff(previous_backoff: dict, max_backoff: int) -> (int, str):
     """
         Calculates a random time, yielding between 2 and 10 times the previous wait time.
-        Postcondition: The 'previous_backoff' value it's modified in-place.
         :param previous_backoff: A dict, with the following structure: {'value': <int>, 'units': TimeUnits}. Examples:
                                      - {'value': 2, 'units': s}
                                      - {'value': 3, 'units': week}
         :param max_backoff: If the operation yields a value higher than 'max_backoff', then the result is 'max_backoff'.
+        :return: A tuple with the new value and time units
     """
+    from copy import deepcopy
     if previous_backoff['units'] == TimeUnits.NEVER:
-        previous_backoff['value'] = max_backoff
-        previous_backoff['units'] = TimeUnits.s
+        return max_backoff, TimeUnits.s
     else:
         value = randint(2, 10) * previous_backoff['value']
         value = value if value < max_backoff else max_backoff
-        previous_backoff['value'] = value
+        return value, previous_backoff['units']
 
 
 def check_coordinates(loc_lat: float, loc_long: float, data_lat: float, data_long: float, margin=1.0) -> bool:

@@ -25,9 +25,9 @@ STATE_SAVED = 70
 FINISHED = 80
 ABORTED = 100
 
-MIN_BACKOFF = {'value': 1, 'units': 's'}
+MIN_BACKOFF = {'value': 60, 'units': 's'}
 MAX_BACKOFF_SECONDS = 86400  # One day
-DATA_MAX_BACKOFF_SECONDS = 7 * 86400  # One week
+
 
 MessageType = enum('register', 'finished', 'report', 'exit')
 CONFIG = get_config(__file__)
@@ -599,10 +599,10 @@ class DataConverter(ABC):
         if self.state['error']:
             self.state['error'] = self.state['error']['class']
             self.state['errors'][self.state['error']] = self.state['errors'].get(self.state['error'], 0) + 1
-            if self.state['error'] == self.state['last_error']:
-                next_exponential_backoff(self.state['backoff_time'], DATA_MAX_BACKOFF_SECONDS)
-            else:
+            if self.state['error'] != self.state['last_error']:
                 self.state['backoff_time'] = MIN_BACKOFF
+            value, units = next_exponential_backoff(self.state['backoff_time'], MAX_BACKOFF_SECONDS)
+            self.state['backoff_time'] = {'value': value, 'units': units}
             self.state['last_error'] = self.state['error']
         else:
             # FIXES [BUG-033].
@@ -610,7 +610,7 @@ class DataConverter(ABC):
         # Only serializing startIndex if data conversion was successful
         if self.check_result is True and self.state['inserted_elements'] and not self.config.get('RESTART_START_INDEX'):
             self.state['start_index'] += self.state['inserted_elements']
-        if self.config.get('RESTART_START_INDEX'):
+        elif self.config.get('RESTART_START_INDEX'):
             self.logger.info('The "start_index" parameter will not be serialized, since "RESTART_START_INDEX" has been '
                     'explicitly set.')
         self.state['last_request'] = serialize_date(self.state['last_request'])

@@ -71,7 +71,11 @@ if [ "$API_IP" == "null" ] || [ "$POSTGRES_IP" == "null" ] ||
                          \n\t- POSTGRES_IP: IP address of the machine containing the PostgreSQL service.
                          \n\t- EXTERNAL_POSTGRES_SERVER: indicates that the PostgreSQL server is externally provided,
                                and does not create a Docker container. Defaults to \"false\".
-                         \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\"." 1;
+                         \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
+                         \n\t- DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS: enables \"Expert Mode\", allowing to pass custom
+                               args to the deploy script. Defaults to \"--all --with-tests\".
+                         \nIMPORTANT: DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS must be used in conjunction with
+                                      SKIP_DEPLOY=false." 1;
 fi
 
 
@@ -121,5 +125,9 @@ fi
 # Displaying installation summary
 echo "";
 message 2 "[SUCCESS] Installation results:";
+if [ "$EXTERNAL_POSTGRES_SERVER" == "true" ]; then
+    message 2 "- PostgreSQL: external";
+    else message 2 "- PostgreSQL: up";
+fi
 message 2 "- Data Conversion Subsystem: built";
 echo "";

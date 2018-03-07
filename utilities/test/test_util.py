@@ -192,20 +192,25 @@ class TestUtil(TestCase):
         iteration_count = 0
 
         # Common case
+        previous_value = backoff['value']
+        value = backoff['value']
         for index in range(max_iterations):
-            previous_value = backoff['value']
-            utilities.util.next_exponential_backoff(backoff, max_backoff)
-            if backoff['value'] == max_backoff:
+            value, units = utilities.util.next_exponential_backoff(backoff, max_backoff)
+            if value == max_backoff:
                 break
-            self.assertGreater(backoff['value'], previous_value)
+            self.assertGreater(value, previous_value)
             iteration_count += 1
+            previous_value = value
+            backoff['value'] = value
+            backoff['units'] = units
         self.assertLessEqual(iteration_count, max_iterations)
-        self.assertEqual(max_backoff, backoff['value'])
+        self.assertEqual(max_backoff, value)
 
         # TimeUnits = NEVER case
         backoff = {'value': None, 'units': TimeUnits.NEVER}
-        utilities.util.next_exponential_backoff(backoff, max_backoff)
-        self.assertEqual({'value': max_backoff, 'units': 's'}, backoff)
+        value, units = utilities.util.next_exponential_backoff(backoff, max_backoff)
+        self.assertEqual(value, max_backoff)
+        self.assertEqual(units, 's')
 
     def test_check_coordinates(self):
         cairo = {'_id': 1, 'country_code': 'EG', 'latitude': 30.06263, 'longitude': 31.24967}

@@ -78,8 +78,7 @@ class TestWeatherForecast(TestCase):
         self.data_converter._perform_data_conversion()
         self.assertListEqual([], self.data_converter.data)
 
-    @mock.patch('data_conversion_subsystem.data_converters.weather_forecast.weather_forecast.'
-                'WeatherForecastObservation.objects.raw', Mock())
+    @mock.patch('django.db.connection.cursor', Mock())
     @mock.patch('data_conversion_subsystem.data_converters.weather_forecast.weather_forecast.'
                 'WeatherForecastObservation.objects.bulk_create', Mock(return_value=[1, 2, 3]))
     def test_save_data(self):
