@@ -66,3 +66,15 @@ services:
             - ~/ClimateChangeApp/postgresql/data:/postgresql/data
         ports:
             - 5432:5432
+    jenkins:
+        build:
+            context: .
+            dockerfile: ./ci/Dockerfile
+        image: diegohermida/jenkins:1.0
+        container_name: jenkins
+        volumes:
+            - ~/ClimateChangeApp/jenkins:/var/jenkins_home
+            - /var/run/docker.sock:/var/run/docker.sock
+        ports:
+            - 8090:8080
+            - 50000:50000

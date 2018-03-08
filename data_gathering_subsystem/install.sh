@@ -103,7 +103,7 @@ if [ "$EXTERNAL_MONGODB_SERVER" == "false" ]; then
     message -1 "[INFO] Launching the MongoDB service.";
     docker-compose up -d mongodb;
     if [ $? != 0 ]; then
-        exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." $?;
+        exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." 1;
     fi
 else
     message -1 "[INFO] MongoDB server has been tagged as \"external\". Thus, the MongoDB Docker service won't be launched.";
@@ -116,7 +116,7 @@ message 4 "[COMPONENT] Building the Data Gathering Subsystem.";
 # Building the Data Gathering Subsystem component
 docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" data_gathering_subsystem
 if [ $? != 0 ]; then
-    exit_with_message 1 "> The Data Gathering Subsystem image could not be built." $?;
+    exit_with_message 1 "> The Data Gathering Subsystem image could not be built." 1;
 fi
 
 

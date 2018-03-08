@@ -1,17 +1,6 @@
 #! /bin/bash
 
-# ---------- Definitions ---------- #
-
-# Setting default values
-MONGODB_IP=null;
-POSTGRES_IP=null;
-API_IP=null;
-LOCALHOST_IP=null;
-EXTERNAL_MONGODB_SERVER=false;
-EXTERNAL_POSTGRES_SERVER=false;
-EXTERNAL_API_SERVICE=false;
-RUN_API=false;
-SKIP_DEPLOY=true;
+# ---------- Functions ---------- #
 
 # Exits the installation process, but prints a message to command line before doing so.
 # :param $1: Colour of the output line. This will be reset before exiting.
@@ -42,6 +31,24 @@ function message () {
     tput sgr0;
 }
 
+
+
+
+# ---------- Definitions ---------- #
+
+# Setting default values
+MONGODB_IP=null;
+POSTGRES_IP=null;
+API_IP=null;
+LOCALHOST_IP=$(calculate_ip_address);
+EXTERNAL_MONGODB_SERVER=false;
+EXTERNAL_POSTGRES_SERVER=false;
+EXTERNAL_API_SERVICE=false;
+RUN_API=false;
+SKIP_DEPLOY=true;
+MACOS=false;
+
+
 # ---------- Argument manipulation ---------- #
 
 # Parsing arguments
@@ -59,6 +66,7 @@ do
             API_IP)                     API_IP=${VALUE} ;;
             EXTERNAL_API_SERVICE)       EXTERNAL_API_SERVICE=${VALUE} ;;
             LOCALHOST_IP)               LOCALHOST_IP=${VALUE} ;;
+            MACOS)                      MACOS=${VALUE} ;;
             *)
     esac
 done
@@ -70,14 +78,15 @@ EXTERNAL_POSTGRES_SERVER=echo "$EXTERNAL_POSTGRES_SERVER" | tr '[:upper:]' '[:lo
 EXTERNAL_API_SERVICE=echo "$EXTERNAL_API_SERVICE" | tr '[:upper:]' '[:lower:]';
 RUN_API=echo "$RUN_API" | tr '[:upper:]' '[:lower:]';
 SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
+MACOS=echo "$MACOS" | tr '[:upper:]' '[:lower:]';
 
 
 # Ensuring variables contain legit values
 
-if ([ "$LOCALHOST_IP" == "null" ] && ([ "$MONGODB_IP" == "null" ] || [ "$API_IP" == "null" ] || [ "$POSTGRES_IP" == "null" ])) ||
-    ([ "$MONGODB_IP" == "null" ] || [ "$API_IP" == "null" ] || [ "$POSTGRES_IP" == "null" ])
+if  ([ "$MONGODB_IP$API_IP$MONGODB_IP" != "nullnullnull" ] && [ "$MONGODB_IP$API_IP$MONGODB_IP" == *"null"* ])
     ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
     ([ "$RUN_API" != "true" ] && [ "$RUN_API" != "false" ]) ||
+    ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]) ||
     ([ "$EXTERNAL_MONGODB_SERVER" != "true" ] && [ "$EXTERNAL_MONGODB_SERVER" != "false" ]) ||
     ([ "$EXTERNAL_API_SERVICE" != "true" ] && [ "$EXTERNAL_API_SERVICE" != "false" ]) ||
     ([ "$EXTERNAL_POSTGRES_SERVER" != "true" ] && [ "$EXTERNAL_POSTGRES_SERVER" != "false" ]); then
@@ -96,8 +105,9 @@ if ([ "$LOCALHOST_IP" == "null" ] && ([ "$MONGODB_IP" == "null" ] || [ "$API_IP"
                                not create a Docker container. Defaults to \"false\".
                          \n\t- RUN_API: launches the API service after building it. Defaults to \"false\".
                          \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
-                         \n\n> install.sh LOCALHOST_IP=xxx.xxx.xxx.xxx [RUN_API=true] [SKIP_DEPLOY=false]
-                         \n\t- LOCALHOST_IP: IP address of the machine.
+                         \n\n> install.sh [MACOS=true] [RUN_API=true] [SKIP_DEPLOY=false]
+                         \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
+                               IP address.
                          \n\t- RUN_API: launches the API service after building it. Defaults to \"false\".
                          \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
                          \n\tNOTE: This option allows to deploy all the Subsystems at the same machine.
@@ -106,9 +116,13 @@ fi
 
 
 # Overriding IP values if LOCALHOST_IP is present
-if [ "$LOCALHOST_IP" != "null" ]; then
+if [ "$MONGODB_IP$API_IP$MONGODB_IP" == "nullnullnull" ]; then
     message -1 "[INFO] Making a local installation.";
     message -1 "[INFO] The MongoDB, API and PostgreSQL components will be installed (locally) as Docker containers.";
+    if [ "$MACOS" == "true" ]; then
+        message -1 "[INFO] Since host OS is macOS/OS X, setting LOCALHOST_IP to \"docker.for.mac.localhost.\"."
+        LOCALHOST_IP="docker.for.mac.localhost"
+    fi
     MONGODB_IP=${LOCALHOST_IP};
     API_IP=${LOCALHOST_IP};
     POSTGRES_IP=${LOCALHOST_IP};
@@ -152,7 +166,7 @@ if [ "$EXTERNAL_MONGODB_SERVER" == "false" ]; then
     message -1 "[INFO] Launching the MongoDB service.";
     docker-compose up -d mongodb;
     if [ $? != 0 ]; then
-        exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." $?;
+        exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." 1;
     fi
 else
     message -1 "[INFO] MongoDB server has been tagged as \"external\". Thus, the MongoDB Docker service won't be launched.";
@@ -165,7 +179,7 @@ message 4 "[COMPONENT] Building the Data Gathering Subsystem.";
 # Building the Data Gathering Subsystem component
 docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" data_gathering_subsystem
 if [ $? != 0 ]; then
-    exit_with_message 1 "> The Data Gathering Subsystem image could not be built." $?;
+    exit_with_message 1 "> The Data Gathering Subsystem image could not be built." 1;
 fi
 
 
@@ -182,14 +196,14 @@ if [ "$EXTERNAL_API_SERVICE" == "false" ]; then
     message -1 "[INFO] Building the API image."
     docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" api
     if [ $? != 0 ]; then
-        exit_with_message 1 "[INFO] The API image could not be built." $?;
+        exit_with_message 1 "[INFO] The API image could not be built." 1;
     fi
     # Launching the API service
     if [ "$RUN_API" == "true" ]; then
         message -1 "[INFO] Launching the API service.";
         docker-compose up -d api;
         if [ $? != 0 ]; then
-            exit_with_message 1 "> The API service could not be initialized." $?;
+            exit_with_message 1 "> The API service could not be initialized." 1;
         fi
     fi
 else
@@ -211,7 +225,7 @@ if [ "$EXTERNAL_POSTGRES_SERVER" == "false" ]; then
     message -1 "[INFO] Launching the PostgreSQL service.";
     docker-compose up -d postgres;
     if [ $? != 0 ]; then
-        exit_with_message 1 "[ERROR] The PostgreSQL service could not be initialized." $?;
+        exit_with_message 1 "[ERROR] The PostgreSQL service could not be initialized." 1;
     fi
 else
     message -1 "[INFO] PostgreSQL server has been tagged as \"external\". Thus, the PostgreSQL Docker service won't be launched.";
@@ -224,7 +238,7 @@ message 4 "[COMPONENT] Building the Data Conversion Subsystem.";
 # Building the Data Gathering Subsystem component
 docker-compose build --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg API_IP=${API_IP} --build-arg DEPLOY_ARGS="${DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS}" data_conversion_subsystem
 if [ $? != 0 ]; then
-    exit_with_message 1 "> The Data Conversion Subsystem image could not be built." $?;
+    exit_with_message 1 "> The Data Conversion Subsystem image could not be built." 1;
 fi
 
 

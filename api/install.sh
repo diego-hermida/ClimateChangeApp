@@ -106,7 +106,7 @@ if [ "$EXTERNAL_MONGODB_SERVER" == "false" ]; then
     message -1 "[INFO] Launching the MongoDB service.";
     docker-compose up -d mongodb;
     if [ $? != 0 ]; then
-        exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." $?;
+        exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." 1;
     fi
 else
     message -1 "[INFO] MongoDB server has been tagged as \"external\". Thus, the MongoDB Docker service won't be launched.";
@@ -125,14 +125,14 @@ fi
 message -1 "[INFO] Building the API image."
 docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" api
 if [ $? != 0 ]; then
-    exit_with_message 1 "[INFO] The API image could not be built." $?;
+    exit_with_message 1 "[INFO] The API image could not be built." 1;
 fi
 # Launching the API service
 if [ "$RUN_API" == "true" ]; then
     message -1 "[INFO] Launching the API service.";
     docker-compose up -d api;
     if [ $? != 0 ]; then
-        exit_with_message 1 "> The API service could not be initialized." $?;
+        exit_with_message 1 "> The API service could not be initialized." 1;
     fi
 fi
 

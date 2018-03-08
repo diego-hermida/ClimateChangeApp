@@ -105,7 +105,7 @@ if [ "$EXTERNAL_POSTGRES_SERVER" == "false" ]; then
     message -1 "[INFO] Launching the PostgreSQL service.";
     docker-compose up -d postgres;
     if [ $? != 0 ]; then
-        exit_with_message 1 "[ERROR] The PostgreSQL service could not be initialized." $?;
+        exit_with_message 1 "[ERROR] The PostgreSQL service could not be initialized." 1;
     fi
 else
     message -1 "[INFO] PostgreSQL server has been tagged as \"external\". Thus, the PostgreSQL Docker service won't be launched.";
@@ -118,7 +118,7 @@ message 4 "[COMPONENT] Building the Data Conversion Subsystem.";
 # Building the Data Gathering Subsystem component
 docker-compose build --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg API_IP=${API_IP} --build-arg DEPLOY_ARGS="${DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS}" data_conversion_subsystem
 if [ $? != 0 ]; then
-    exit_with_message 1 "> The Data Conversion Subsystem image could not be built." $?;
+    exit_with_message 1 "> The Data Conversion Subsystem image could not be built." 1;
 fi
 
 
