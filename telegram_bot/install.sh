@@ -48,6 +48,7 @@ do
             FORCE_BUILD)                            FORCE_BUILD=${VALUE} ;;
             SKIP_DEPLOY)                            SKIP_DEPLOY=${VALUE} ;;
             TELEGRAM_CONFIGURATOR_DEPLOY_ARGS)      TELEGRAM_CONFIGURATOR_DEPLOY_ARGS=${VALUE} ;;
+            RUN)                                    RUN=${VALUE} ;;
             *)
     esac
 done
@@ -56,7 +57,7 @@ done
 SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 FORCE_BUILD=echo "$FORCE_BUILD" | tr '[:upper:]' '[:lower:]';
 TELEGRAM_CONFIGURATOR_DEPLOY_ARGS=echo "$TELEGRAM_CONFIGURATOR_DEPLOY_ARGS" | tr '[:upper:]' '[:lower:]';
-
+RUN=echo "$RUN" | tr '[:upper:]' '[:lower:]';
 
 # Warnings
 if [ "$TELEGRAM_CONFIGURATOR_DEPLOY_ARGS" != "null" ] && [ "$SKIP_DEPLOY" == "true" ]; then
@@ -110,11 +111,11 @@ if [ "$RUN" == "true" ]; then
     message -1 "[INFO] Running the Telegram Configurator component.";
     echo "";
     docker run --rm -i -t --name telegram_bot diegohermida/telegram_bot:1.0;
-fi
 
-# Displaying installation summary
-if [ $? != 0 ]; then
-        exit_with_message 1 "\n[ERROR] The Telegram Configurator did not exit normally. You should rerun this installer." 1;
-   else exit_with_message 2 "\n[SUCCESS] The Telegram Configurator was successful." 0;
+    # Displaying installation summary
+    if [ $? != 0 ]; then
+            exit_with_message 1 "\n[ERROR] The Telegram Configurator did not exit normally. You should rerun this installer." 1;
+       else exit_with_message 2 "\n[SUCCESS] The Telegram Configurator was successful." 0;
+    fi
+    echo ""
 fi
-echo ""
