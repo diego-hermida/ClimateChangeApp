@@ -26,7 +26,7 @@ def get_connection(with_autocommit=True):
         :return:
     """
     connection = connect(host=environ.get(GLOBAL_CONFIG['POSTGRES_SERVER'], 'localhost'),
-            port=GLOBAL_CONFIG['POSTGRES_PORT'], user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
+            port=environ.get(GLOBAL_CONFIG['POSTGRES_PORT'], 5432), user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
             'POSTGRES_ROOT_PASSWORD'], database=GLOBAL_CONFIG['POSTGRES_ROOT'], connect_timeout=GLOBAL_CONFIG[
             'POSTGRES_MAX_SECONDS_WAIT'])
     if with_autocommit:
@@ -47,7 +47,7 @@ def create_application_database(connection=None, close_after=False):
                 - https://stackoverflow.com/questions/13793399/passing-table-name-as-a-parameter-in-psycopg2
     """
     connection = connect(host=environ.get(GLOBAL_CONFIG['POSTGRES_SERVER'], 'localhost'),
-            port=GLOBAL_CONFIG['POSTGRES_PORT'], user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
+            port=environ.get(GLOBAL_CONFIG['POSTGRES_PORT'], 5432), user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
             'POSTGRES_ROOT_PASSWORD'], database=GLOBAL_CONFIG['POSTGRES_ROOT'], connect_timeout=GLOBAL_CONFIG[
             'POSTGRES_MAX_SECONDS_WAIT']) if not connection else connection
     connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -78,7 +78,7 @@ def create_application_user(connection=None, close_after=False):
                 - https://stackoverflow.com/questions/13793399/passing-table-name-as-a-parameter-in-psycopg2
     """
     connection = connect(host=environ.get(GLOBAL_CONFIG['POSTGRES_SERVER'], 'localhost'),
-            port=GLOBAL_CONFIG['POSTGRES_PORT'], user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
+            port=environ.get(GLOBAL_CONFIG['POSTGRES_PORT'], 5432), user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
             'POSTGRES_ROOT_PASSWORD'], database=GLOBAL_CONFIG['POSTGRES_ROOT'], connect_timeout=GLOBAL_CONFIG[
             'POSTGRES_MAX_SECONDS_WAIT']) if not connection else connection
     connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -106,7 +106,7 @@ def ping_database(close_after=False):
     """
     try:
         connection = connect(host=environ.get(GLOBAL_CONFIG['POSTGRES_SERVER'], 'localhost'),
-                port=GLOBAL_CONFIG['POSTGRES_PORT'], user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
+                port=environ.get(GLOBAL_CONFIG['POSTGRES_PORT'], 5432), user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
                 'POSTGRES_ROOT_PASSWORD'], database=GLOBAL_CONFIG['POSTGRES_ROOT'], connect_timeout=GLOBAL_CONFIG[
                 'POSTGRES_MAX_SECONDS_WAIT'])
         if close_after:

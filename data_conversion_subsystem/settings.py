@@ -17,7 +17,7 @@ DATABASES = {
         'USER': GLOBAL_CONFIG['POSTGRES_USERNAME'],
         'PASSWORD': GLOBAL_CONFIG['POSTGRES_USER_PASSWORD'],
         'HOST': os.environ.get(GLOBAL_CONFIG['POSTGRES_SERVER'], 'localhost'),
-        'PORT': GLOBAL_CONFIG['POSTGRES_PORT'],
+        'PORT': int(os.environ.get(GLOBAL_CONFIG['POSTGRES_PORT'], 5432)),
     }
 }
 

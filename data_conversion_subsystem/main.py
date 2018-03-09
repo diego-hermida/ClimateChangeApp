@@ -88,7 +88,7 @@ def main(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
     _logger.info('Determining if the Data Gathering Subsystem API is up.')
     try:
         r = requests.get(DCS_CONFIG['API_ALIVE_ENDPOINT_URL'].replace('{IP}', os.environ['API_IP']).replace('{PORT}',
-                str(GLOBAL_CONFIG['API_PORT'])), timeout=5)
+                str(os.environ.get(GLOBAL_CONFIG['API_PORT'], 5000))), timeout=5)
     except requests.RequestException:
         _logger.critical('An HTTP error occurred. The Subsystem will exit now, since the Data Gathering Subsystem API'
                 ' is unreachable.')

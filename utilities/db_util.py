@@ -8,11 +8,12 @@ def drop_database(database=GLOBAL_CONFIG['MONGODB_DATABASE']):
         Deletes all contents from a database.
         :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), port=GLOBAL_CONFIG['MONGODB_PORT'],
-            authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
-            serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-            username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
-            authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+                    port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
+                    authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                    serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                    username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                    authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
     try:
         c.drop_database(database)
     finally:
@@ -27,11 +28,12 @@ def create_user(username: str, password: str, roles: list, database=GLOBAL_CONFI
         :param roles: User roles.
         :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), port=GLOBAL_CONFIG['MONGODB_PORT'],
-            authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
-            serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-            username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
-            authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+                    port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
+                    authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                    serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                    username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                    authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
     try:
         c.get_database(database).command('createUser', username, pwd=password, roles=roles)
     except Exception:
@@ -47,11 +49,12 @@ def drop_user(username=GLOBAL_CONFIG['MONGODB_USERNAME'], database=GLOBAL_CONFIG
         :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
         :return: True, if the user has been successfully dropped; False, otherwise.
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), port=GLOBAL_CONFIG['MONGODB_PORT'],
-            authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
-            serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-            username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
-            authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+                    port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
+                    authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                    serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                    username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                    authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
     try:
         return c.get_database(database).command('dropUser', username)
     finally:
@@ -72,11 +75,12 @@ def bulk_create_authorized_users(users: list, database=GLOBAL_CONFIG['MONGODB_DA
     for user in users:
         # Changing "$set" to "$setOnInsert" FIXES [BUG-029].
         ops.append(UpdateOne({'_id': user['_id']}, update={'$setOnInsert': user}, upsert=True))
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), port=GLOBAL_CONFIG['MONGODB_PORT'],
-            authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
-            serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-            username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
-            authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+                    port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
+                    authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                    serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                    username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                    authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
     try:
         result = c.get_database(database).get_collection(GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION']).\
                 bulk_write(ops)
@@ -91,11 +95,12 @@ def ping_database():
         Performs a connection attempt, to ensure database is up. Regardless of the error, the client will be closed.
         :raises EnvironmentError: If any error occurs during the process.
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), port=GLOBAL_CONFIG['MONGODB_PORT'],
-            authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
-            serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-            username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
-            authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+                    port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
+                    authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
+                    serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                    username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
+                    authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
     try:
         c.server_info()
     except Exception as exc:
@@ -113,7 +118,8 @@ def get_and_increment_execution_id(subsystem_id: int, database=GLOBAL_CONFIG['MO
         :param increment: If True, the execution ID will be incremented (default).
         :return: An integer, containing the current execution ID.
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), port=GLOBAL_CONFIG['MONGODB_PORT'],
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+                    port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
                     authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
                     serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
                     username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
@@ -138,12 +144,13 @@ def get_connection_pool(username=GLOBAL_CONFIG['MONGODB_USERNAME'], password=GLO
         :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
         :return: A pymongo.MongoClient instance.
     """
-    return MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), port=GLOBAL_CONFIG['MONGODB_PORT'],
-            authSource=database, serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-            username=username, password=password, authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'],
-            maxPoolSize=GLOBAL_CONFIG['MONGODB_MAX_POOL_SIZE'],
-            waitQueueMultiple=GLOBAL_CONFIG['MONGODB_WAIT_QUEUE_MULTIPLE'],
-            waitQueueTimeoutMS=GLOBAL_CONFIG['WAIT_QUEUE_MILLISECONDS_TIMEOUT'])
+    return MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+                       port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
+                       authSource=database, serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                       username=username, password=password, authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'],
+                       maxPoolSize=GLOBAL_CONFIG['MONGODB_MAX_POOL_SIZE'],
+                       waitQueueMultiple=GLOBAL_CONFIG['MONGODB_WAIT_QUEUE_MULTIPLE'],
+                       waitQueueTimeoutMS=GLOBAL_CONFIG['WAIT_QUEUE_MILLISECONDS_TIMEOUT'])
 
 
 class MongoDBCollection:
@@ -195,7 +202,7 @@ class MongoDBCollection:
                 self._client = MongoDBCollection._pools[_id]
         else:
             self._client = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
-                    port=GLOBAL_CONFIG['MONGODB_PORT'], authSource=database,
+                    port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)), authSource=database,
                     serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
                     username=username, password=password, authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'])
         self._client.server_info()  # Checks valid connection.

@@ -3,7 +3,10 @@ FROM pypy:latest
 
 # Provisional solution to [BUG-015]
 ARG MONGODB_IP
+ARG MONGODB_PORT
+
 ENV MONGODB_IP=$MONGODB_IP
+ENV MONGODB_PORT=$MONGODB_PORT
 
 # Allows setting custom args to execute the deploy script. Use --build-arg DEPLOY_ARGS=<args> when building the Subsystem
 # service with docker-compose.

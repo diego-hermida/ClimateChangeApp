@@ -442,7 +442,7 @@ class DataConverter(ABC):
             # Converting data for, at most, the next MAX_DATA_CALLS_PER_MODULE_AND_EXECUTION executions.
             for i in range(DCS_CONFIG['MAX_DATA_CALLS_PER_MODULE_AND_EXECUTION']):
                 url = DCS_CONFIG['API_DATA_ENDPOINT_URL'].replace('{IP}', os.environ['API_IP']).replace('{PORT}',
-                        str(GLOBAL_CONFIG['API_PORT'])).replace('{MODULE}', self.module_name)
+                        str(os.environ.get(GLOBAL_CONFIG['API_PORT'], 5000))).replace('{MODULE}', self.module_name)
                 try:
                     r = requests.get(url, headers={'Authorization': 'Bearer %s' % DCS_CONFIG['SUBSYSTEM_API_TOKEN']},
                             params={'startIndex': self._next_start_index, 'limit': self.config['PAGE_SIZE']},

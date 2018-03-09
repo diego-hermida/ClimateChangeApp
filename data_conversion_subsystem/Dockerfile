@@ -2,11 +2,15 @@
 FROM pypy:latest
 
 # Provisional solution to [BUG-015]
-ARG API_IP=$API_IP
-ENV API_IP=$API_IP
+ARG API_IP
+ARG POSTGRES_IP
+ARG API_PORT
+ARG POSTGRES_PORT
 
-ARG POSTGRES_IP=$POSTGRES_IP
+ENV API_IP=$API_IP
 ENV POSTGRES_IP=$POSTGRES_IP
+ENV API_PORT=$API_PORT
+ENV POSTGRES_PORT=$POSTGRES_PORT
 
 # Allows setting custom args to execute the deploy script. Use --build-arg DEPLOY_ARGS=<args> when building the Subsystem
 # service with docker-compose.
