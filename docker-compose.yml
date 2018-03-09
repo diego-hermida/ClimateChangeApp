@@ -8,8 +8,8 @@ services:
         container_name: data_gathering_subsystem
         image: diegohermida/data_gathering_subsystem:2.0.1
         volumes:
-            - ${ROOT_PROJECT_DIR}/log:/ClimateChangeApp/log
-            - ${ROOT_PROJECT_DIR}/state:/ClimateChangeApp/state
+            - ${ROOT_DIR}/log:/ClimateChangeApp/log
+            - ${ROOT_DIR}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
     data_conversion_subsystem:
@@ -19,8 +19,8 @@ services:
         container_name: data_conversion_subsystem
         image: diegohermida/data_conversion_subsystem:1.0.1
         volumes:
-            - ${ROOT_PROJECT_DIR}/log:/ClimateChangeApp/log
-            - ${ROOT_PROJECT_DIR}/state:/ClimateChangeApp/state
+            - ${ROOT_DIR}/log:/ClimateChangeApp/log
+            - ${ROOT_DIR}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
     api:
@@ -32,7 +32,7 @@ services:
         environment:
             - PYTHONUNBUFFERED=1
         volumes:
-            - ${ROOT_PROJECT_DIR}/log/api:/ClimateChangeApp/log/api
+            - ${ROOT_DIR}/log/api:/ClimateChangeApp/log/api
         ports:
             - 5000:5000
     telegram_bot:
@@ -51,7 +51,7 @@ services:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=root
         volumes:
-            - ${ROOT_PROJECT_DIR}/data/db:/data/db
+            - ${ROOT_DIR}/data/db:/data/db
         ports:
             - 27017:27017
         command: mongod --smallfiles
@@ -63,7 +63,7 @@ services:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=root
         volumes:
-            - ${ROOT_PROJECT_DIR}/postgresql/data:/postgresql/data
+            - ${ROOT_DIR}/postgresql/data:/postgresql/data
         ports:
             - 5432:5432
     jenkins:
@@ -73,7 +73,7 @@ services:
         image: diegohermida/jenkins:1.0
         container_name: jenkins
         volumes:
-            - ${ROOT_PROJECT_DIR}/jenkins:/var/jenkins_home
+            - ${ROOT_DIR}/jenkins:/var/jenkins_home
             - /var/run/docker.sock:/var/run/docker.sock
         ports:
             - 8090:8080
@@ -88,8 +88,8 @@ services:
         container_name: data_gathering_subsystem_CI
         image: diegohermida/data_gathering_subsystem:2.0.1_CI
         volumes:
-            - ${ROOT_PROJECT_DIR}/log:/ClimateChangeApp/log
-            - ${ROOT_PROJECT_DIR}/state:/ClimateChangeApp/state
+            - ${ROOT_DIR}/log:/ClimateChangeApp/log
+            - ${ROOT_DIR}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
     data_conversion_subsystem_CI:
@@ -99,8 +99,8 @@ services:
         container_name: data_conversion_subsystem_CI
         image: diegohermida/data_conversion_subsystem:1.0.1_CI
         volumes:
-            - ${ROOT_PROJECT_DIR}/log:/ClimateChangeApp/log
-            - ${ROOT_PROJECT_DIR}/state:/ClimateChangeApp/state
+            - ${ROOT_DIR}/log:/ClimateChangeApp/log
+            - ${ROOT_DIR}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
     api_CI:
@@ -112,7 +112,7 @@ services:
         environment:
             - PYTHONUNBUFFERED=1
         volumes:
-            - ${ROOT_PROJECT_DIR}/log/api:/ClimateChangeApp/log/api
+            - ${ROOT_DIR}/log/api:/ClimateChangeApp/log/api
         ports:
             - 5001:5000
     mongodb_CI:
@@ -123,7 +123,7 @@ services:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=root
         volumes:
-            - ${ROOT_PROJECT_DIR}/data/db:/data/db
+            - ${ROOT_DIR}/data/db:/data/db
         ports:
             - 27018:27017
         command: mongod --smallfiles
@@ -135,6 +135,6 @@ services:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=root
         volumes:
-            - ${ROOT_PROJECT_DIR}/postgresql/data:/postgresql/data
+            - ${ROOT_DIR}/postgresql/data:/postgresql/data
         ports:
             - 5433:5432

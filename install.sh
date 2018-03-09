@@ -9,11 +9,11 @@
 # :param $3: Exit code.
 function exit_with_message () {
     if [ $1 != -1 ]; then
-        tput setaf $1;
+        tput -T xterm-256color setaf $1;
     fi
-    tput bold;
+    tput -T xterm-256color bold;
     echo -e $2;
-    tput sgr0;
+    tput -T xterm-256color sgr0;
     echo ""
     exit $3;
 }
@@ -23,12 +23,12 @@ function exit_with_message () {
 #            If this value equals -1, the default color is used.
 # :param $2: Message to be printed.
 function message () {
-    tput bold;
+    tput -T xterm-256color bold;
     if [ $1 != -1 ]; then
-        tput setaf $1;
+        tput -T xterm-256color setaf $1;
     fi
     echo -e $2
-    tput sgr0;
+    tput -T xterm-256color sgr0;
 }
 
 # Calculates the machine's IPv4 address.
@@ -50,7 +50,7 @@ HOST_IP=$(calculate_ip_address);
 RUN_API=false;
 SKIP_DEPLOY=true;
 MACOS=false;
-ROOT_PROJECT_DIR="~/ClimateChangeApp";
+ROOT_DIR="~/ClimateChangeApp";
 CI=false;
 
 # ---------- Argument manipulation ---------- #
@@ -65,7 +65,7 @@ do
             RUN_API)            RUN_API=${VALUE} ;;
             SKIP_DEPLOY)        SKIP_DEPLOY=${VALUE} ;;
             MACOS)              MACOS=${VALUE} ;;
-            ROOT_PROJECT_DIR)   ROOT_PROJECT_DIR=${VALUE} ;;
+            ROOT_DIR)   ROOT_DIR=${VALUE} ;;
             CI)                 CI=${VALUE} ;;
             *)
     esac
@@ -83,12 +83,12 @@ if  ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
     ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]); then
          exit_with_message 1 "> usage:
                          \n install.sh [HOST_IP=<IP>][MACOS={true|false}] [RUN_API={true|false}] [SKIP_DEPLOY={true|false}]
-                         \n\t\t[ROOT_PROJECT_DIR=<path>] [CI={true|false}]
+                         \n\t\t[ROOT_DIR=<path>] [CI={true|false}]
                          \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
                                local IP address.
                          \n\t- RUN_API: launches the API service after building it. Defaults to \"false\".
                          \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
-                         \n\t- ROOT_PROJECT_DIR: installs the Application under a custom directory. Defaults to
+                         \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
                                \"~/ClimateChangeApp\".
                          \n\t- CI: uses CI images, containers and services. Defaults to \"false\".
                          \n\tNOTE: This option allows to deploy all the Subsystems to the same machine.
@@ -96,8 +96,8 @@ if  ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
 fi
 
 # CI and default directory?
-if ([ "$CI" == "true" ] && [ "$ROOT_PROJECT_DIR" == "~/ClimateChangeApp" ]); then
-    exit_with_message 1 "[ERROR] Deploying the application under the default directory \"$ROOT_PROJECT_DIR\" is not
+if ([ "$CI" == "true" ] && [ "$ROOT_DIR" == "~/ClimateChangeApp" ]); then
+    exit_with_message 1 "[ERROR] Deploying the application under the default directory \"$ROOT_DIR\" is not
                          allowed when invoking \"install.sh <args> CI=true\"." 1;
 fi
 
@@ -130,13 +130,13 @@ else
     DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
 fi
 
-# Overriding default ROOT_PROJECT_DIR?
-if [ "$ROOT_PROJECT_DIR" != "~/ClimateChangeApp" ]; then
-    message -1 "[INFO] Deploying the application under custom directory: $ROOT_PROJECT_DIR.";
+# Overriding default ROOT_DIR?
+if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
+    message -1 "[INFO] Deploying the application under custom directory: $ROOT_DIR.";
 else
-    message -1 "[INFO] Using default directory for deployment: $ROOT_PROJECT_DIR.";
+    message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";
 fi
-export ROOT_PROJECT_DIR="$ROOT_PROJECT_DIR";
+export ROOT_DIR="$ROOT_DIR";
 
 # Setting default ports?
 if [ "$CI" == "false" ]; then

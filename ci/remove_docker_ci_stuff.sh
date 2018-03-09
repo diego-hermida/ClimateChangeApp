@@ -5,12 +5,12 @@
 #            If this value equals -1, the default color is used.
 # :param $2: Message to be printed.
 function message () {
-    tput bold;
+    tput -T xterm-256color bold;
     if [ $1 != -1 ]; then
-        tput setaf $1;
+        tput -T xterm-256color setaf $1;
     fi
     echo -e $2
-    tput sgr0;
+    tput -T xterm-256color sgr0;
 }
 
 
