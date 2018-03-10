@@ -61,15 +61,16 @@ do
     KEY=$(echo ${ARGUMENT} | cut -f1 -d=)
     VALUE=$(echo ${ARGUMENT} | cut -f2 -d=)
     case "$KEY" in
-            HOST_IP)            HOST_IP=${VALUE} ;;
-            RUN_API)            RUN_API=${VALUE} ;;
-            SKIP_DEPLOY)        SKIP_DEPLOY=${VALUE} ;;
-            MACOS)              MACOS=${VALUE} ;;
-            ROOT_DIR)   ROOT_DIR=${VALUE} ;;
-            CI)                 CI=${VALUE} ;;
+            HOST_IP)        HOST_IP=${VALUE} ;;
+            RUN_API)        RUN_API=${VALUE} ;;
+            SKIP_DEPLOY)    SKIP_DEPLOY=${VALUE} ;;
+            MACOS)          MACOS=${VALUE} ;;
+            ROOT_DIR)       ROOT_DIR=${VALUE} ;;
+            CI)             CI=${VALUE} ;;
             *)
     esac
 done
+
 
 # Setting variables to lower case
 RUN_API=echo "$RUN_API" | tr '[:upper:]' '[:lower:]';
@@ -77,29 +78,32 @@ SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 MACOS=echo "$MACOS" | tr '[:upper:]' '[:lower:]';
 CI=echo "$CI" | tr '[:upper:]' '[:lower:]';
 
+
 # Ensuring variables contain legit values
 if  ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
-    ([ "$RUN_API" != "true" ] && [ "$RUN_API" != "false" ]) ||
-    ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]); then
-         exit_with_message 1 "> usage:
-                         \n install.sh [HOST_IP=<IP>][MACOS={true|false}] [RUN_API={true|false}] [SKIP_DEPLOY={true|false}]
-                         \n\t\t[ROOT_DIR=<path>] [CI={true|false}]
-                         \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
-                               local IP address.
-                         \n\t- RUN_API: launches the API service after building it. Defaults to \"false\".
-                         \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
-                         \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
-                               \"~/ClimateChangeApp\".
-                         \n\t- CI: uses CI images, containers and services. Defaults to \"false\".
-                         \n\tNOTE: This option allows to deploy all the Subsystems to the same machine.
-                         \n\tIMPORTANT. The \"HOST_IP\" parameter overrides the values of all \"*_IP\" parameters." 1;
+        ([ "$RUN_API" != "true" ] && [ "$RUN_API" != "false" ]) ||
+        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]); then
+    exit_with_message 1 "> usage:
+            \n install.sh [HOST_IP=<IP>][MACOS={true|false}] [RUN_API={true|false}] [SKIP_DEPLOY={true|false}]
+            \n\t\t[ROOT_DIR=<path>] [CI={true|false}]
+            \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
+                   local IP address.
+            \n\t- RUN_API: launches the API service after building it. Defaults to \"false\".
+            \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
+            \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
+                  \"~/ClimateChangeApp\".
+            \n\t- CI: uses CI images, containers and services. Defaults to \"false\".
+            \n\tNOTE: This option allows to deploy all the Subsystems to the same machine.
+            \n\tIMPORTANT. The \"HOST_IP\" parameter overrides the values of all \"*_IP\" parameters." 1;
 fi
+
 
 # CI and default directory?
 if ([ "$CI" == "true" ] && [ "$ROOT_DIR" == "~/ClimateChangeApp" ]); then
     exit_with_message 1 "[ERROR] Deploying the application under the default directory \"$ROOT_DIR\" is not
                          allowed when invoking \"install.sh <args> CI=true\"." 1;
 fi
+
 
 # Overriding IP values if HOST_IP is present
 message -1 "[INFO] The MongoDB, API and PostgreSQL components will be installed (locally) as Docker containers.";
@@ -112,6 +116,7 @@ message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by in
 MONGODB_IP=${HOST_IP};
 API_IP=${HOST_IP};
 POSTGRES_IP=${HOST_IP};
+
 
 # Warnings
 if  [ "$SKIP_DEPLOY" == "true" ]; then
@@ -130,6 +135,7 @@ else
     DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
 fi
 
+
 # Overriding default ROOT_DIR?
 if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
     message -1 "[INFO] Deploying the application under custom directory: $ROOT_DIR.";
@@ -137,6 +143,7 @@ else
     message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";
 fi
 export ROOT_DIR="$ROOT_DIR";
+
 
 # Setting default ports?
 if [ "$CI" == "false" ]; then
@@ -150,6 +157,7 @@ else
     API_PORT=5001;
     message -1 "[INFO] Using CI values for MongoDB, PostgreSQL and API ports.";
 fi
+
 
 # Creating CI containers?
 if [ "$CI" == "true" ]; then

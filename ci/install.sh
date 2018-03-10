@@ -46,8 +46,8 @@ do
     KEY=$(echo ${ARGUMENT} | cut -f1 -d=)
     VALUE=$(echo ${ARGUMENT} | cut -f2 -d=)
     case "$KEY" in
-            -h)                 SHOW_HELP=true ;;
-            --help)             SHOW_HELP=true ;;
+            -h)         SHOW_HELP=true ;;
+            --help)     SHOW_HELP=true ;;
             ROOT_DIR)   ROOT_DIR=${VALUE} ;;
             *)
     esac
@@ -60,9 +60,9 @@ done
 # Ensuring variables contain legit values
 if  [ "$SHOW_HELP" == "true" ]; then
      exit_with_message 1 "> usage: install.sh [ROOT_DIR=<path>] [FORCE_BUILD={true|false}]
-         \n\t- ROOT_DIR: installs the Jenkins server under a custom directory. Defaults to
-               \"~/ClimateChangeApp\".
-         \n\t- FORCE_BUILD: builds the Jenkins image even if it already exists. Defaults to \"false\"." 0;
+            \n\t- ROOT_DIR: installs the Jenkins server under a custom directory. Defaults to
+                  \"~/ClimateChangeApp\".
+            \n\t- FORCE_BUILD: builds the Jenkins image even if it already exists. Defaults to \"false\"." 0;
 fi
 
 
