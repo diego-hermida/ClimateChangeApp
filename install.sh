@@ -153,10 +153,9 @@ fi
 
 # Creating CI containers?
 if [ "$CI" == "true" ]; then
-    message 5 "[ACTION] Creating Docker CI containers. Originals";
+    message 5 "[ACTION] Creating Docker CI containers. Application containers will not be affected.";
     export CI="_CI";
 else
-    message -1 "[INFO] Using default names for Docker containers.";
     export CI="";
 fi
 
