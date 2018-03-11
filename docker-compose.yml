@@ -6,7 +6,7 @@ services:
             context: .
             dockerfile: ./data_gathering_subsystem/Dockerfile
         container_name: data_gathering_subsystem
-        image: diegohermida/data_gathering_subsystem:2.0.1
+        image: diegohermida/data_gathering_subsystem:latest
         volumes:
             - ${ROOT_DIR}/log:/ClimateChangeApp/log
             - ${ROOT_DIR}/state:/ClimateChangeApp/state
@@ -17,7 +17,7 @@ services:
             context: .
             dockerfile: ./data_conversion_subsystem/Dockerfile
         container_name: data_conversion_subsystem
-        image: diegohermida/data_conversion_subsystem:1.0.1
+        image: diegohermida/data_conversion_subsystem:latest
         volumes:
             - ${ROOT_DIR}/log:/ClimateChangeApp/log
             - ${ROOT_DIR}/state:/ClimateChangeApp/state
@@ -28,7 +28,7 @@ services:
             context: .
             dockerfile: ./api/Dockerfile
         container_name: data_gathering_subsystem_api
-        image: diegohermida/data_gathering_subsystem_api:1.0.0
+        image: diegohermida/data_gathering_subsystem_api:latest
         environment:
             - PYTHONUNBUFFERED=1
         volumes:
@@ -40,7 +40,7 @@ services:
             context: .
             dockerfile: ./telegram_bot/Dockerfile
         container_name: telegram_bot
-        image: diegohermida/telegram_bot:1.0
+        image: diegohermida/telegram_bot:latest
         environment:
             - PYTHONUNBUFFERED=1
     mongodb:
@@ -70,7 +70,7 @@ services:
         build:
             context: .
             dockerfile: ./ci/Dockerfile
-        image: diegohermida/jenkins:1.0
+        image: diegohermida/jenkins:latest
         container_name: jenkins
         volumes:
             - ${ROOT_DIR}/jenkins:/var/jenkins_home
@@ -78,7 +78,17 @@ services:
         ports:
             - 8090:8080
             - 50000:50000
-
+    utilities:
+        build:
+            context: .
+            dockerfile: ./utilities/Dockerfile
+        container_name: utilities
+        image: diegohermida/utilities:latest
+        environment:
+            - PYTHONUNBUFFERED=1
+        depends_on:
+          - mongodb
+          - postgres
 
     # CI services
     data_gathering_subsystem_CI:
@@ -86,35 +96,42 @@ services:
             context: .
             dockerfile: ./data_gathering_subsystem/Dockerfile
         container_name: data_gathering_subsystem_CI
-        image: diegohermida/data_gathering_subsystem:2.0.1_CI
+        image: diegohermida/data_gathering_subsystem:latest_CI
         volumes:
             - ${ROOT_DIR}/log:/ClimateChangeApp/log
             - ${ROOT_DIR}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
+        depends_on:
+          - mongodb_CI
     data_conversion_subsystem_CI:
         build:
             context: .
             dockerfile: ./data_conversion_subsystem/Dockerfile
         container_name: data_conversion_subsystem_CI
-        image: diegohermida/data_conversion_subsystem:1.0.1_CI
+        image: diegohermida/data_conversion_subsystem:latest_CI
         volumes:
             - ${ROOT_DIR}/log:/ClimateChangeApp/log
             - ${ROOT_DIR}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
+        depends_on:
+          - postgres_CI
+          - api_CI
     api_CI:
         build:
             context: .
             dockerfile: ./api/Dockerfile
         container_name: data_gathering_subsystem_api_CI
-        image: diegohermida/data_gathering_subsystem_api:1.0.0_CI
+        image: diegohermida/data_gathering_subsystem_api:latest_CI
         environment:
             - PYTHONUNBUFFERED=1
         volumes:
             - ${ROOT_DIR}/log/api:/ClimateChangeApp/log/api
         ports:
             - 5001:5000
+        depends_on:
+          - mongodb_CI
     mongodb_CI:
         image: mongo:latest
         container_name: mongodb_CI
@@ -138,3 +155,30 @@ services:
             - ${ROOT_DIR}/postgresql/data:/postgresql/data
         ports:
             - 5433:5432
+    telegram_bot_CI:
+        build:
+            context: .
+            dockerfile: ./telegram_bot/Dockerfile
+        container_name: telegram_bot_CI
+        image: diegohermida/telegram_bot:latest_CI
+        environment:
+            - PYTHONUNBUFFERED=1
+    utilities_CI:
+        build:
+            context: .
+            dockerfile: ./utilities/Dockerfile
+        container_name: utilities_CI
+        image: diegohermida/utilities:latest_CI
+        environment:
+            - PYTHONUNBUFFERED=1
+        depends_on:
+          - mongodb_CI
+          - postgres_CI
+    coverage_CI:
+        build:
+            context: .
+            dockerfile: ./ci/Dockerfile-coverage
+        container_name: coverage_CI
+        image: diegohermida/coverage:latest_CI
+        environment:
+            - PYTHONUNBUFFERED=1

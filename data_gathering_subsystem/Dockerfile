@@ -1,9 +1,9 @@
 # Using PyPy 3 as the Python interpreter.
 FROM pypy:latest
 
-# Provisional solution to [BUG-015]
+# Setting environment variables.
 ARG MONGODB_IP
-ARG MONGODB_PORT
+ARG MONGODB_PORT=27017
 
 ENV MONGODB_IP=$MONGODB_IP
 ENV MONGODB_PORT=$MONGODB_PORT

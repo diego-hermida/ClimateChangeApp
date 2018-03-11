@@ -1,4 +1,5 @@
 argparse
+coverage
 Django==1.11.7
 psycopg2cffi
 python-telegram-bot==9.0.0

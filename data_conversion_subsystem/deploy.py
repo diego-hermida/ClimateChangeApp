@@ -1,14 +1,27 @@
 import argparse
+import coverage
 import sys
 
 from data_conversion_subsystem.config.config import DCS_CONFIG
 from data_conversion_subsystem.manage import execute
+from global_config.global_config import GLOBAL_CONFIG
 from os import environ
 from unittest import TestLoader, TextTestRunner
 from utilities.postgres_util import create_application_user, create_application_database, ping_database
 from utilities.import_dir import import_modules
 from utilities.log_util import get_logger
-from utilities.util import remove_all_under_directory
+from utilities.util import remove_all_under_directory, recursive_makedir
+
+
+def _execute_tests() -> bool:
+    """
+        Executes all API tests.
+        :return: True, if test execution was successful; False, otherwise.
+    """
+    suite = TestLoader().discover(DCS_CONFIG['ROOT_DATA_CONVERSION_SUBSYSTEM_FOLDER'])
+    runner = TextTestRunner(failfast=True, verbosity=2)
+    results = runner.run(suite)
+    return results.wasSuccessful()
 
 
 def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
@@ -30,8 +43,9 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         parser.add_argument('--remove-files', help='removes all .log and .state files (and its directories)',
                 required=False, action='store_true')
         parser.add_argument('--with-tests', help='executes all the Subsystem tests', required=False, action='store_true')
-        parser.add_argument('--skip-all', help='does not execute any deploy step', required=False,
-                            action='store_true')
+        parser.add_argument('--with-tests-coverage', help='executes all the Subsystem tests and generates a coverage '
+                'report', required=False, action='store_true')
+        parser.add_argument('--skip-all', help='does not execute any deploy step', required=False, action='store_true')
 
         # Deploy args can be added from the "install.sh" script using environment variables.
         env_args = environ.get('DEPLOY_ARGS', None)
@@ -47,9 +61,9 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         if args.all and any([args.prepare_db, args.make_migrations, args.verify_modules, args.remove_files]):
             logger.info('Since "--all" option has been passed, any other option is excluded.')
         elif not any([args.all, args.prepare_db, args.make_migrations, args.verify_modules, args.remove_files,
-                args.with_tests]) and not sys.argv[1:]:
+                args.with_tests, args.with_tests_coverage]) and not sys.argv[1:]:
             logger.info('Since no option has been passed, using "--all" as the default option.')
-            args = argparse.Namespace(all=True, with_tests=False)
+            args = argparse.Namespace(all=True, with_tests=False, with_tests_coverage=False)
 
         # 1. [Default] Verifying PostgreSQL is up (required both for deploy operations and tests).
         try:
@@ -103,17 +117,28 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                 logger.info('All DataConverter class(es) are instantiable and runnable.')
 
         # 4. Executing all tests
-        if args.with_tests:
-            logger.info('Running all the Data Conversion Subsystem tests.')
-            loader = TestLoader()
-            suite = loader.discover(DCS_CONFIG['ROOT_DATA_CONVERSION_SUBSYSTEM_FOLDER'])
-            runner = TextTestRunner(failfast=True, verbosity=2)
-            results = runner.run(suite)
+        if args.with_tests or args.with_tests_coverage:
+            if args.with_tests_coverage:
+                logger.info('Running all the Data Conversion Subsystem tests with branch coverage.')
+                # Measuring coverage
+                coverage_filepath = GLOBAL_CONFIG['COVERAGE_DIR'] + DCS_CONFIG['COVERAGE_FILENAME']
+                coverage_analyzer = coverage.Coverage(source=[GLOBAL_CONFIG['ROOT_PROJECT_FOLDER']], branch=True,
+                                                      concurrency="thread", data_file=coverage_filepath)
+                coverage_analyzer.start()
+                success = _execute_tests()
+                coverage_analyzer.stop()
+                if success:
+                    logger.info('Saving coverage report to "%s".' % coverage_filepath)
+                    recursive_makedir(coverage_filepath, is_file=True)
+                    coverage_analyzer.save()
+            else:
+                logger.info('Running all the Data Conversion Subsystem tests.')
+                success = _execute_tests()
             sys.stderr.flush()
             logger = get_logger(__file__, 'DeployDataConversionSubsystemLogger', to_file=log_to_file,
                     to_stdout=log_to_stdout, is_subsystem=False, component=DCS_CONFIG['COMPONENT'],
                     to_telegram=log_to_telegram)
-            if results.wasSuccessful():
+            if success:
                 logger.info('All tests passed.')
             else:
                 logger.error('Some tests did not pass. Further info is available in the command line output.')
@@ -121,8 +146,7 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
 
         # 5. Emptying Subsystem's logs and '.state' files.
         if args.all or args.remove_files:
-            logger.info('Removing log base directory: %s' % (DCS_CONFIG[
-                    'DATA_CONVERSION_SUBSYSTEM_LOG_FILES_ROOT_FOLDER']))
+            logger.info('Removing log base directory: %s' % (DCS_CONFIG['DATA_CONVERSION_SUBSYSTEM_LOG_FILES_ROOT_FOLDER']))
             try:
                 remove_all_under_directory(DCS_CONFIG['DATA_CONVERSION_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'])
             except FileNotFoundError:

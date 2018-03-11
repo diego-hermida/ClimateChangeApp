@@ -66,16 +66,18 @@ def current_timestamp_utc() -> datetime.datetime:
     return datetime.datetime.now(tz=pytz.UTC)
 
 
-def recursive_makedir(path: str):
+def recursive_makedir(path: str, is_file=False):
     """
         Recursively creates all directories under a base directory. If a directory does already exist, silently performs
         the operation (FileExistsError is handled).
         :param path: A valid directory path. Example: /var/log/DataGatheringSubsystem/data_modules, where 'data_modules'
                      is a directory (can be non-existent).
+        :param is_file: If True, indicates that the path is a filepath, and its directory filepath should be calculated.
         :raise PermissionError: If an attempt to create a directory without the necessary privileges is made.
     """
     try:
-        makedirs(path)
+        target = path if not is_file else os_file_separator.join(path.split(os_file_separator)[:-1])
+        makedirs(target)
     except FileExistsError as ex:
         assert ex.errno == errno.EEXIST
 

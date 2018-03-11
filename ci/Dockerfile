@@ -18,3 +18,4 @@ RUN apt-get update
 RUN apt-get -y install python-pip
 RUN pip install --upgrade pip setuptools
 RUN pip install --upgrade pip setuptools docker-compose
+RUN pip install --upgrade pip setuptools coverage

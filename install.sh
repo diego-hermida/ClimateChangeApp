@@ -48,6 +48,7 @@ function calculate_ip_address () {
 # Setting default values
 HOST_IP=$(calculate_ip_address);
 RUN_API=false;
+RUN_TELEGRAM=false;
 SKIP_DEPLOY=true;
 MACOS=false;
 ROOT_DIR="~/ClimateChangeApp";
@@ -74,6 +75,7 @@ done
 
 # Setting variables to lower case
 RUN_API=echo "$RUN_API" | tr '[:upper:]' '[:lower:]';
+RUN_TELEGRAM=echo "$RUN_API" | tr '[:upper:]' '[:lower:]';
 SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 MACOS=echo "$MACOS" | tr '[:upper:]' '[:lower:]';
 CI=echo "$CI" | tr '[:upper:]' '[:lower:]';
@@ -82,19 +84,22 @@ CI=echo "$CI" | tr '[:upper:]' '[:lower:]';
 # Ensuring variables contain legit values
 if  ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
         ([ "$RUN_API" != "true" ] && [ "$RUN_API" != "false" ]) ||
+        ([ "$RUN_TELEGRAM" != "true" ] && [ "$RUN_TELEGRAM" != "false" ]) ||
+        ([ "$CI" != "true" ] && [ "$CI" != "false" ]) ||
         ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]); then
     exit_with_message 1 "> usage:
-            \n install.sh [HOST_IP=<IP>][MACOS={true|false}] [RUN_API={true|false}] [SKIP_DEPLOY={true|false}]
-            \n\t\t[ROOT_DIR=<path>] [CI={true|false}]
+            \n install.sh [HOST_IP=<IP>][MACOS={true|false}] [RUN_API={true|false}] [RUN_TELEGRAM={true|false}]
+            \n\t\t[SKIP_DEPLOY={true|false}] [ROOT_DIR=<path>] [CI={true|false}]
             \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
                    local IP address.
             \n\t- RUN_API: launches the API service after building it. Defaults to \"false\".
+            \n\t- RUN_TELEGRAM: launches the Telegram Configurator service. Defaults to \"false\".
             \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
             \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
                   \"~/ClimateChangeApp\".
             \n\t- CI: uses CI images, containers and services. Defaults to \"false\".
             \n\tNOTE: This option allows to deploy all the Subsystems to the same machine.
-            \n\tIMPORTANT. The \"HOST_IP\" parameter overrides the values of all \"*_IP\" parameters." 1;
+            \n\tIMPORTANT. The \"HOST_IP\" parameter sets the MONGODB_IP, API_IP and POSTGRES_IP parameters." 1;
 fi
 
 
@@ -120,19 +125,38 @@ POSTGRES_IP=${HOST_IP};
 
 # Warnings
 if  [ "$SKIP_DEPLOY" == "true" ]; then
-        message -1 "[INFO] Deploy operations will be skipped for the API component.";
-        message -1 "[INFO] Deploy operations will be skipped for the Data Gathering Subsystem component.";
-        message -1 "[INFO] Deploy operations will be skipped for the Data Conversion Subsystem component.";
-        API_DEPLOY_ARGS="--skip-all";
-        DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
-        DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
+    message -1 "[INFO] Deploy operations will be skipped for the API component.";
+    message -1 "[INFO] Deploy operations will be skipped for the Data Gathering Subsystem component.";
+    message -1 "[INFO] Deploy operations will be skipped for the Data Conversion Subsystem component.";
+    message -1 "[INFO] Deploy operations will be skipped for the Telegram Configurator component.";
+    message -1 "[INFO] Deploy operations will be skipped for the Utilities component.";
+    API_DEPLOY_ARGS="--skip-all";
+    DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
+    DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
+    TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--skip-all";
+    UTILITIES_DEPLOY_ARGS="--skip-all";
+elif [ "$CI" == "true" ]; then
+    message -1 "[INFO] Adding coverage report generation to API_DEPLOY_ARGS.";
+    message -1 "[INFO] Adding coverage report to DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS.";
+    message -1 "[INFO] Adding coverage report to DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS.";
+    message -1 "[INFO] Adding coverage report to TELEGRAM_CONFIGURATOR_DEPLOY_ARGS.";
+    message -1 "[INFO] Adding coverage report to UTILITIES_DEPLOY_ARGS.";
+    API_DEPLOY_ARGS="--all --with-tests-coverage";
+    DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests-coverage";
+    DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests-coverage";
+    TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--with-tests-coverage";
+    UTILITIES_DEPLOY_ARGS="--with-tests-coverage";
 else
     message -1 "[INFO] Using default values for API_DEPLOY_ARGS.";
     message -1 "[INFO] Using default values for DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS.";
     message -1 "[INFO] Using default values for DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS.";
+    message -1 "[INFO] Using default values for TELEGRAM_CONFIGURATOR_DEPLOY_ARGS.";
+    message -1 "[INFO] Using default values for UTILITIES_DEPLOY_ARGS.";
     API_DEPLOY_ARGS="--all --with-tests";
     DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
     DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
+    TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--with-tests";
+    UTILITIES_DEPLOY_ARGS="--with-tests";
 fi
 
 
@@ -162,28 +186,81 @@ fi
 # Creating CI containers?
 if [ "$CI" == "true" ]; then
     message 5 "[ACTION] Creating Docker CI containers. Application containers will not be affected.";
-    export CI="_CI";
+    export CI_EXTENSION="_CI";
 else
-    export CI="";
+    export CI_EXTENSION="";
 fi
 
 
 # ---------- Installation ---------- #
 
+# Telegram Configurator component
+message 4 "[COMPONENT] Building the Telegram Configurator component.";
+
+# Building the Telegram Configurator component
+docker-compose build --build-arg DEPLOY_ARGS="${TELEGRAM_CONFIGURATOR_DEPLOY_ARGS}" "telegram_bot$CI_EXTENSION";
+if [ $? != 0 ]; then
+    exit_with_message 1 "> The Telegram Configurator image could not be built." 1;
+fi
+# Running the Telegram Configurator component
+if [ "$RUN_TELEGRAM" == "true" ]; then
+    message -1 "[INFO] Running the Telegram Configurator component.";
+    echo "";
+    docker run --rm -i -t --name "telegram_bot$CI_EXTENSION" "diegohermida/telegram_bot:latest$CI_EXTENSION";
+
+    # Displaying installation summary
+    if [ $? != 0 ]; then
+        exit_with_message 1 "\n[ERROR] The Telegram Configurator did not exit normally. You should rerun this installer." 1;
+    else
+        message 2 "\n[SUCCESS] The Telegram Configurator was successful.";
+        exit_with_message -1 "[INFO] The installation will finish now. Be sure to follow the Telegrama Configurator
+                    instructions, and restart this installer without RUN_TELEGRAM=true." 0
+    fi
+fi
+
+
 # MongoDB component
 message 4 "[COMPONENT] Building and launching the MongoDB service.";
 
 # Deleting the MongoDB service if it was already been created: Brand-new container.
-if [ "$(docker ps -aq -f name="mongodb$CI")" ]; then
-    message -1 "[INFO] Removing previous MongoDB$CI container.";
-    docker stop "mongodb$CI";
-    docker rm "mongodb$CI";
+if [ "$(docker ps -aq -f name="mongodb$CI_EXTENSION")" ]; then
+    message -1 "[INFO] Removing previous MongoDB$CI_EXTENSION container.";
+    docker stop "mongodb$CI_EXTENSION";
+    docker rm "mongodb$CI_EXTENSION";
 fi
 # Launching the MongoDB service
 message -1 "[INFO] Launching the MongoDB service.";
-docker-compose up -d "mongodb$CI";
+docker-compose up -d "mongodb$CI_EXTENSION";
 if [ $? != 0 ]; then
     exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." 1;
+fi
+
+
+# PostgreSQL component
+message 4 "[COMPONENT] Building and launching the PostgreSQL service.";
+
+# Deleting the PostgreSQL service if it was already been created: Brand-new container.
+if [ "$(docker ps -aq -f name="postgres$CI_EXTENSION")" ]; then
+    message -1 "[INFO] Removing previous PostgreSQL$CI_EXTENSION container.";
+    docker stop "postgres$CI_EXTENSION";
+    docker rm "postgres$CI_EXTENSION";
+fi
+# Launching the PostgreSQL service
+message -1 "[INFO] Launching the PostgreSQL service.";
+docker-compose up -d "postgres$CI_EXTENSION";
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] The PostgreSQL service could not be initialized." 1;
+fi
+
+
+# Utilities component
+message 4 "[COMPONENT] Building and testing the Utilities component.";
+docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
+                     --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
+                     --build-arg DEPLOY_ARGS="${UTILITIES_DEPLOY_ARGS}" "utilities$CI_EXTENSION";
+
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] The Utilities component could not be built." 1;
 fi
 
 
@@ -192,64 +269,136 @@ message 4 "[COMPONENT] Building the Data Gathering Subsystem.";
 
 # Building the Data Gathering Subsystem component
 docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
-                     --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" "data_gathering_subsystem$CI";
+                     --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" "data_gathering_subsystem$CI_EXTENSION";
 if [ $? != 0 ]; then
     exit_with_message 1 "> The Data Gathering Subsystem image could not be built." 1;
 fi
 
 
 # API component
-message 4 "[COMPONENT] Building and (optionally) launching the API service.";
+if [ "$RUN_API" == "true" ]; then
+    message 4 "[COMPONENT] Building and launching the API service.";
+else
+    message 4 "[COMPONENT] Building the API service.";
+fi
 
 # Deleting the API service if it was already been created: Brand-new container.
-if [ "$(docker ps -aq -f name="data_gathering_subsystem_api_CI$CI")" ]; then
-    message -1 "[INFO] Removing previous API$CI container.";
-    docker stop "data_gathering_subsystem_api_CI$CI";
-    docker rm "data_gathering_subsystem_api_CI$CI";
+if [ "$(docker ps -aq -f name="data_gathering_subsystem_api_CI$CI_EXTENSION")" ]; then
+    message -1 "[INFO] Removing previous API$CI_EXTENSION container.";
+    docker stop "data_gathering_subsystem_api_CI$CI_EXTENSION";
+    docker rm "data_gathering_subsystem_api_CI$CI_EXTENSION";
 fi
 # Building the API service
 message -1 "[INFO] Building the API image."
 docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
-                     --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" "api$CI";
+                     --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" "api$CI_EXTENSION";
 if [ $? != 0 ]; then
     exit_with_message 1 "[INFO] The API image could not be built." 1;
 fi
 # Launching the API service
 if [ "$RUN_API" == "true" ]; then
     message -1 "[INFO] Launching the API service.";
-    docker-compose up -d "api$CI";
+    docker-compose up -d "api$CI_EXTENSION";
     if [ $? != 0 ]; then
         exit_with_message 1 "> The API service could not be initialized." 1;
     fi
 fi
 
 
-# PostgreSQL component
-message 4 "[COMPONENT] Building and launching the PostgreSQL service.";
-
-# Deleting the MongoDB service if it was already been created: Brand-new container.
-if [ "$(docker ps -aq -f name="postgres$CI")" ]; then
-    message -1 "[INFO] Removing previous PostgreSQL$CI container.";
-    docker stop "postgres$CI";
-    docker rm "postgres$CI";
-fi
-# Launching the MongoDB service
-message -1 "[INFO] Launching the PostgreSQL service.";
-docker-compose up -d "postgres$CI";
-if [ $? != 0 ]; then
-    exit_with_message 1 "[ERROR] The PostgreSQL service could not be initialized." 1;
-fi
-
-
 # Data Conversion Subsystem component
 message 4 "[COMPONENT] Building the Data Conversion Subsystem.";
 
-# Building the Data Gathering Subsystem component
+# Building the Data Conversion Subsystem component
 docker-compose build --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg API_IP=${API_IP} \
                      --build-arg POSTGRES_PORT=${POSTGRES_PORT} --build-arg API_PORT=${API_PORT} \
-                     --build-arg DEPLOY_ARGS="${DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS}" "data_conversion_subsystem$CI";
+                     --build-arg DEPLOY_ARGS="${DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS}" "data_conversion_subsystem$CI_EXTENSION";
 if [ $? != 0 ]; then
     exit_with_message 1 "> The Data Conversion Subsystem image could not be built." 1;
+fi
+
+
+# Generating combined coverage report.
+if ([ "$CI" == "true" ] && [ "$SKIP_DEPLOY" == "false" ]); then
+    FAILED=0;
+    message 5 "[ACTION] Fetching coverage reports from Docker images.";
+    mkdir ./coverage
+    CONTAINER_ID=$(docker create diegohermida/data_gathering_subsystem_api:latest_CI);
+    if [ $? != 0 ]; then
+        FAILED=$((FAILED + 1));
+        message 3 "[WARNING] API Docker container could not be created.";
+    else
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/api.coverage ./coverage/.coverage.api;
+        if [ $? != 0 ]; then
+            FAILED=$((FAILED + 1));
+            message 3 "[WARNING] API coverage report could not be fetched.";
+        fi
+        docker rm ${CONTAINER_ID}
+    fi
+    CONTAINER_ID=$(docker create diegohermida/data_gathering_subsystem:latest_CI);
+    if [ $? != 0 ]; then
+        FAILED=$((FAILED + 1));
+        message 3 "[WARNING] Data Gathering Subsystem Docker container could not be created.";
+    else
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/dgs.coverage ./coverage/.coverage.dgs;
+        if [ $? != 0 ]; then
+            FAILED=$((FAILED + 1));
+            message 3 "[WARNING] Data Gathering Subsystem coverage report could not be fetched.";
+        fi
+        docker rm ${CONTAINER_ID}
+    fi
+    CONTAINER_ID=$(docker create diegohermida/data_conversion_subsystem:latest_CI);
+    if [ $? != 0 ]; then
+        FAILED=$((FAILED + 1));
+        message 3 "[WARNING] Data Conversion Subsystem Docker container could not be created.";
+    else
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/dcs.coverage ./coverage/.coverage.dcs;
+        if [ $? != 0 ]; then
+            FAILED=$((FAILED + 1));
+            message 3 "[WARNING] Data Conversion Subsystem coverage report could not be fetched.";
+        fi
+        docker rm ${CONTAINER_ID}
+    fi
+    CONTAINER_ID=$(docker create diegohermida/telegram_bot:latest_CI);
+    if [ $? != 0 ]; then
+        FAILED=$((FAILED + 1));
+        message 3 "[WARNING] Telegram Configurator Docker container could not be created.";
+    else
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/telegram.coverage ./coverage/.coverage.telegram;
+        if [ $? != 0 ]; then
+            FAILED=$((FAILED + 1));
+            message 3 "[WARNING] Telegram Configurator coverage report could not be fetched.";
+        fi
+        docker rm ${CONTAINER_ID}
+    fi
+    CONTAINER_ID=$(docker create diegohermida/utilities:latest_CI);
+    if [ $? != 0 ]; then
+        FAILED=$((FAILED + 1));
+        message 3 "[WARNING] Utilities Docker container could not be created.";
+    else
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/util.coverage ./coverage/.coverage.util;
+        if [ $? != 0 ]; then
+            FAILED=$((FAILED + 1));
+            message 3 "[WARNING] Utilities coverage report could not be fetched.";
+        fi
+        docker rm ${CONTAINER_ID}
+    fi
+    if (( $FAILED > 0 )); then
+        exit_with_message 1 "[ERROR] All coverage reports must be fetched in order to generate a merged coverage report. Failed: $FAILED" 1;
+    fi
+    message 5 "[ACTION] Generating merged coverage report.";
+    docker-compose up -d coverage_CI
+    CONTAINER_ID=$(docker create diegohermida/coverage:latest_CI);
+    if [ $? != 0 ]; then
+        exit_with_message 1 "[ERROR] Coverage merge report Docker container could not be created." 1;
+    else
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/code/coverage/coverage.xml ./coverage/coverage.xml;
+        if [ $? != 0 ]; then
+            FAILED=$((FAILED + 1));
+            exit_with_message 1 "[ERROR] Merged coverage report could not be fetched." 1;
+        fi
+        docker rm ${CONTAINER_ID}
+    fi
+    message 2 "[SUCCESS] XML coverage report successfully generated to \"./coverage/coverage.xml\"."
 fi
 
 
@@ -257,12 +406,12 @@ fi
 echo "";
 message 2 "[SUCCESS] Installation results:";
 if [ "$RUN_API" == "true" ]; then
-    message 2 "- API$CI: up";
+    message 2 "- API$CI_EXTENSION: up";
 else
-    message 2 "- API$CI: built";
+    message 2 "- API$CI_EXTENSION: built";
 fi
-message 2 "- Data Conversion Subsystem$CI: built";
-message 2 "- Data Gathering Subsystem$CI: built";
-message 2 "- MongoDB$CI: up";
-message 2 "- PostgreSQL$CI: up";
+message 2 "- Data Conversion Subsystem$CI_EXTENSION: built";
+message 2 "- Data Gathering Subsystem$CI_EXTENSION: built";
+message 2 "- MongoDB$CI_EXTENSION: up";
+message 2 "- PostgreSQL$CI_EXTENSION: up";
 echo "";

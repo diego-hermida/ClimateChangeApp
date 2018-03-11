@@ -1,4 +1,5 @@
 argparse
+coverage
 pymongo
 python-dateutil
 python-telegram-bot==9.0.0

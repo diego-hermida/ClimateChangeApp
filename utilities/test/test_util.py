@@ -46,7 +46,7 @@ class TestUtil(TestCase):
         self.assertEqual(past_expected, utilities.util.decimal_date_to_millis_since_epoch(past_date))
 
     def test_recursive_makedir(self):
-        from os.path import exists
+        from os.path import exists, isdir
         from os import getcwd
         from shutil import rmtree
 
@@ -60,6 +60,13 @@ class TestUtil(TestCase):
         rmtree('./foo')
         utilities.util.recursive_makedir(existing_dir)
         self.assertTrue(exists(existing_dir))
+
+        # Now path is a filepath
+        non_existing_file = './foo/baz/bar.txt'
+        utilities.util.recursive_makedir(non_existing_file, is_file=True)
+        self.assertTrue(exists('./foo/baz'))
+        self.assertTrue(isdir('./foo/baz'))
+        rmtree('./foo')
 
     def test_get_config(self):
         from os import remove

@@ -125,6 +125,10 @@ fi
 export ROOT_DIR="$ROOT_DIR";
 
 
+# Setting port address
+message -1 "[INFO] Using default value for MONGODB_PORT."
+MONGODB_PORT=27017;
+
 # ---------- Installation ---------- #
 
 # MongoDB component
@@ -152,7 +156,7 @@ fi
 message 4 "[COMPONENT] Building the Data Gathering Subsystem.";
 
 # Building the Data Gathering Subsystem component
-docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} \
+docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
                      --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" data_gathering_subsystem
 if [ $? != 0 ]; then
     exit_with_message 1 "> The Data Gathering Subsystem image could not be built." 1;

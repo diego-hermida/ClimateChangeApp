@@ -1,11 +1,10 @@
 # Using PyPy 3 as the Python interpreter.
 FROM pypy:latest
 
-# Provisional solution to [BUG-015]
 ARG API_IP
 ARG POSTGRES_IP
-ARG API_PORT
-ARG POSTGRES_PORT
+ARG API_PORT=5000
+ARG POSTGRES_PORT=5432
 
 ENV API_IP=$API_IP
 ENV POSTGRES_IP=$POSTGRES_IP

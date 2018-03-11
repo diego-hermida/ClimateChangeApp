@@ -1,4 +1,5 @@
 import argparse
+import coverage
 import sys
 import yaml
 
@@ -9,7 +10,18 @@ from pymongo.errors import DuplicateKeyError
 from unittest import TestLoader, TextTestRunner
 from utilities.db_util import bulk_create_authorized_users, ping_database, create_user
 from utilities.log_util import get_logger
-from utilities.util import remove_all_under_directory
+from utilities.util import remove_all_under_directory, recursive_makedir
+
+
+def _execute_tests() -> bool:
+    """
+        Executes all API tests.
+        :return: True, if test execution was successful; False, otherwise.
+    """
+    suite = TestLoader().discover(API_CONFIG['ROOT_API_FOLDER'])
+    runner = TextTestRunner(failfast=True, verbosity=2)
+    results = runner.run(suite)
+    return results.wasSuccessful()
 
 
 def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
@@ -22,16 +34,14 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         parser = argparse.ArgumentParser()
         parser.add_argument('--all', help='executes all deploy actions. This is the default option. If chosen, all '
                 'other options will be ignored. Tests are not executed by default.', required=False, action='store_true')
-        parser.add_argument('--db-user', help='creates the API MongoDB user', required=False,
-                action='store_true')
+        parser.add_argument('--db-user', help='creates the API MongoDB user', required=False, action='store_true')
         parser.add_argument('--add-users', help='adds the authorized users contained in the "authorized_users.config" '
                 'file', required=False, action='store_true')
-        parser.add_argument('--remove-files', help='removes all API .log files',
+        parser.add_argument('--remove-files', help='removes all API .log files', required=False, action='store_true')
+        parser.add_argument('--with-tests', help='executes all the API tests', required=False, action='store_true')
+        parser.add_argument('--with-tests-coverage', help='executes all the API tests and generates a coverage report',
                 required=False, action='store_true')
-        parser.add_argument('--with-tests', help='executes all the Subsystem tests', required=False,
-                            action='store_true')
-        parser.add_argument('--skip-all', help='does not execute any deploy step', required=False,
-                            action='store_true')
+        parser.add_argument('--skip-all', help='does not execute any deploy step', required=False, action='store_true')
 
         # Deploy args can be added from the "install.sh" script using environment variables.
         env_args = environ.get('DEPLOY_ARGS', None)
@@ -46,9 +56,10 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
             exit(0)
         if args.all and any([args.db_user, args.add_users, args.remove_files]):
             logger.info('Since "--all" option has been passed, any other option is excluded.')
-        elif not any([args.all, args.db_user, args.add_users, args.remove_files]) and not sys.argv[1:]:
+        elif not any([args.all, args.db_user, args.add_users, args.remove_files, args.with_tests,
+                      args.with_tests_coverage]) and not sys.argv[1:]:
             logger.info('Since no option has been passed, using "--all" as the default option.')
-            args = argparse.Namespace(all=True, with_tests=False)
+            args = argparse.Namespace(all=True, with_tests=False, with_tests_coverage=False)
 
         # 1. [Default] Verifying MongoDB is up (required both for adding users and tests).
         try:
@@ -92,16 +103,27 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                 exit(1)
 
         # 4. Executing all tests
-        if args.with_tests:
-            logger.info('Running all the API tests.')
-            loader = TestLoader()
-            suite = loader.discover(API_CONFIG['ROOT_API_FOLDER'])
-            runner = TextTestRunner(failfast=True, verbosity=2)
-            results = runner.run(suite)
+        if args.with_tests or args.with_tests_coverage:
+            if args.with_tests_coverage:
+                logger.info('Running all the API tests with branch coverage.')
+                # Measuring coverage
+                coverage_filepath = GLOBAL_CONFIG['COVERAGE_DIR'] + API_CONFIG['COVERAGE_FILENAME']
+                coverage_analyzer = coverage.Coverage(source=[GLOBAL_CONFIG['ROOT_PROJECT_FOLDER']], branch=True,
+                                                      concurrency="thread", data_file=coverage_filepath)
+                coverage_analyzer.start()
+                success = _execute_tests()
+                coverage_analyzer.stop()
+                if success:
+                    logger.info('Saving coverage report to "%s".' % coverage_filepath)
+                    recursive_makedir(coverage_filepath, is_file=True)
+                    coverage_analyzer.save()
+            else:
+                logger.info('Running all the API tests.')
+                success = _execute_tests()
             sys.stderr.flush()
             logger = get_logger(__file__, 'DeployAPILogger', to_file=log_to_file, to_stdout=log_to_stdout,
                     is_subsystem=False, component=API_CONFIG['COMPONENT'], to_telegram=log_to_telegram)
-            if results.wasSuccessful():
+            if success:
                 logger.info('All tests passed.')
             else:
                 logger.error('Some tests did not pass. Further info is available in the command line output.')
