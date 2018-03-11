@@ -1,0 +1,18 @@
+# Using PyPy 3 as the Python interpreter.
+FROM pypy:latest
+
+# Getting the last package updates.
+RUN pip install --upgrade pip setuptools
+RUN pip3 install --upgrade pip setuptools
+
+# Adding project code to the image.
+ADD . /ClimateChangeApp/code
+
+# Installing all project dependencies.
+RUN pip3 install coverage
+
+# Setting working directory.
+WORKDIR /ClimateChangeApp/code/coverage
+
+# Component executable.
+RUN ["coverage", "xml", "-i"]
