@@ -25,4 +25,4 @@ been used:
 
 and more...
 
-![https://github.com/diego-hermida/ClimateChangeApp/tree/master/doc/tools.png]
+![Tools](https://github.com/diego-hermida/ClimateChangeApp/tree/master/doc/tools.png)
