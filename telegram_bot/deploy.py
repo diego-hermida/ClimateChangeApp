@@ -1,7 +1,6 @@
 import argparse
 import coverage
 import sys
-import xmlrunner.runner
 
 from global_config.global_config import GLOBAL_CONFIG
 from os import environ
@@ -9,6 +8,7 @@ from telegram_bot.config.config import TELEGRAM_CONFIG
 from unittest import TestLoader, TextTestRunner
 from utilities.log_util import get_logger
 from utilities.util import recursive_makedir
+from xmlrunner.runner import XMLTestRunner
 
 
 def _execute_tests(xml_results=False) -> bool:
@@ -19,9 +19,9 @@ def _execute_tests(xml_results=False) -> bool:
     """
     suite = TestLoader().discover(TELEGRAM_CONFIG['ROOT_TELEGRAM_CONFIGURATOR_FOLDER'])
     recursive_makedir(GLOBAL_CONFIG['TEST_RESULTS_DIR'])
-    with open(GLOBAL_CONFIG['TEST_RESULTS_DIR'] + TELEGRAM_CONFIG['TESTS_FILENAME'], 'w') as f:
-        runner = TextTestRunner(failfast=True, verbosity=2) if not xml_results else xmlrunner.runner.XMLTestRunner(
-            failfast=True, verbosity=2, output=f)
+    with open(GLOBAL_CONFIG['TEST_RESULTS_DIR'] + TELEGRAM_CONFIG['TESTS_FILENAME'], 'wb') as f:
+        runner = TextTestRunner(failfast=True, verbosity=2) if not xml_results else XMLTestRunner(failfast=True,
+                verbosity=2, output=f)
         results = runner.run(suite)
     return results.wasSuccessful()
 
@@ -65,6 +65,9 @@ def deploy(log_to_stdout=True):
                 coverage_analyzer.start()
                 success = _execute_tests(xml_results=True)
                 coverage_analyzer.stop()
+                sys.stderr.flush()
+                logger = get_logger(__file__, 'DeployTelegramConfiguratorLogger', to_stdout=log_to_stdout,
+                                    is_subsystem=False, component=TELEGRAM_CONFIG['COMPONENT'], to_telegram=False)
                 if success:
                     logger.info('Saving coverage report to "%s".' % coverage_filepath)
                     recursive_makedir(coverage_filepath, is_file=True)
@@ -72,9 +75,9 @@ def deploy(log_to_stdout=True):
             else:
                 logger.info('Running all the Telegram Configurator tests.')
                 success = _execute_tests()
-            sys.stderr.flush()
-            logger = get_logger(__file__, 'DeployTelegramConfiguratorLogger', to_stdout=log_to_stdout,
-                    is_subsystem=False, component=TELEGRAM_CONFIG['COMPONENT'], to_telegram=False)
+                sys.stderr.flush()
+                logger = get_logger(__file__, 'DeployTelegramConfiguratorLogger', to_stdout=log_to_stdout,
+                        is_subsystem=False, component=TELEGRAM_CONFIG['COMPONENT'], to_telegram=False)
             if success:
                 logger.info('All tests passed.')
             else:

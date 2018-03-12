@@ -5,4 +5,4 @@ python-telegram-bot==9.0.0
 pytz
 pyYAML
 requests
-unittest-xml-reporting
+unittest-xml-reporting==2.1.1

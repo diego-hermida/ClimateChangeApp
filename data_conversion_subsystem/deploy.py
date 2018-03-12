@@ -1,7 +1,6 @@
 import argparse
 import coverage
 import sys
-import xmlrunner.runner
 
 from data_conversion_subsystem.config.config import DCS_CONFIG
 from data_conversion_subsystem.manage import execute
@@ -12,6 +11,7 @@ from utilities.postgres_util import create_application_user, create_application_
 from utilities.import_dir import import_modules
 from utilities.log_util import get_logger
 from utilities.util import remove_all_under_directory, recursive_makedir
+from xmlrunner.runner import XMLTestRunner
 
 
 def _execute_tests(xml_results=False) -> bool:
@@ -22,9 +22,9 @@ def _execute_tests(xml_results=False) -> bool:
     """
     suite = TestLoader().discover(DCS_CONFIG['ROOT_DATA_CONVERSION_SUBSYSTEM_FOLDER'])
     recursive_makedir(GLOBAL_CONFIG['TEST_RESULTS_DIR'])
-    with open(GLOBAL_CONFIG['TEST_RESULTS_DIR'] + DCS_CONFIG['TESTS_FILENAME'], 'w') as f:
-        runner = TextTestRunner(failfast=True, verbosity=2) if not xml_results else xmlrunner.runner.XMLTestRunner(
-            failfast=True, verbosity=2, output=f)
+    with open(GLOBAL_CONFIG['TEST_RESULTS_DIR'] + DCS_CONFIG['TESTS_FILENAME'], 'wb') as f:
+        runner = TextTestRunner(failfast=True, verbosity=2) if not xml_results else XMLTestRunner(failfast=True,
+                verbosity=2, output=f)
         results = runner.run(suite)
     return results.wasSuccessful()
 
@@ -132,6 +132,10 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                 coverage_analyzer.start()
                 success = _execute_tests(xml_results=True)
                 coverage_analyzer.stop()
+                sys.stderr.flush()
+                logger = get_logger(__file__, 'DeployDataConversionSubsystemLogger', to_file=log_to_file,
+                                    to_stdout=log_to_stdout, is_subsystem=False, component=DCS_CONFIG['COMPONENT'],
+                                    to_telegram=log_to_telegram)
                 if success:
                     logger.info('Saving coverage report to "%s".' % coverage_filepath)
                     recursive_makedir(coverage_filepath, is_file=True)
@@ -139,10 +143,10 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
             else:
                 logger.info('Running all the Data Conversion Subsystem tests.')
                 success = _execute_tests()
-            sys.stderr.flush()
-            logger = get_logger(__file__, 'DeployDataConversionSubsystemLogger', to_file=log_to_file,
-                    to_stdout=log_to_stdout, is_subsystem=False, component=DCS_CONFIG['COMPONENT'],
-                    to_telegram=log_to_telegram)
+                sys.stderr.flush()
+                logger = get_logger(__file__, 'DeployDataConversionSubsystemLogger', to_file=log_to_file,
+                        to_stdout=log_to_stdout, is_subsystem=False, component=DCS_CONFIG['COMPONENT'],
+                        to_telegram=log_to_telegram)
             if success:
                 logger.info('All tests passed.')
             else:

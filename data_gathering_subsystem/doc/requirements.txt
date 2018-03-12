@@ -8,4 +8,4 @@ pyYAML
 requests
 six
 unidecode
-unittest-xml-reporting
+unittest-xml-reporting==2.1.1
