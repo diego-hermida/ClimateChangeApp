@@ -14,5 +14,8 @@ RUN pip3 install coverage
 # Setting working directory.
 WORKDIR /ClimateChangeApp/code/coverage
 
-# Component executable.
+# Combine all .coverage.*
+RUN ["coverage", "combine"]
+
+# Create coverage.xml given .coverage
 RUN ["coverage", "xml", "-i"]
