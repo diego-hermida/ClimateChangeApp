@@ -136,16 +136,16 @@ if  [ "$SKIP_DEPLOY" == "true" ]; then
     TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--skip-all";
     UTILITIES_DEPLOY_ARGS="--skip-all";
 elif [ "$CI" == "true" ]; then
-    message -1 "[INFO] Adding coverage report generation to API_DEPLOY_ARGS.";
-    message -1 "[INFO] Adding coverage report to DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS.";
-    message -1 "[INFO] Adding coverage report to DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS.";
-    message -1 "[INFO] Adding coverage report to TELEGRAM_CONFIGURATOR_DEPLOY_ARGS.";
-    message -1 "[INFO] Adding coverage report to UTILITIES_DEPLOY_ARGS.";
-    API_DEPLOY_ARGS="--all --with-tests-coverage";
-    DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests-coverage";
-    DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests-coverage";
-    TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--with-tests-coverage";
-    UTILITIES_DEPLOY_ARGS="--with-tests-coverage";
+    message -1 "[INFO] Adding coverage and test results report generation to API_DEPLOY_ARGS.";
+    message -1 "[INFO] Adding coverage and test results report generation to DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS.";
+    message -1 "[INFO] Adding coverage and test results report generation to DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS.";
+    message -1 "[INFO] Adding coverage and test results report generation to TELEGRAM_CONFIGURATOR_DEPLOY_ARGS.";
+    message -1 "[INFO] Adding coverage and test results report generation to UTILITIES_DEPLOY_ARGS.";
+    API_DEPLOY_ARGS="--all --with-test-reports";
+    DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-test-reports";
+    DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-test-reports";
+    TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--with-test-reports";
+    UTILITIES_DEPLOY_ARGS="--with-test-reports";
 else
     message -1 "[INFO] Using default values for API_DEPLOY_ARGS.";
     message -1 "[INFO] Using default values for DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS.";
@@ -319,84 +319,127 @@ fi
 
 # Generating combined coverage report.
 if ([ "$CI" == "true" ] && [ "$SKIP_DEPLOY" == "false" ]); then
-    FAILED=0;
+    FAILED_COVERAGE=0;
+    FAILED_REPORT=0;
     message 5 "[ACTION] Fetching coverage reports from Docker images.";
+    message 5 "[ACTION] Fetching test results reports from Docker images.";
     mkdir ./coverage
+    mkdir ./test_results
     CONTAINER_ID=$(docker create diegohermida/data_gathering_subsystem_api:latest_CI);
     if [ $? != 0 ]; then
-        FAILED=$((FAILED + 1));
+        FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
+        FAILED_REPORT=$((FAILED_REPORT + 1));
         message 3 "[WARNING] API Docker container could not be created.";
     else
         docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/api.coverage ./coverage/.coverage.api;
         if [ $? != 0 ]; then
-            FAILED=$((FAILED + 1));
+            FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
             message 3 "[WARNING] API coverage report could not be fetched.";
+        fi
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/test_results/api_tests.xml ./test_results/api_tests.xml;
+        if [ $? != 0 ]; then
+            FAILED_REPORT=$((FAILED_REPORT + 1));
+            message 3 "[WARNING] API test results report could not be fetched.";
         fi
         docker rm ${CONTAINER_ID}
     fi
     CONTAINER_ID=$(docker create diegohermida/data_gathering_subsystem:latest_CI);
     if [ $? != 0 ]; then
-        FAILED=$((FAILED + 1));
+        FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
+        FAILED_REPORT=$((FAILED_REPORT + 1));
         message 3 "[WARNING] Data Gathering Subsystem Docker container could not be created.";
     else
         docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/dgs.coverage ./coverage/.coverage.dgs;
         if [ $? != 0 ]; then
-            FAILED=$((FAILED + 1));
+            FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
             message 3 "[WARNING] Data Gathering Subsystem coverage report could not be fetched.";
+        fi
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/test_results/dgs_tests.xml ./test_results/dgs_tests.xml;
+        if [ $? != 0 ]; then
+            FAILED_REPORT=$((FAILED_REPORT + 1));
+            message 3 "[WARNING] Data Gathering Subsystem test results report could not be fetched.";
         fi
         docker rm ${CONTAINER_ID}
     fi
     CONTAINER_ID=$(docker create diegohermida/data_conversion_subsystem:latest_CI);
     if [ $? != 0 ]; then
-        FAILED=$((FAILED + 1));
+        FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
+        FAILED_REPORT=$((FAILED_REPORT + 1));
         message 3 "[WARNING] Data Conversion Subsystem Docker container could not be created.";
     else
         docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/dcs.coverage ./coverage/.coverage.dcs;
         if [ $? != 0 ]; then
-            FAILED=$((FAILED + 1));
+            FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
             message 3 "[WARNING] Data Conversion Subsystem coverage report could not be fetched.";
+        fi
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/test_results/dcs_tests.xml ./test_results/dcs_tests.xml;
+        if [ $? != 0 ]; then
+            FAILED_REPORT=$((FAILED_REPORT + 1));
+            message 3 "[WARNING] Data Conversion Subsystem test results report could not be fetched.";
         fi
         docker rm ${CONTAINER_ID}
     fi
     CONTAINER_ID=$(docker create diegohermida/telegram_bot:latest_CI);
     if [ $? != 0 ]; then
-        FAILED=$((FAILED + 1));
+        FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
+        FAILED_REPORT=$((FAILED_REPORT + 1));
         message 3 "[WARNING] Telegram Configurator Docker container could not be created.";
     else
         docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/telegram.coverage ./coverage/.coverage.telegram;
         if [ $? != 0 ]; then
-            FAILED=$((FAILED + 1));
+            FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
             message 3 "[WARNING] Telegram Configurator coverage report could not be fetched.";
+        fi
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/test_results/telegram_tests.xml ./test_results/telegram_tests.xml;
+        if [ $? != 0 ]; then
+            FAILED_REPORT=$((FAILED_REPORT + 1));
+            message 3 "[WARNING] Telegram Configurator test results report could not be fetched.";
         fi
         docker rm ${CONTAINER_ID}
     fi
     CONTAINER_ID=$(docker create diegohermida/utilities:latest_CI);
     if [ $? != 0 ]; then
-        FAILED=$((FAILED + 1));
+        FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
+        FAILED_REPORT=$((FAILED_REPORT + 1));
         message 3 "[WARNING] Utilities Docker container could not be created.";
     else
         docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/util.coverage ./coverage/.coverage.util;
         if [ $? != 0 ]; then
-            FAILED=$((FAILED + 1));
+            FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
             message 3 "[WARNING] Utilities coverage report could not be fetched.";
+        fi
+        docker cp ${CONTAINER_ID}:/ClimateChangeApp/test_results/util_tests.xml ./test_results/util_tests.xml;
+        if [ $? != 0 ]; then
+            FAILED_REPORT=$((FAILED_REPORT + 1));
+            message 3 "[WARNING] Utilities test results report could not be fetched.";
         fi
         docker rm ${CONTAINER_ID}
     fi
-    if (( $FAILED > 0 )); then
-        exit_with_message 1 "[ERROR] All coverage reports must be fetched in order to generate a merged coverage report. Failed: $FAILED" 1;
+    if (( $FAILED_COVERAGE > 0 )); then
+        exit_with_message 1 "[ERROR] All coverage reports must be fetched in order to generate a merged coverage
+                             report. Failed: $FAILED_COVERAGE" 1;
     fi
+    if (( $FAILED_REPORT > 0 )); then
+        exit_with_message 1 "[ERROR] All test results reports must be fetched in order to be a successful build.
+                             Failed: $FAILED_REPORT" 1;
+    fi
+    message 2 "[SUCCESS] XML test results reports successfully saved to \"./test_results/\"."
     message 5 "[ACTION] Generating merged coverage report.";
     docker-compose up -d coverage_CI
-    CONTAINER_ID=$(docker create diegohermida/coverage:latest_CI);
     if [ $? != 0 ]; then
         exit_with_message 1 "[ERROR] Coverage merge report Docker container could not be created." 1;
     else
-        docker cp ${CONTAINER_ID}:/ClimateChangeApp/code/coverage/coverage.xml ./coverage/coverage.xml;
+        CONTAINER_ID=$(docker create diegohermida/coverage:latest_CI);
         if [ $? != 0 ]; then
-            FAILED=$((FAILED + 1));
-            exit_with_message 1 "[ERROR] Merged coverage report could not be fetched." 1;
+            exit_with_message 1 "[ERROR] Coverage merge report Docker container could not be created." 1;
+        else
+            docker cp ${CONTAINER_ID}:/ClimateChangeApp/code/coverage/coverage.xml ./coverage/coverage.xml;
+            if [ $? != 0 ]; then
+                FAILED_COVERAGE=$((FAILED_COVERAGE + 1));
+                exit_with_message 1 "[ERROR] Merged coverage report could not be fetched." 1;
+            fi
+            docker rm ${CONTAINER_ID}
         fi
-        docker rm ${CONTAINER_ID}
     fi
     message 2 "[SUCCESS] XML coverage report successfully generated to \"./coverage/coverage.xml\"."
 fi

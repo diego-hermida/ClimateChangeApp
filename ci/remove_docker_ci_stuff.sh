@@ -34,7 +34,7 @@ fi
 message 4 "[ACTION] Removing all Docker CI images.";
 IMAGES=$(docker images | grep "_CI" | tr -s ' ' | cut -d ' ' -f 3 | tr '\n' ' ' | awk '{$1=$1};1');
 if [ "$IMAGES" != "" ]; then
-    docker rmi ${IMAGES};
+    docker rmi --force ${IMAGES};
     if [ $? != 0 ]; then
         message 1 "[ERROR] An error occurred while removing Docker CI images.";
     else

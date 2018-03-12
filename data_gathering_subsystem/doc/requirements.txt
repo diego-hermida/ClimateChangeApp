@@ -8,3 +8,4 @@ pyYAML
 requests
 six
 unidecode
+xmlrunner

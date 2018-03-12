@@ -6,3 +6,4 @@ python-telegram-bot==9.0.0
 pytz
 pyYAML
 requests
+xmlrunner

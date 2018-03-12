@@ -29,8 +29,8 @@ class TestDeploy(TestCase):
         import yaml
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
-        args.with_tests_coverage = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
+        args.with_test_reports = False
         args.all = True
         args.db_user = False
         args.add_users = False
@@ -64,7 +64,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.all = False
         args.db_user = True
         args.add_users = False
@@ -79,7 +79,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = True
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.all = False
         args.db_user = False
         args.add_users = False
@@ -101,7 +101,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = True
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.all = False
         args.db_user = False
         args.add_users = False
@@ -125,7 +125,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.all = False
         args.db_user = False
         args.add_users = True
@@ -142,7 +142,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.all = False
         args.db_user = False
         args.add_users = True
@@ -159,7 +159,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.all = False
         args.db_user = False
         args.add_users = True
@@ -177,7 +177,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = True
+        args.with_test_reports = True
         args.all = False
         args.db_user = False
         args.add_users = False
@@ -195,7 +195,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = True
+        args.with_test_reports = True
         args.all = False
         args.db_user = False
         args.add_users = False

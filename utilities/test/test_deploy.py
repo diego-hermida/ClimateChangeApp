@@ -16,7 +16,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = True
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         mock_test_runner.return_value.run = results = Mock()
         results.return_value.wasSuccessful.return_value = True
         deploy.deploy(log_to_stdout=False)
@@ -38,7 +38,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         deploy.deploy(log_to_stdout=False)
         self.assertTrue(mock_args.called)
 
@@ -48,7 +48,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = True
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_stdout=False)
         self.assertEqual(1, e.exception.code)
@@ -66,7 +66,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = True
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_stdout=False)
         self.assertTrue(mock_args.called)
@@ -79,7 +79,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = True
+        args.with_test_reports = True
         deploy.deploy(log_to_stdout=False)
         self.assertEqual(1, mock_coverage.return_value.start.call_count)
         self.assertEqual(1, mock_coverage.return_value.stop.call_count)
@@ -92,7 +92,7 @@ class TestDeploy(TestCase):
         mock_args.return_value.parse_args.return_value = args = Mock()
         args.skip_all = False
         args.with_tests = False
-        args.with_tests_coverage = True
+        args.with_test_reports = True
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_stdout=False)
         self.assertEqual(1, e.exception.code)

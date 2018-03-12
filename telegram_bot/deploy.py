@@ -1,6 +1,7 @@
 import argparse
 import coverage
 import sys
+import xmlrunner
 
 from global_config.global_config import GLOBAL_CONFIG
 from os import environ
@@ -10,14 +11,19 @@ from utilities.log_util import get_logger
 from utilities.util import recursive_makedir
 
 
-def _execute_tests() -> bool:
+def _execute_tests(xml_results=False) -> bool:
     """
         Executes all API tests.
+        :param xml_results: If True, it will generate an XML test report in a directory (TEST_RESULTS_DIR).
         :return: True, if test execution was successful; False, otherwise.
     """
     suite = TestLoader().discover(TELEGRAM_CONFIG['ROOT_TELEGRAM_CONFIGURATOR_FOLDER'])
-    runner = TextTestRunner(failfast=True, verbosity=2)
-    results = runner.run(suite)
+    recursive_makedir(GLOBAL_CONFIG['TEST_RESULTS_DIR'])
+    with open(GLOBAL_CONFIG['TEST_RESULTS_DIR'] + TELEGRAM_CONFIG['TESTS_FILENAME'], 'w') as f:
+        runner = TextTestRunner(failfast=True, verbosity=2) if not xml_results \
+            else xmlrunner.XMLTestRunner(verbosity=2, output=f)
+        runner.failfast = True
+        results = runner.run(suite)
     return results.wasSuccessful()
 
 
@@ -30,8 +36,8 @@ def deploy(log_to_stdout=True):
         parser = argparse.ArgumentParser()
         parser.add_argument('--with-tests', help='executes all the Telegram Configurator tests', required=False,
                 action='store_true')
-        parser.add_argument('--with-tests-coverage', help='executes all the Telegram Configurator tests and generates'
-                'a coverage report', required=False, action='store_true')
+        parser.add_argument('--with-test-reports', help='executes all the Telegram Configurator tests and generates'
+                'a coverage report and a XML test results report', required=False, action='store_true')
         parser.add_argument('--skip-all', help='does not execute any deploy step', required=False, action='store_true')
 
         # Deploy args can be added from the "install.sh" script using environment variables.
@@ -45,20 +51,20 @@ def deploy(log_to_stdout=True):
         if args.skip_all:
             logger.info('Deploy operations have been skipped.')
             exit(0)
-        elif not any([args.with_tests, args.with_tests_coverage]) and not sys.argv[1:]:
+        elif not any([args.with_tests, args.with_test_reports]) and not sys.argv[1:]:
             logger.info('Since no option has been passed, using "--with-tests" as the default option.')
-            args = argparse.Namespace(with_tests=True, with_tests_coverage=False)
+            args = argparse.Namespace(with_tests=True, with_test_reports=False)
 
         # 1. Executing all tests
-        if args.with_tests or args.with_tests_coverage:
-            if args.with_tests_coverage:
+        if args.with_tests or args.with_test_reports:
+            if args.with_test_reports:
                 logger.info('Running all the Telegram Configurator tests with branch coverage.')
                 # Measuring coverage
                 coverage_filepath = GLOBAL_CONFIG['COVERAGE_DIR'] + TELEGRAM_CONFIG['COVERAGE_FILENAME']
                 coverage_analyzer = coverage.Coverage(source=[GLOBAL_CONFIG['ROOT_PROJECT_FOLDER']], branch=True,
                                                       concurrency="thread", data_file=coverage_filepath)
                 coverage_analyzer.start()
-                success = _execute_tests()
+                success = _execute_tests(xml_results=True)
                 coverage_analyzer.stop()
                 if success:
                     logger.info('Saving coverage report to "%s".' % coverage_filepath)

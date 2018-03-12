@@ -26,7 +26,7 @@ class TestDeploy(TestCase):
         args.make_migrations = False
         args.verify_modules = False
         args.with_tests = True
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.remove_files = False
         mock_module1 = Mock(name='Mock module')
         mock_module1.return_value.instance.return_value = runnable = Mock()
@@ -66,7 +66,7 @@ class TestDeploy(TestCase):
         args.make_migrations = False
         args.verify_modules = True
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.remove_files = False
         mock_module1 = Mock(name='Mock module')
         mock_module1.instance.return_value = runnable = Mock()
@@ -87,7 +87,7 @@ class TestDeploy(TestCase):
         args.make_migrations = False
         args.verify_modules = False
         args.with_tests = True
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.remove_files = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
@@ -105,7 +105,7 @@ class TestDeploy(TestCase):
         args.make_migrations = False
         args.verify_modules = False
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.remove_files = True
         deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertTrue(mock_args.called)
@@ -127,7 +127,7 @@ class TestDeploy(TestCase):
         args.make_migrations = False
         args.verify_modules = False
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.remove_files = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
@@ -156,7 +156,7 @@ class TestDeploy(TestCase):
         args.make_migrations = False
         args.verify_modules = False
         args.with_tests = False
-        args.with_tests_coverage = False
+        args.with_test_reports = False
         args.remove_files = False
         mock_module1 = Mock(name='Mock module')
         mock_module1.return_value.instance.return_value = runnable = Mock()
@@ -178,7 +178,7 @@ class TestDeploy(TestCase):
         args.make_migrations = False
         args.verify_modules = False
         args.with_tests = False
-        args.with_tests_coverage = True
+        args.with_test_reports = True
         args.remove_files = False
         deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         self.assertEqual(1, mock_coverage.return_value.start.call_count)
@@ -197,7 +197,7 @@ class TestDeploy(TestCase):
         args.make_migrations = False
         args.verify_modules = False
         args.with_tests = False
-        args.with_tests_coverage = True
+        args.with_test_reports = True
         args.remove_files = False
         with self.assertRaises(SystemExit) as e:
             deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
