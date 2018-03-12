@@ -4,5 +4,6 @@
 *.git
 .gitignore
 README.md
+/doc/tools.png
 
 **/__pycache__
