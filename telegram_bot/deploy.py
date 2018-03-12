@@ -1,7 +1,7 @@
 import argparse
 import coverage
 import sys
-import xmlrunner
+import xmlrunner.runner
 
 from global_config.global_config import GLOBAL_CONFIG
 from os import environ

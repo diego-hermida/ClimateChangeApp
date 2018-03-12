@@ -1,7 +1,7 @@
 import argparse
 import coverage
 import sys
-import xmlrunner
+import xmlrunner.runner
 
 from data_conversion_subsystem.config.config import DCS_CONFIG
 from data_conversion_subsystem.manage import execute

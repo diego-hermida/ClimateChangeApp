@@ -1,7 +1,7 @@
 import argparse
 import coverage
 import sys
-import xmlrunner
+import xmlrunner.runner
 
 from data_gathering_subsystem.config.config import DGS_CONFIG
 from global_config.global_config import GLOBAL_CONFIG

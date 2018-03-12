@@ -1,7 +1,7 @@
 import argparse
 import coverage
 import sys
-import xmlrunner
+import xmlrunner.runner
 import yaml
 
 from api.config.config import API_CONFIG
