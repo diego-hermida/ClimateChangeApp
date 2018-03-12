@@ -56,7 +56,7 @@ services:
             - 27017:27017
         command: mongod --smallfiles
     postgres:
-        image: postgres
+        image: postgres:latest
         container_name: postgres
         environment:
             - PGDATA=/postgresql/data
@@ -66,6 +66,17 @@ services:
             - ${ROOT_DIR}/postgresql/data:/postgresql/data
         ports:
             - 5432:5432
+    utilities:
+        build:
+            context: .
+            dockerfile: ./utilities/Dockerfile
+        container_name: utilities
+        image: diegohermida/utilities:latest
+        environment:
+            - PYTHONUNBUFFERED=1
+        depends_on:
+          - mongodb
+          - postgres
     jenkins:
         build:
             context: .
@@ -78,17 +89,32 @@ services:
         ports:
             - 8090:8080
             - 50000:50000
-    utilities:
-        build:
-            context: .
-            dockerfile: ./utilities/Dockerfile
-        container_name: utilities
-        image: diegohermida/utilities:latest
+    sonar:
+        image: sonarqube:latest
+        container_name: sonar
         environment:
-            - PYTHONUNBUFFERED=1
+            - SONARQUBE_JDBC_USERNAME=sonar
+            - SONARQUBE_JDBC_PASSWORD=sonar
+            - SONARQUBE_JDBC_URL=jdbc:postgresql://${HOST_IP}:5434/sonar
+        volumes:
+            - ${ROOT_DIR}/sonar/extensions:/opt/sonarqube/extensions
+            - ${ROOT_DIR}/sonar/data:/opt/sonarqube/data
+        ports:
+            - 9000:9000
         depends_on:
-          - mongodb
-          - postgres
+          - sonar_db
+    sonar_db:
+        image: postgres:latest
+        container_name: sonar_db
+        environment:
+            - PGDATA=/postgresql/data
+            - POSTGRES_USER=sonar
+            - POSTGRES_PASSWORD=sonar
+            - POSRGRES_DB=sonar
+        volumes:
+            - ${ROOT_DIR}/sonar/postgresql/data:/postgresql/data
+        ports:
+            - 5434:5432
 
     # CI services
     data_gathering_subsystem_CI:
