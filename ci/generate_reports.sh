@@ -34,8 +34,8 @@ function message () {
 # ---------- Actions ---------- #
 
 # Generating combined coverage report.
-SUCCESS_COVERAGE=0;
-SUCCESS_REPORT=0;
+SUCCESS_COVERAGE=5;
+SUCCESS_REPORT=5;
 message 5 "[ACTION] Fetching coverage reports from Docker images.";
 message 5 "[ACTION] Fetching test results reports from Docker images.";
 mkdir ./coverage
