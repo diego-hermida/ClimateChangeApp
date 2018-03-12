@@ -24,8 +24,7 @@ def _execute_tests(xml_results=False) -> bool:
     recursive_makedir(GLOBAL_CONFIG['TEST_RESULTS_DIR'])
     with open(GLOBAL_CONFIG['TEST_RESULTS_DIR'] + API_CONFIG['TESTS_FILENAME'], 'w') as f:
         runner = TextTestRunner(failfast=True, verbosity=2) if not xml_results \
-            else xmlrunner.XMLTestRunner(verbosity=2, output=f)
-        runner.failfast = True
+            else xmlrunner.runner.XMLTestRunner(failfast=True, verbosity=2, output=f)
         results = runner.run(suite)
     return results.wasSuccessful()
 

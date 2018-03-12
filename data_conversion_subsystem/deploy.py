@@ -23,9 +23,8 @@ def _execute_tests(xml_results=False) -> bool:
     suite = TestLoader().discover(DCS_CONFIG['ROOT_DATA_CONVERSION_SUBSYSTEM_FOLDER'])
     recursive_makedir(GLOBAL_CONFIG['TEST_RESULTS_DIR'])
     with open(GLOBAL_CONFIG['TEST_RESULTS_DIR'] + DCS_CONFIG['TESTS_FILENAME'], 'w') as f:
-        runner = TextTestRunner(failfast=True, verbosity=2) if not xml_results \
-            else xmlrunner.XMLTestRunner(verbosity=2, output=f)
-        runner.failfast = True
+        runner = TextTestRunner(failfast=True, verbosity=2) if not xml_results else xmlrunner.runner.XMLTestRunner(
+            failfast=True, verbosity=2, output=f)
         results = runner.run(suite)
     return results.wasSuccessful()
 
