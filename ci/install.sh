@@ -60,9 +60,9 @@ done
 # Ensuring variables contain legit values
 if  [ "$SHOW_HELP" == "true" ]; then
      exit_with_message 1 "> usage: install.sh [ROOT_DIR=<path>] [FORCE_BUILD={true|false}]
-            \n\t- ROOT_DIR: installs the Jenkins server under a custom directory. Defaults to
+            \n\t- ROOT_DIR: installs the CI components under a custom directory. Defaults to
                   \"~/ClimateChangeApp\".
-            \n\t- FORCE_BUILD: builds the Jenkins image even if it already exists. Defaults to \"false\"." 0;
+            \n\t- FORCE_BUILD: builds the CI components' images even if they already exist. Defaults to \"false\"." 0;
 fi
 
 
@@ -92,14 +92,38 @@ if [ "$FORCE_BUILD" == "true" ]; then
     message -1 "[INFO] Recreating Jenkins image.";
     docker-compose up -d --build jenkins;
 else
-    docker-compose up -d --build jenkins;
+    docker-compose up -d jenkins;
 fi
 if [ $? != 0 ]; then
     exit_with_message 1 "[ERROR] The Jenkins service could not be initialized." 1;
 fi
 
 
+# Sonar component
+message 4 "[COMPONENT] Building and launching the Sonar service.";
+
+# Deleting the Sonar service if it was already been created: Brand-new container.
+if [ "$(docker ps -aq -f name="sonar")" ]; then
+    message -1 "[INFO] Removing previous Sonar containers.";
+    docker rm --force sonar;
+    docker rm --force sonar_db;
+fi
+# Launching the Sonar service
+message -1 "[INFO] Launching the Sonar service.";
+if [ "$FORCE_BUILD" == "true" ]; then
+    message -1 "[INFO] Recreating Sonar image.";
+    docker-compose up -d --build sonar;
+else
+    docker-compose up -d sonar;
+fi
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] The Sonar service could not be initialized." 1;
+fi
+
 # Displaying installation summary
 echo "";
 message 2 "[SUCCESS] Installation results:";
-exit_with_message 2 "- Jenkins: up" 0
+message 2 "- Jenkins: up"
+message 2 "- Sonar: up"
+message 2 "- Sonar (db): up"
+echo ""

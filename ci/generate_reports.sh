@@ -155,3 +155,4 @@ else
     fi
 fi
 message 2 "[SUCCESS] XML coverage report successfully generated to \"./coverage/coverage.xml\"."
+echo ""

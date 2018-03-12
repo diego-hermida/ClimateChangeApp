@@ -38,7 +38,7 @@ if [ "$IMAGES" != "" ]; then
     if [ $? != 0 ]; then
         message 1 "[ERROR] An error occurred while removing Docker CI images.";
     else
-        message 2 "[SUCCESS] Docker CI container(s) successfully removed.";
+        message 2 "[SUCCESS] Docker CI image(s) successfully removed.";
     fi
 else
     message -1 "[INFO] No Docker CI images were available to remove.";
