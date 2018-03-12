@@ -1,5 +1,38 @@
 #! /bin/bash
 
+# ---------- Functions ---------- #
+
+# Exits the installation process, but prints a message to command line before doing so.
+# :param $1: Colour of the output line. This will be reset before exiting.
+#            If this value equals -1, the default color is used.
+# :param $2: Message to be printed.
+# :param $3: Exit code.
+function exit_with_message () {
+    if [ $1 != -1 ]; then
+        tput -T xterm-256color setaf $1;
+    fi
+    tput -T xterm-256color bold;
+    echo -e $2;
+    tput -T xterm-256color sgr0;
+    echo ""
+    exit $3;
+}
+
+# Prints a message. Message output uses bold by default.
+# :param $1: Colour of the output line. This will be reset before exiting.
+#            If this value equals -1, the default color is used.
+# :param $2: Message to be printed.
+function message () {
+    tput -T xterm-256color bold;
+    if [ $1 != -1 ]; then
+        tput -T xterm-256color setaf $1;
+    fi
+    echo -e $2
+    tput -T xterm-256color sgr0;
+}
+
+# ---------- Actions ---------- #
+
 # Generating combined coverage report.
 SUCCESS_COVERAGE=0;
 SUCCESS_REPORT=0;
