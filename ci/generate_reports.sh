@@ -34,7 +34,7 @@ function message () {
 
 # ---------- Definitions ---------- #
 
-PATH_TO_REPLACE="/var/jenkins_home/workspace/ClimateChangeApp";
+PATH_TO_REPLACE="/ClimateChangeApp/code";
 SHOW_HELP=false;
 
 # ---------- Argument manipulation ---------- #
@@ -56,15 +56,16 @@ done
 if  [ "$SHOW_HELP" == "true" ]; then
      exit_with_message 1 "> usage: install.sh [PATH_TO_REPLACE=<path>]
             \n\t- -h, --help: shows this message
-            \n\t- PATH_TO_REPLACE: Replaces \"/ClimateChange/code\" with another path, so that coverage report points to
-                  the real workspace path. Defaults to \"/var/jenkins_home/workspace/ClimateChangeApp\"". 0;
+            \n\t- PATH_TO_REPLACE: Replaces \"/ClimateChange/code\" with another path, so that coverage
+            \n\t\t report points to the real workspace path. Defaults to \"/ClimateChange/code\" (no-op)." 0;
 fi
 
+
 # Overriding default ROOT_DIR?
-if [ "$PATH_TO_REPLACE" != "/var/jenkins_home/workspace/ClimateChangeApp" ]; then
-    message -1 "[INFO] Replacing \"/ClimateChangeApp/code\" with a custom path: \"$PATH_TO_REPLACE\".";
+if [ "$PATH_TO_REPLACE" == "/ClimateChangeApp/code" ]; then
+    message -1 "[INFO] Keeping source code file paths in the coverage report.";
 else
-    message -1 "[INFO] Replacing \"/ClimateChangeApp/code\" with the default path: \"$PATH_TO_REPLACE\".";
+    message -1 "[INFO] Replacing \"/ClimateChangeApp/code\" with a custom path: \"$PATH_TO_REPLACE\".";
 fi
 
 # ---------- Actions ---------- #
