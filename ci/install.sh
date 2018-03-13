@@ -54,12 +54,10 @@ do
 done
 
 
-# Setting variables to lower case
-
-
-# Ensuring variables contain legit values
+# Showing help if required
 if  [ "$SHOW_HELP" == "true" ]; then
      exit_with_message 1 "> usage: install.sh [ROOT_DIR=<path>] [FORCE_BUILD={true|false}]
+            \n\t- -h, --help: shows this message
             \n\t- ROOT_DIR: installs the CI components under a custom directory. Defaults to
                   \"~/ClimateChangeApp\".
             \n\t- FORCE_BUILD: builds the CI components' images even if they already exist. Defaults to \"false\"." 0;

@@ -1,6 +1,10 @@
 # Using PyPy 3 as the Python interpreter.
 FROM pypy:latest
 
+# Setting path to replace.
+ARG PATH_TO_REPLACE
+ENV PATH_TO_REPLACE=$PATH_TO_REPLACE
+
 # Getting the last package updates.
 RUN pip install --upgrade pip setuptools
 RUN pip3 install --upgrade pip setuptools
@@ -19,3 +23,8 @@ RUN ["coverage", "combine"]
 
 # Create coverage.xml given .coverage
 RUN ["coverage", "xml", "-i"]
+
+# Replace "/ClimateChangeApp/code" with the workspace base dir.
+RUN sed "s|/ClimateChangeApp/code|${PATH_TO_REPLACE}|" coverage.xml > coverage_backup.xml
+
+RUN rm coverage.xml && mv coverage_backup.xml coverage.xml

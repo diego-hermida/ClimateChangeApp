@@ -31,6 +31,42 @@ function message () {
     tput -T xterm-256color sgr0;
 }
 
+
+# ---------- Definitions ---------- #
+
+PATH_TO_REPLACE="/var/jenkins_home/workspace/ClimateChangeApp";
+SHOW_HELP=false;
+
+# ---------- Argument manipulation ---------- #
+
+# Parsing arguments
+for ARGUMENT in "$@"
+do
+    KEY=$(echo ${ARGUMENT} | cut -f1 -d=)
+    VALUE=$(echo ${ARGUMENT} | cut -f2 -d=)
+    case "$KEY" in
+            -h)                 SHOW_HELP=true ;;
+            --help)             SHOW_HELP=true ;;
+            PATH_TO_REPLACE)    PATH_TO_REPLACE=${VALUE} ;;
+            *)
+    esac
+done
+
+# Showing help if required
+if  [ "$SHOW_HELP" == "true" ]; then
+     exit_with_message 1 "> usage: install.sh [PATH_TO_REPLACE=<path>]
+            \n\t- -h, --help: shows this message
+            \n\t- PATH_TO_REPLACE: Replaces \"/ClimateChange/code\" with another path, so that coverage report points to
+                  the real workspace path. Defaults to \"/var/jenkins_home/workspace/ClimateChangeApp\"". 0;
+fi
+
+# Overriding default ROOT_DIR?
+if [ "$PATH_TO_REPLACE" != "/var/jenkins_home/workspace/ClimateChangeApp" ]; then
+    message -1 "[INFO] Replacing \"/ClimateChangeApp/code\" with a custom path: \"$PATH_TO_REPLACE\".";
+else
+    message -1 "[INFO] Replacing \"/ClimateChangeApp/code\" with the default path: \"$PATH_TO_REPLACE\".";
+fi
+
 # ---------- Actions ---------- #
 
 # Generating combined coverage report.
@@ -138,7 +174,7 @@ if (( $SUCCESS_REPORT == 0 )); then
 fi
 message 2 "[SUCCESS] XML test results reports successfully saved to \"./test_results/\"."
 message 5 "[ACTION] Generating merged coverage report.";
-docker-compose up -d coverage_CI
+docker-compose build --build-arg PATH_TO_REPLACE="$PATH_TO_REPLACE" coverage_CI
 if [ $? != 0 ]; then
     exit_with_message 1 "[ERROR] Coverage merge report Docker container could not be created." 1;
 else
