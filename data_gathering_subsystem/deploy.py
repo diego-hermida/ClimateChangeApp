@@ -147,7 +147,8 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                 # Measuring coverage
                 coverage_filepath = GLOBAL_CONFIG['COVERAGE_DIR'] + DGS_CONFIG['COVERAGE_FILENAME']
                 coverage_analyzer = coverage.Coverage(source=[GLOBAL_CONFIG['ROOT_PROJECT_FOLDER']], branch=True,
-                                                      concurrency="thread", data_file=coverage_filepath)
+                                                      concurrency="thread", data_file=coverage_filepath,
+                                                      config_file=GLOBAL_CONFIG['COVERAGE_CONFIG_FILEPATH'])
                 coverage_analyzer.start()
                 success = _execute_tests(xml_results=True)
                 coverage_analyzer.stop()
