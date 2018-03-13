@@ -104,9 +104,8 @@ fi
 
 
 # CI and default directory?
-if ([ "$CI" == "true" ] && [ "$ROOT_DIR" == "~/ClimateChangeApp" ]); then
-    exit_with_message 1 "[ERROR] Deploying the application under the default directory \"$ROOT_DIR\" is not
-                         allowed when invoking \"install.sh <args> CI=true\"." 1;
+if ([ "$CI" == "true" ] && [ "$ROOT_DIR" != "~/ClimateChangeApp" ]); then
+    message 3 "[WARNING] CI Docker containers do not export any volume. As a result, the ROOT_DIR parameter will be ignored.";
 fi
 
 

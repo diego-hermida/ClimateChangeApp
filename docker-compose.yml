@@ -123,9 +123,6 @@ services:
             dockerfile: ./data_gathering_subsystem/Dockerfile
         container_name: data_gathering_subsystem_CI
         image: diegohermida/data_gathering_subsystem:latest_CI
-        volumes:
-            - ${ROOT_DIR}/log:/ClimateChangeApp/log
-            - ${ROOT_DIR}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
         depends_on:
@@ -136,9 +133,6 @@ services:
             dockerfile: ./data_conversion_subsystem/Dockerfile
         container_name: data_conversion_subsystem_CI
         image: diegohermida/data_conversion_subsystem:latest_CI
-        volumes:
-            - ${ROOT_DIR}/log:/ClimateChangeApp/log
-            - ${ROOT_DIR}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
         depends_on:
@@ -152,8 +146,6 @@ services:
         image: diegohermida/data_gathering_subsystem_api:latest_CI
         environment:
             - PYTHONUNBUFFERED=1
-        volumes:
-            - ${ROOT_DIR}/log/api:/ClimateChangeApp/log/api
         ports:
             - 5001:5000
         depends_on:
@@ -165,8 +157,6 @@ services:
             - MONGO_DATA_DIR=/data/db
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=root
-        volumes:
-            - ${ROOT_DIR}/data/db:/data/db
         ports:
             - 27018:27017
         command: mongod --smallfiles
@@ -177,8 +167,6 @@ services:
             - PGDATA=/postgresql/data
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=root
-        volumes:
-            - ${ROOT_DIR}/postgresql/data:/postgresql/data
         ports:
             - 5433:5432
     telegram_bot_CI:
