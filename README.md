@@ -1,7 +1,7 @@
 
 # Climate Change App
 
-[![Build Status](http://localhost:8090/job/ClimateChangeApp/badge/icon)](http://localhost:8090/job/ClimateChangeApp/)
+[![Build Status](http://193.144.50.169:8090/job/ClimateChangeApp/badge/icon)](http://localhost:8090/job/ClimateChangeApp/)
 
 This is the code repository of my **final degree project**.
 
