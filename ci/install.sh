@@ -31,9 +31,22 @@ function message () {
     tput -T xterm-256color sgr0;
 }
 
+# Calculates the machine's IPv4 address.
+function calculate_ip_address () {
+    local _ip _myip _line _nl=$'\n'
+    while IFS=$': \t' read -a _line ;do
+        [ -z "${_line%inet}" ] &&
+           _ip=${_line[${#_line[1]}>4?1:2]} &&
+           [ "${_ip#127.0.0.1}" ] && _myip=$_ip
+      done< <(LANG=C /sbin/ifconfig)
+    printf ${1+-v} $1 "%s${_nl:0:$[${#1}>0?0:1]}" $_myip
+}
+
 
 # ---------- Definitions ---------- #
 
+HOST_IP=$(calculate_ip_address)
+MACOS=false;
 FORCE_BUILD=false;
 ROOT_DIR="~/ClimateChangeApp";
 SHOW_HELP=false;
@@ -46,22 +59,40 @@ do
     KEY=$(echo ${ARGUMENT} | cut -f1 -d=)
     VALUE=$(echo ${ARGUMENT} | cut -f2 -d=)
     case "$KEY" in
-            -h)         SHOW_HELP=true ;;
-            --help)     SHOW_HELP=true ;;
-            ROOT_DIR)   ROOT_DIR=${VALUE} ;;
+            -h)             SHOW_HELP=true ;;
+            --help)         SHOW_HELP=true ;;
+            FORCE_BUILD)    FORCE_BUILD=${VALUE} ;;
+            MACOS)          MACOS=${VALUE} ;;
+            HOST_IP)        HOST_IP=${VALUE} ;;
+            ROOT_DIR)       ROOT_DIR=${VALUE} ;;
             *)
     esac
 done
 
 
 # Showing help if required
-if  [ "$SHOW_HELP" == "true" ]; then
-     exit_with_message 1 "> usage: install.sh [ROOT_DIR=<path>] [FORCE_BUILD={true|false}]
+if  [ "$SHOW_HELP" == "true" ] || ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]) ||
+            ([ "$FORCE_BUILD" != "true" ] && [ "$FORCE_BUILD" != "false" ]); then
+     exit_with_message 1 "> usage: install.sh [HOST_IP=xxx.xxx.xxx.xxx] [MACOS={true|false}] [ROOT_DIR=<path>]
+                            [FORCE_BUILD={true|false}]
             \n\t- -h, --help: shows this message
+            \n\t- HOST_IP: IP address of the machine. Defaults to the current IP value of the machine.
+            \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
+                   local IP address.
             \n\t- ROOT_DIR: installs the CI components under a custom directory. Defaults to
                   \"~/ClimateChangeApp\".
-            \n\t- FORCE_BUILD: builds the CI components' images even if they already exist. Defaults to \"false\"." 0;
+            \n\t- FORCE_BUILD: builds the CI components' images even if they already exist. Defaults to \"false\"." 1;
 fi
+
+
+# Overriding IP values if HOST_IP is present
+if [ "$MACOS" == "true" ]; then
+    message -1 "[INFO] Since host OS is macOS/OS X, setting HOST_IP to \"docker.for.mac.localhost\".";
+    HOST_IP="docker.for.mac.localhost";
+fi
+export HOST_IP=${HOST_IP}
+message -1 "[INFO] Deploying Jenkins and Sonar components to the local machine. HOST_IP has been set to \"$HOST_IP\".";
+message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install.sh HOST_IP=<IP>\".";
 
 
 # Overriding default ROOT_DIR?
