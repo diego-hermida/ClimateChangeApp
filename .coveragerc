@@ -8,12 +8,15 @@ exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
 
-    # Don't complain about missing debug-only code:
     def __repr__
-
-    # Don't complain if tests don't hit defensive assertion code:
+    def __str__
     raise AssertionError
     raise NotImplementedError
+    class .+:
+    import .+
+    from .+ import .+
+    def .+(.+):
+    @.+(.+)
 
     # Don't complain if non-runnable code isn't run:
     if __name__ == __main__:
