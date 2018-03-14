@@ -52,6 +52,7 @@ do
     esac
 done
 
+
 # Showing help if required
 if  [ "$SHOW_HELP" == "true" ]; then
      exit_with_message 1 "> usage: install.sh [PATH_TO_REPLACE=<path>]
@@ -67,6 +68,10 @@ if [ "$PATH_TO_REPLACE" == "/ClimateChangeApp/code" ]; then
 else
     message -1 "[INFO] Replacing \"/ClimateChangeApp/code\" with a custom path: \"$PATH_TO_REPLACE\".";
 fi
+
+
+# Avoiding errors at the docker-compose.yml file
+export BIND_IP_ADDRESS="0.0.0.0"
 
 # ---------- Actions ---------- #
 

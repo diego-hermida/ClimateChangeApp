@@ -73,6 +73,10 @@ fi
 export ROOT_DIR="$ROOT_DIR";
 
 
+# Making Jenkins and SonarQube accessible from any host
+export BIND_IP_ADDRESS="0.0.0.0"
+
+
 # ---------- Installation ---------- #
 
 # Jenkins component
