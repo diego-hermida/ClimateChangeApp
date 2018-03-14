@@ -97,9 +97,9 @@ class _LocationsDataCollector(DataCollector):
                                 'units': MeasureUnits.m}, 'timezone': fields[17], 'last_modified': date, '_id':
                                 loc['_id']}
                         loc['name'] = location['name']
-                        if self._is_selected_location(loc['name'], loc['country_code'], loc['latitude'],
-                                loc['longitude'], location['name'], location['country_code'], location['latitude'],
-                                location['longitude']):
+                        if self._is_selected_location((loc['name'], loc['country_code'], loc['latitude'],
+                                loc['longitude']), (location['name'], location['country_code'], location['latitude'],
+                                location['longitude'])):
                             loc['missing'] = False
 
                             # Finding Station ID for Wunderground API requests
@@ -141,7 +141,7 @@ class _LocationsDataCollector(DataCollector):
 
                             self.data.append(location)
                             if index > 0 and index % 10 is 0:
-                                self.logger.debug('Collected data: %.2f%%'%(((index / locations_length) * 100)))
+                                self.logger.debug('Collected data: %.2f%%' % ((index / locations_length) * 100))
                             index += 1
             if multiple:
                 self.logger.warning('%d location(s) have multiple matches at Wunderground API. As a result, API requests '
@@ -244,24 +244,16 @@ class _LocationsDataCollector(DataCollector):
         super()._save_state()
 
     @staticmethod
-    def _is_selected_location(loc_name: str, loc_cc: str, loc_lat: float, loc_long: float, data_name: str,
-                               data_cc: str, data_lat: float, data_long: float, margin=1.0) -> bool:
+    def _is_selected_location(loc: tuple, data: tuple, margin=1.0) -> bool:
         """
             Compares location data, both from '.config' file and downloaded data, in order to determine if data refers
             to the same location.
-            :param loc_name: Name of the location from '.config' file.
-            :param loc_cc: Country code of the location from '.config' file.
-            :param loc_lat: Latitude of the location from '.config' file.
-            :param loc_long: Longitude of the location from '.config' file.
-            :param data_name: Name of the location from '.config' file.
-            :param data_cc: Country code of the location from '.config' file.
-            :param data_lat: Latitude of the location from '.config' file.
-            :param data_long: Longitude of the location from '.config' file.
+            :param loc: A tuple, containing the config location's name, country code, latitude and longitude.
+            :param loc: A tuple, containing the data location's name, country code, latitude and longitude.
             :param margin: Maximum accepted difference (in absolute value) between latitudes and longitudes (in both
                            '.config' file and data).
             :return: True, if location names and country codes are the same, and latitudes/longitudes doesn't exceed
                      'margin' difference.
             :rtype: bool
         """
-        return loc_name == data_name and loc_cc == data_cc and check_coordinates(loc_lat, loc_long, data_lat, data_long,
-                margin=margin)
+        return loc[0] == data[0] and loc[1] == data[1] and check_coordinates(loc[2], loc[3], data[2], data[3], margin)

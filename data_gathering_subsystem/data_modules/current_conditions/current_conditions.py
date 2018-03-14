@@ -56,7 +56,7 @@ class _CurrentConditionsDataCollector(DataCollector):
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 unmatched.append(location['name'])
             if index > 0 and index % 10 is 0:
-                self.logger.debug('Collected data: %0.2f%%'%((((index + 1) / locations_length) * 100)))
+                self.logger.debug('Collected data: %0.2f%%' % (((index + 1) / locations_length) * 100))
         if unmatched:
             self.logger.warning('Current weather conditions data is unavailable for %d location(s): %s'%(len(unmatched),
                     sorted(unmatched)))

@@ -8,7 +8,7 @@ import threading
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from logging.handlers import BaseRotatingHandler, RotatingFileHandler
 from os import sep as os_file_separator, remove
 from os.path import basename, exists
@@ -24,7 +24,7 @@ class TelegramHandler(logging.Handler):
     """
         This class allows sending messages to a Telegram chat. A Telegram Bot is used to achieve this.
         If any Telegram error occurs during the process, a WARNING log record will be emitted.
-        Telegram bot configuration is read from 'telegram_config.config' and 'global_config.config'.
+        Telegram bot configuration is read from 'telegram_config.config' and 'config.config'.
         Telegram messages will be sent in their own Thread.
     """
     def __init__(self):
@@ -44,7 +44,6 @@ class TelegramHandler(logging.Handler):
         try:
             bot.send_message(chat_id=GLOBAL_CONFIG['TELEGRAM_CHAT_ID'], text=message,
                              parse_mode=telegram.ParseMode.MARKDOWN)
-            pass
         except telegram.error.TelegramError as ex:
             self.logger.warning('Error message could not be sent via Telegram. Cause: %s' % get_exception_info(ex))
 
@@ -65,8 +64,8 @@ class SMTPRotatingFileHandler(RotatingFileHandler):
         The e-mail operation can be executed both synchronously and async (by default).
         E-mail settings (to, from, server, port, etc.) are read from the 'log_util.config' configuration file.
     """
-    def __init__(self, filename, mode='a', maxBytes=0, backupCount=0, encoding=None, delay=False, async_email=True):
-        super().__init__(filename, mode, maxBytes, backupCount, encoding, delay)
+    def __init__(self, filename, mode='a', max_bytes=0, backup_count=0, encoding=None, delay=False, async_email=True):
+        super().__init__(filename, mode, max_bytes, backup_count, encoding, delay)
         self.async_email=async_email
 
     def emit(self, record):
@@ -185,8 +184,8 @@ def get_logger(path: str, name: str, root_dir: str = GLOBAL_CONFIG['ROOT_LOG_FOL
         path = _get_log_filepath(path, root_dir=root_dir)
         recursive_makedir(path[:path.rfind(os_file_separator)])
         if oldest_to_email:
-            file_handler = SMTPRotatingFileHandler(filename=path, maxBytes=CONFIG['MAX_LOG_FILE_SIZE'],
-                    encoding=CONFIG['LOG_FILE_ENCODING'], backupCount=CONFIG['MAX_BACKUP_FILES'],
+            file_handler = SMTPRotatingFileHandler(filename=path, max_bytes=CONFIG['MAX_LOG_FILE_SIZE'],
+                    encoding=CONFIG['LOG_FILE_ENCODING'], backup_count=CONFIG['MAX_BACKUP_FILES'],
                     async_email=async_email)
         else:
             file_handler = RotatingFileHandler(filename=path, maxBytes=CONFIG['MAX_LOG_FILE_SIZE'],

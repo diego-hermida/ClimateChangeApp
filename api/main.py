@@ -2,7 +2,7 @@ from api.config.config import API_CONFIG
 from bson import ObjectId
 from eve import Eve
 from eve.auth import TokenAuth
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from flask import json, request
 from functools import wraps
 from os import environ
@@ -386,11 +386,11 @@ def main(log_to_stdout=True, log_to_file=True, log_to_telegram=None):
     # API info
     _logger.info('Current API version is: %s' % API_CONFIG['API_VERSION'])
     _logger.info('API docs are available at: %s' % API_CONFIG['API_DOCS_URL'])
-    _logger.info('Awaiting for incoming connections from any host on port %d.' %
-            int(environ.get(GLOBAL_CONFIG['API_PORT'], 5000)))
+    _logger.info('Awaiting for incoming connections on port %d.' % int(environ.get(GLOBAL_CONFIG['API_PORT'], 5000)))
 
     # Launching API
-    app.run(host='0.0.0.0', port=int(environ.get(GLOBAL_CONFIG['API_PORT'], 5000)))
+    app.run(host=environ.get(GLOBAL_CONFIG['API_MASK'], GLOBAL_CONFIG['API_BROADCAST']),
+            port=int(environ.get(GLOBAL_CONFIG['API_PORT'], 5000)))
 
 
 if __name__ == '__main__':

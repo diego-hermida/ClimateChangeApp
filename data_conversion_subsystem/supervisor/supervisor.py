@@ -2,7 +2,7 @@ import builtins
 import data_conversion_subsystem.data_converter.data_converter as dc
 from copy import deepcopy
 from data_conversion_subsystem.config.config import DCS_CONFIG
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from json import dumps
 from queue import Queue
 from threading import Condition, Thread

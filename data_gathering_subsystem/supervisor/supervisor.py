@@ -2,7 +2,7 @@ import builtins
 import data_gathering_subsystem.data_collector.data_collector as dc
 from copy import deepcopy
 from data_gathering_subsystem.config.config import DGS_CONFIG
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from json import dumps
 from pymongo import InsertOne, UpdateOne
 from queue import Queue

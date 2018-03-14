@@ -3,7 +3,7 @@ from os import environ
 from psycopg2cffi import connect
 from psycopg2cffi.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 
 
 def import_psycopg2():

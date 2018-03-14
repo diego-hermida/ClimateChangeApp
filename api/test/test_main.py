@@ -1,4 +1,4 @@
-import global_config.global_config
+import global_config.config
 import api.main as main
 import json
 from pymongo.errors import DuplicateKeyError
@@ -8,7 +8,7 @@ from utilities.db_util import create_user, bulk_create_authorized_users, drop_us
 
 
 database = 'test_database'
-global_config.global_config.GLOBAL_CONFIG['MONGODB_DATABASE'] = database
+global_config.config.GLOBAL_CONFIG['MONGODB_DATABASE'] = database
 main.GLOBAL_CONFIG['MONGODB_DATABASE'] = database
 
 
@@ -17,23 +17,23 @@ class TestMain(TestCase):
     @classmethod
     def setUpClass(cls):
         try:
-            create_user(global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
-                    global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
-                    roles=[{'role': 'dbOwner', 'db': database}], database=database)
+            create_user(global_config.config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
+                        global_config.config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
+                        roles=[{'role': 'dbOwner', 'db': database}], database=database)
         except DuplicateKeyError:
             pass
         bulk_create_authorized_users([{'_id': 'test_user', 'token': 'test_token', 'scope': 1},
                 {'_id': 'test_user2', 'token': 'test_token2', 'scope': 2}, {'_id': 'test_user3', 'token':
                 'test_token_with_no_scope', 'scope': None}], database=database)
         main._stats_collection = main.MongoDBCollection(
-            collection_name=global_config.global_config.GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'],
-            username=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
-            password=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
+            collection_name=global_config.config.GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'],
+            username=global_config.config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
+            password=global_config.config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
             database=database)
         main._auth_collection = main.MongoDBCollection(
-            collection_name=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'],
-            username=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
-            password=global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
+            collection_name=global_config.config.GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'],
+            username=global_config.config.GLOBAL_CONFIG['MONGODB_API_USERNAME'],
+            password=global_config.config.GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'],
             database=database)
 
     def setUp(self):
@@ -43,8 +43,8 @@ class TestMain(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        drop_user(global_config.global_config.GLOBAL_CONFIG['MONGODB_API_USERNAME'], database=database)
-        drop_database(global_config.global_config.GLOBAL_CONFIG['MONGODB_DATABASE'])
+        drop_user(global_config.config.GLOBAL_CONFIG['MONGODB_API_USERNAME'], database=database)
+        drop_database(global_config.config.GLOBAL_CONFIG['MONGODB_DATABASE'])
 
     def test_execution_fails_if_environment_variable_does_not_exist(self):
         from os import environ

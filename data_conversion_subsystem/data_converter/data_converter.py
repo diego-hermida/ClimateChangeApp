@@ -6,7 +6,7 @@ import requests
 from abc import ABC, abstractmethod
 from data_conversion_subsystem.config.config import DCS_CONFIG
 from functools import wraps
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from queue import Queue
 from threading import Condition, Thread
 from utilities.util import date_plus_timedelta_gt_now, deserialize_date, enum, get_config, get_exception_info, \

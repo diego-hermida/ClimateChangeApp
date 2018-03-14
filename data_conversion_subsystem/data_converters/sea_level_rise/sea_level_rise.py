@@ -40,15 +40,15 @@ class _SeaLevelRiseDataConverter(DataConverter):
                 variation = parse_float(value['measures']['variation'], nullable=False)
                 deviation = parse_float(value['measures']['deviation'], nullable=False)
                 smoothed_variation = parse_float(value['measures']['smoothed_variation'], nullable=False)
-                variation_GIA = parse_float(value['measures']['variation_GIA'], nullable=False)
-                deviation_GIA = parse_float(value['measures']['deviation_GIA'], False)
-                smoothed_variation_GIA = parse_float(value['measures']['smoothed_variation_GIA'], nullable=False)
-                smoothed_variation_GIA_annual_semi_annual_removed = parse_float(value['measures'][
+                variation_gia = parse_float(value['measures']['variation_GIA'], nullable=False)
+                deviation_gia = parse_float(value['measures']['deviation_GIA'], False)
+                smoothed_variation_gia = parse_float(value['measures']['smoothed_variation_GIA'], nullable=False)
+                smoothed_variation_gia_annual_semi_annual_removed = parse_float(value['measures'][
                         'smoothed_variation_GIA_annual_&_semi_annual_removed'], nullable=False)
                 self.data.append(SeaLevelRiseMeasure(timestamp=timestamp, altimeter=altimeter, variation=variation,
-                        deviation=deviation, smoothed_variation=smoothed_variation, variation_GIA=variation_GIA,
-                        deviation_GIA=deviation_GIA, smoothed_variation_GIA=smoothed_variation_GIA,
-                        smoothed_variation_GIA_annual_semi_annual_removed=smoothed_variation_GIA_annual_semi_annual_removed))
+                        deviation=deviation, smoothed_variation=smoothed_variation, variation_GIA=variation_gia,
+                        deviation_GIA=deviation_gia, smoothed_variation_GIA=smoothed_variation_gia,
+                        smoothed_variation_GIA_annual_semi_annual_removed=smoothed_variation_gia_annual_semi_annual_removed))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. SeaLevelRiseMeasure with ID "%s" will not '

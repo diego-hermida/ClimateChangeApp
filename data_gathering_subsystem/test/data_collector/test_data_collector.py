@@ -144,7 +144,7 @@ class TestDataCollector(TestCase):
 
     def test_remove_files(self):
         from os.path import exists
-        from global_config.global_config import GLOBAL_CONFIG
+        from global_config.config import GLOBAL_CONFIG
         from utilities.util import map_data_collector_path_to_state_file_path
 
         mock.return_value = CONFIG

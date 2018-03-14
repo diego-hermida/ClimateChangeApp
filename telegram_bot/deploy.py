@@ -2,7 +2,7 @@ import argparse
 import coverage
 import sys
 
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from os import environ
 from telegram_bot.config.config import TELEGRAM_CONFIG
 from unittest import TestLoader, TextTestRunner

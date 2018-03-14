@@ -1,4 +1,4 @@
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from os import environ
 from pymongo import MongoClient
 

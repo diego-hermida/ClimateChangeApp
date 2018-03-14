@@ -249,7 +249,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking requests (get and response content)
-        mock_requests.return_value = response = Mock()
+        mock_requests.return_value = Mock()
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS

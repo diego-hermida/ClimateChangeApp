@@ -194,7 +194,7 @@ class TestDbUtil(TestCase):
                 pass
 
     def test_bulk_create_authorized_users(self):
-        from global_config.global_config import GLOBAL_CONFIG
+        from global_config.config import GLOBAL_CONFIG
         res = utilities.db_util.bulk_create_authorized_users([{'_id': 'test_user', 'token': 'test_token', 'scope': 1},
                 {'_id': 'test_user2', 'token': 'test_token2', 'scope': 1}, {'_id': 'test_user3', 'token':
                 'test_token_with_no_scope', 'scope': None}, {'_id': 'test_user', 'token': 'gNJFSAI82', 'scope': 4}],

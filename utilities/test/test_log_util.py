@@ -6,7 +6,7 @@ from unittest import TestCase, mock
 
 import utilities.log_util
 from utilities.util import remove_all_under_directory
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 
 _CONFIG = deepcopy(utilities.log_util.CONFIG)
 _GLOBAL_CONFIG = deepcopy(utilities.log_util.GLOBAL_CONFIG)

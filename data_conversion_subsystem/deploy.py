@@ -4,7 +4,7 @@ import sys
 
 from data_conversion_subsystem.config.config import DCS_CONFIG
 from data_conversion_subsystem.manage import execute
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from os import environ
 from unittest import TestLoader, TextTestRunner
 from utilities.postgres_util import create_application_user, create_application_database, ping_database

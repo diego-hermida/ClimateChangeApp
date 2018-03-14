@@ -7,7 +7,7 @@ from data_conversion_subsystem.data_converter.data_converter import DataConverte
 from data_conversion_subsystem.config.config import DCS_CONFIG
 from data_conversion_subsystem.supervisor.supervisor import SupervisorThread
 from django.core.wsgi import get_wsgi_application
-from global_config.global_config import GLOBAL_CONFIG
+from global_config.config import GLOBAL_CONFIG
 from timeit import default_timer as timer
 from threading import Condition
 from utilities.postgres_util import import_psycopg2, ping_database

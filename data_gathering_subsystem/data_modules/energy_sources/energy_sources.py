@@ -71,7 +71,7 @@ class _EnergySourcesDataCollector(DataCollector):
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 unmatched.append(country['name'])
             if index > 0 and index % 10 is 0:
-                self.logger.debug('Collected data: %.2f%%' % (((index / countries_length) * 100)))
+                self.logger.debug('Collected data: %.2f%%' % ((index / countries_length) * 100))
         if unmatched:
             self.logger.warning('%d country(ies) do not have recent energy sources data: %s'%(len(unmatched),
                     sorted(unmatched)))

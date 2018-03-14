@@ -173,7 +173,6 @@ class TestSupervisor(TestCase):
                          s.execution_report['aggregated']['per_module']['simple_data_converter']['failure_details'][
                              'Exception'])
         # Second execution
-        execution_report = s.execution_report
         s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         d3 = SimpleDataConverter(elements_to_convert=1234, data_converted=1234, data_inserted=1234)
         d4 = SimpleDataConverter(pending_work=False)
@@ -220,7 +219,6 @@ class TestSupervisor(TestCase):
         self.assertEqual(1236, s.execution_report['aggregated']['inserted_elements'])
 
         # Third execution
-        execution_report = s.execution_report
         s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         d6 = SimpleDataConverter(elements_to_convert=1, data_converted=1, data_inserted=1)
         d7 = SimpleDataConverter(fail_on='_restore_state')
