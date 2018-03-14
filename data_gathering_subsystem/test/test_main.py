@@ -1,7 +1,6 @@
 from data_gathering_subsystem import main as main
 
 from data_gathering_subsystem.data_collector.data_collector import CONFIG
-from os import environ
 from data_gathering_subsystem.test.data_collector.test_data_collector import SimpleDataCollector
 from time import sleep
 from timeit import default_timer as timer
@@ -9,27 +8,12 @@ from unittest import TestCase, mock
 from unittest.mock import Mock
 from utilities.util import time_limit
 
-PREVIOUS_LOCALHOST_IP = environ.get('MONGODB_IP')
-
 
 def sleep5(*args, **kwargs):
     sleep(5)
 
 
 class TestMain(TestCase):
-
-    def setUp(self):
-        environ['MONGODB_IP'] = '0.0.0.0 (test IP)'
-
-    @classmethod
-    def tearDownClass(cls):
-        if PREVIOUS_LOCALHOST_IP is not None:
-            environ['MONGODB_IP'] = PREVIOUS_LOCALHOST_IP
-        else:
-            try:
-                del environ['MONGODB_IP']
-            except KeyError:
-                pass
 
     @mock.patch('data_gathering_subsystem.main.get_and_increment_execution_id', Mock(return_value=1))
     @mock.patch('data_gathering_subsystem.main.ping_database', Mock())
@@ -72,9 +56,8 @@ class TestMain(TestCase):
             main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
         self.assertEqual(1, e.exception.code)
 
+    @mock.patch('data_gathering_subsystem.main.environ', {})
     def test_execution_fails_if_environment_variable_doesnt_exist(self):
-        from os import environ
-        del environ['MONGODB_IP']
         with self.assertRaises(SystemExit) as e:
             main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
         self.assertEqual(1, e.exception.code)
