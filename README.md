@@ -1,7 +1,8 @@
 
 # Climate Change App
 
-[![Build Status](http://193.144.50.169:8090/job/ClimateChangeApp/badge/icon)](http://193.144.50.169:8090/job/ClimateChangeApp/)
+
+![Build Status](http://193.144.50.169:8090/job/ClimateChangeApp/badge/icon "Build Status")
 
 This is the code repository of my **final degree project**.
 
