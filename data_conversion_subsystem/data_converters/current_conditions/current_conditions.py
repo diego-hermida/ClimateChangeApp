@@ -10,7 +10,7 @@ from data_conversion_subsystem.config.config import DCS_CONFIG
 from data_conversion_subsystem.data.models import CurrentConditionsObservation, Location, WeatherType
 from data_conversion_subsystem.data_converter.data_converter import DataConverter
 from utilities.util import parse_float, parse_int, compute_wind_direction
-from django.db import transaction, connection
+from django.db import transaction
 
 _singleton = None
 
@@ -96,9 +96,8 @@ class _CurrentConditionsDataConverter(DataConverter):
         """
         super()._save_data()
         if self.data:
-            # FIXES [BUG-034].
-            cursor = connection.cursor()
-            cursor.execute('TRUNCATE TABLE %s' % CurrentConditionsObservation._meta.db_table)
+            # FIXES [BUG-034]
+            CurrentConditionsObservation.objects.all().delete()
             self.state['inserted_elements'] = len(CurrentConditionsObservation.objects.bulk_create(self.data))
             self.logger.info('Successfully saved %d elements.' % self.state['inserted_elements'])
         else:
