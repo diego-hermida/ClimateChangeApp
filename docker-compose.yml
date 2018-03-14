@@ -88,7 +88,6 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
         ports:
             - "${BIND_IP_ADDRESS}:8090:8080"
-            - "${BIND_IP_ADDRESS}:50000:50000"
     sonar:
         image: sonarqube:latest
         container_name: sonar
