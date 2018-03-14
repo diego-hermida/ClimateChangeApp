@@ -121,6 +121,7 @@ if [ "$MACOS" == "true" ]; then
     message -1 "[INFO] Since host OS is macOS/OS X, setting HOST_IP to \"docker.for.mac.localhost\".";
     HOST_IP="docker.for.mac.localhost";
 fi
+export HOST_IP=${HOST_IP}
 message -1 "[INFO] Deploying all components to the local machine. HOST_IP has been set to \"$HOST_IP\".";
 message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install.sh HOST_IP=<IP>\".";
 MONGODB_IP=${HOST_IP};
