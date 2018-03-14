@@ -48,6 +48,7 @@ function calculate_ip_address () {
 # Setting default values
 HOST_IP=$(calculate_ip_address);
 RUN_API=false;
+EXPOSE_CONTAINERS=true;
 RUN_TELEGRAM=false;
 SKIP_DEPLOY=true;
 MACOS=false;
@@ -64,6 +65,7 @@ do
     case "$KEY" in
             HOST_IP)        HOST_IP=${VALUE} ;;
             RUN_API)        RUN_API=${VALUE} ;;
+            EXPOSE_CONTAINERS)     EXPOSE_CONTAINERS=${VALUE} ;;
             SKIP_DEPLOY)    SKIP_DEPLOY=${VALUE} ;;
             MACOS)          MACOS=${VALUE} ;;
             ROOT_DIR)       ROOT_DIR=${VALUE} ;;
@@ -75,6 +77,7 @@ done
 
 # Setting variables to lower case
 RUN_API=echo "$RUN_API" | tr '[:upper:]' '[:lower:]';
+EXPOSE_CONTAINERS=echo "$EXPOSE_CONTAINERS" | tr '[:upper:]' '[:lower:]';
 RUN_TELEGRAM=echo "$RUN_API" | tr '[:upper:]' '[:lower:]';
 SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 MACOS=echo "$MACOS" | tr '[:upper:]' '[:lower:]';
@@ -84,12 +87,15 @@ CI=echo "$CI" | tr '[:upper:]' '[:lower:]';
 # Ensuring variables contain legit values
 if  ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
         ([ "$RUN_API" != "true" ] && [ "$RUN_API" != "false" ]) ||
+        ([ "$EXPOSE_CONTAINERS" != "true" ] && [ "$EXPOSE_CONTAINERS" != "false" ]) ||
         ([ "$RUN_TELEGRAM" != "true" ] && [ "$RUN_TELEGRAM" != "false" ]) ||
         ([ "$CI" != "true" ] && [ "$CI" != "false" ]) ||
         ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]); then
     exit_with_message 1 "> usage:
-            \n install.sh [HOST_IP=<IP>][MACOS={true|false}] [RUN_API={true|false}] [RUN_TELEGRAM={true|false}]
-            \n\t\t[SKIP_DEPLOY={true|false}] [ROOT_DIR=<path>] [CI={true|false}]
+            \n install.sh [HOST_IP=<IP>] [EXPOSE_CONTAINERS={true|false}] [MACOS={true|false}] [RUN_API={true|false}]
+            \n\t\t[RUN_TELEGRAM={true|false}] [SKIP_DEPLOY={true|false}] [ROOT_DIR=<path>] [CI={true|false}]
+            \n\t- HOST_IP: IP address of the machine. Defaults to the current IP value of the machine.
+            \n\t- EXPOSE_CONTAINERS: exposes Docker containers to the outside (0.0.0.0). Defaults to \"true\".
             \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
                    local IP address.
             \n\t- RUN_API: launches the API service after building it. Defaults to \"false\".
@@ -110,7 +116,7 @@ fi
 
 
 # Overriding IP values if HOST_IP is present
-message -1 "[INFO] The MongoDB, API and PostgreSQL components will be installed (locally) as Docker containers.";
+message -1 "[INFO] The application will be installed (locally) using Docker containers.";
 if [ "$MACOS" == "true" ]; then
     message -1 "[INFO] Since host OS is macOS/OS X, setting HOST_IP to \"docker.for.mac.localhost\".";
     HOST_IP="docker.for.mac.localhost";
@@ -120,6 +126,21 @@ message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by in
 MONGODB_IP=${HOST_IP};
 API_IP=${HOST_IP};
 POSTGRES_IP=${HOST_IP};
+
+
+# Binding containers to local?
+if [ "$EXPOSE_CONTAINERS" == "true" ]; then
+    message -1 "[INFO] Exposing Docker containers by using the 0.0.0.0 mask.";
+    export BIND_IP_ADDRESS='0.0.0.0';
+else
+     if [ "$HOST_IP" == "docker.for.mac.localhost" ]; then
+        export BIND_IP_ADDRESS="127.0.0.1";
+     else
+        export BIND_IP_ADDRESS=${HOST_IP};
+     fi
+     message -1 "[INFO] Restricting connections to the HOST_IP address: $HOST_IP.";
+     message 3 "[WARNING] Docker containers will not be reachable from the outside.";
+fi
 
 
 # Warnings
