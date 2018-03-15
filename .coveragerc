@@ -1,6 +1,13 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
+omit =
+    **/*config/*config.py
+    data_conversion_subsystem/data/*
+    data_conversion_subsystem/manage.py
+    **/*config/*config.py
+    data_conversion_subsystem/settings.py
+    **/__init__.py
 
 [report]
 # Regexes for lines to exclude from consideration

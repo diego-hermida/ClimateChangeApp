@@ -14,7 +14,7 @@ apt-get update && \
 apt-get -y install docker-ce
 
 # Getting the last package updates.
-RUN apt-get update
+RUN apt-get update -y
 RUN apt-get -y install python-pip
 RUN pip install --upgrade pip setuptools
 RUN pip install --upgrade pip setuptools docker-compose
