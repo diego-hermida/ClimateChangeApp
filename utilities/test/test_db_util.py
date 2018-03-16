@@ -90,40 +90,40 @@ class TestDbUtil(TestCase):
 
         # Sorting only
         expected = sorted(values, key=lambda k: k['country_code'])
-        result = get_collection().find(sort='country_code')['data']
-        self.assertListEqual(expected, result)
+        data, next_start_index = get_collection().find(sort='country_code')
+        self.assertListEqual(expected, data)
 
         # Sorting and paging
         expected = sorted(values, key=lambda k: k['_id'])
-        first_page = get_collection().find(count=4, sort='_id')
-        self.assertIsNotNone(first_page.get('next_start_index'))
-        last_page = get_collection().find(start_index=first_page['next_start_index'], sort='_id')
-        self.assertListEqual(expected[:4], first_page['data'])
-        self.assertListEqual(expected[4:], last_page['data'])
+        data, next_start_index = get_collection().find(count=4, sort='_id')
+        self.assertIsNotNone(next_start_index)
+        data2, next_start_index2 = get_collection().find(start_index=next_start_index, sort='_id')
+        self.assertListEqual(expected[:4], data)
+        self.assertListEqual(expected[4:], data2)
 
         # Filtering
         expected = [values[6]]
-        result = get_collection().find(conditions={'country_code': {'$eq': 'CN'}})['data']
+        result = get_collection().find(conditions={'country_code': {'$eq': 'CN'}})[0]
         self.assertListEqual(expected, result)
 
         # Selecting fields
         expected = []
         for i in range(1, 9):
             expected.append({'_id': i})
-        result = get_collection().find(fields={'_id': 1}, sort='_id')['data']
+        result = get_collection().find(fields={'_id': 1}, sort='_id')[0]
         self.assertListEqual(expected, result)
 
         # All combined
         expected = [{'_id': 1}, {'_id': 2}, {'_id': 4}, {'_id': 5}, {'_id': 7}, {'_id': 8}]
-        first_page = get_collection().find(fields={'_id': 1}, count=4, sort='_id',
+        data, next_start_index = get_collection().find(fields={'_id': 1}, count=4, sort='_id',
                                            conditions={'latitude': {'$gt': 0}, 'longitude': {'$gt': 0}})
-        self.assertIsNotNone(first_page.get('next_start_index'))
-        last_page = get_collection().find(fields={'_id': 1}, sort='_id', start_index=first_page['next_start_index'],
-                                          conditions={'latitude': {'$gt': 0}, 'longitude': {'$gt': 0}}, count=4)
+        self.assertIsNotNone(next_start_index)
+        data2, next_start_index2 = get_collection().find(fields={'_id': 1}, sort='_id', start_index=next_start_index,
+            conditions={'latitude': {'$gt': 0}, 'longitude': {'$gt': 0}}, count=4)
 
-        self.assertIsNone(last_page.get('next_start_index'))
-        self.assertListEqual(expected[:4], first_page['data'])
-        self.assertListEqual(expected[4:], last_page['data'])
+        self.assertIsNone(next_start_index2)
+        self.assertListEqual(expected[:4], data)
+        self.assertListEqual(expected[4:], data2)
 
     def test_get_last_elements(self):
         self.assertIsNone(get_collection().get_last_elements())
@@ -135,7 +135,7 @@ class TestDbUtil(TestCase):
         self.assertDictEqual({'_id': 5, 'data': 'DATA'}, result)
 
         result = get_collection().get_last_elements(amount=5)
-        self.assertListEqual(get_collection().find()['data'], result)
+        self.assertListEqual(get_collection().find()[0], result)
 
     def test_ping_database(self):
         self.assertIsNone(utilities.db_util.ping_database())
