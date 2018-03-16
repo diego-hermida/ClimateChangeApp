@@ -347,6 +347,7 @@ class DataConverter(ABC):
         try:
             self._state_transitions = []
             self._state_transitions.append(self._transition_state)
+            self._backoff_prevented_execution = False
             self.check_result = None
             self.data = None
             self.elements_to_convert = None
@@ -410,10 +411,13 @@ class DataConverter(ABC):
             if self.pending_work:
                 self.state['restart_required'] = False
             else:
-                self.logger.info('Exponential backoff prevented data conversion. Current backoff is: %d %s.'%
+                self._backoff_prevented_execution = True
+                self.logger.info('Exponential backoff prevented data conversion. Current backoff is: %d %s.' %
                         (self.state['backoff_time']['value'], self.state['backoff_time']['units']))
         else:
-            self.pending_work = date_plus_timedelta_gt_now(self.state['last_request'], self.state['update_frequency'])
+            self.pending_work = True
+        self.pending_work = all([self.pending_work, date_plus_timedelta_gt_now(self.state['last_request'],
+                                                                               self.state['update_frequency'])])
 
     def _decide_on_pending_work(self):
         """
@@ -601,12 +605,17 @@ class DataConverter(ABC):
             self.state['errors'][self.state['error']] = self.state['errors'].get(self.state['error'], 0) + 1
             if self.state['error'] != self.state['last_error']:
                 self.state['backoff_time'] = MIN_BACKOFF
-            value, units = next_exponential_backoff(self.state['backoff_time'], MAX_BACKOFF_SECONDS)
-            self.state['backoff_time'] = {'value': value, 'units': units}
+            else:
+                value, units = next_exponential_backoff(self.state['backoff_time'], MAX_BACKOFF_SECONDS)
+                self.state['backoff_time'] = {'value': value, 'units': units}
             self.state['last_error'] = self.state['error']
-        else:
-            # FIXES [BUG-033].
+            self.state['last_request'] = self.state['last_request'] if self.state['last_request'] \
+                    else current_timestamp_utc()
+        # FIXES [BUG-033].
+        elif not self._backoff_prevented_execution:
             self.state['backoff_time'] = MIN_BACKOFF
+        else:
+            self.state['restart_required'] = True
         # Only serializing startIndex if data conversion was successful
         if self.check_result is True and self.state['inserted_elements'] and not self.config.get('RESTART_START_INDEX'):
             self.state['start_index'] += self.state['inserted_elements']

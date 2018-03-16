@@ -7,7 +7,8 @@ from queue import Queue
 from threading import Condition, Thread
 from utilities.db_util import MongoDBCollection
 from utilities.util import date_plus_timedelta_gt_now, deserialize_date, enum, get_config, get_exception_info, \
-    get_module_name, next_exponential_backoff, read_state, serialize_date, write_state, remove_state_file
+    get_module_name, next_exponential_backoff, read_state, serialize_date, write_state, remove_state_file, \
+    current_timestamp_utc
 
 
 CREATED = 0
@@ -354,6 +355,7 @@ class DataCollector(ABC):
         self._transition_state = self._CREATED
         try:
             self._state_transitions = []
+            self._backoff_prevented_execution = False
             self._state_transitions.append(self._transition_state)
             self.check_result = None
             self.collection = None
@@ -405,10 +407,13 @@ class DataCollector(ABC):
             if self.pending_work:
                 self.state['restart_required'] = False
             else:
+                self._backoff_prevented_execution = True
                 self.logger.info('Exponential backoff prevented data collection. Current backoff is: %d %s.' %
                         (self.state['backoff_time']['value'], self.state['backoff_time']['units']))
         else:
-            self.pending_work = date_plus_timedelta_gt_now(self.state['last_request'], self.state['update_frequency'])
+            self.pending_work = True
+        self.pending_work = all([self.pending_work, date_plus_timedelta_gt_now(self.state['last_request'],
+                                                                               self.state['update_frequency'])])
 
     def _decide_on_pending_work(self):
         """
@@ -484,17 +489,23 @@ class DataCollector(ABC):
             Errors are also serialized, and current error's counter incremented, if there was an error and it's the same
             as the last error.
         """
+        self.state['restart_required'] = True if self.state['error'] else False
         if self.state['error']:
             self.state['error'] = self.state['error']['class']
             self.state['errors'][self.state['error']] = self.state['errors'].get(self.state['error'], 0) + 1
-            if self.state['error'] != self.state['last_error']:
+            if self.state['last_error'] and self.state['error'] != self.state['last_error']:
                 self.state['backoff_time'] = MIN_BACKOFF
-            value, units = next_exponential_backoff(self.state['backoff_time'], MAX_BACKOFF_SECONDS)
-            self.state['backoff_time'] = {'value': value, 'units': units}
+            else:
+                value, units = next_exponential_backoff(self.state['backoff_time'], MAX_BACKOFF_SECONDS)
+                self.state['backoff_time'] = {'value': value, 'units': units}
             self.state['last_error'] = self.state['error']
-        else:
-            # FIXES [BUG-033].
+            self.state['last_request'] = self.state['last_request'] if self.state['last_request'] \
+                    else current_timestamp_utc()
+        # FIXES [BUG-033].
+        elif not self._backoff_prevented_execution:
             self.state['backoff_time'] = MIN_BACKOFF
+        else:
+            self.state['restart_required'] = True
         self.state['last_request'] = serialize_date(self.state['last_request'])
         write_state(self.state, self._file_path, DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
         self.logger.info('Successfully serialized state.')
