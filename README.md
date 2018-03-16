@@ -3,7 +3,7 @@
 
 
 [![Quality Gate](http://193.144.50.169:9000/api/badges/gate?key=ClimateChangeApp)](http://193.144.50.169:9000/dashboard/index/ClimateChangeApp)
-[![Lines of Code](http://193.144.50.169:9000/api/badges/measure?metric=nloc&key=ClimateChangeApp)](http://193.144.50.169:9000/dashboard/index/ClimateChangeApp)
+[![Lines of Code](http://193.144.50.169:9000/api/badges/measure?metric=ncloc&key=ClimateChangeApp)](http://193.144.50.169:9000/dashboard/index/ClimateChangeApp)
 [![Duplicated lines](http://193.144.50.169:9000/api/badges/measure?metric=duplicated_lines_density&key=ClimateChangeApp)](http://193.144.50.169:9000/dashboard/index/ClimateChangeApp)
 [![Coverage](http://193.144.50.169:9000/api/badges/measure?metric=coverage&key=ClimateChangeApp)](http://193.144.50.169:9000/dashboard/index/ClimateChangeApp)
 [![Code smells](http://193.144.50.169:9000/api/badges/measure?metric=code_smells&key=ClimateChangeApp)](http://193.144.50.169:9000/dashboard/index/ClimateChangeApp)
