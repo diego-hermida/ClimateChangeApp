@@ -31,15 +31,15 @@ class _EnergySourcesDataCollector(DataCollector):
         super()._collect_data()
         # Retrieves countries from database
         self.collection = MongoDBCollection(collection_name=self.config['COUNTRIES_MODULE_NAME'])
-        countries = self.collection.find(fields={'_id': 1, 'name': 1}, sort='_id')
+        countries, next_start_index = self.collection.find(fields={'_id': 1, 'name': 1}, sort='_id')
         self.collection.close()
         self.data = []
         unmatched = []
         # Filtering countries with numbers (World Bank API aggregations)
-        countries['data'] = [x for x in countries['data'] if not any(char.isdigit() for char in x['_id'])]
-        countries_length = len(countries['data'])
+        countries = [x for x in countries if not any(char.isdigit() for char in x['_id'])]
+        countries_length = len(countries)
         date = self.get_last_date_to_millis()
-        for index, country in enumerate(countries['data']):
+        for index, country in enumerate(countries):
             url = self.config['BASE_URL'].replace('{COUNTRY_CODE}', country['_id'])
             r = requests.get(url, headers={'auth-token': self.config['TOKEN']})
             try:
@@ -73,10 +73,10 @@ class _EnergySourcesDataCollector(DataCollector):
             if index > 0 and index % 10 is 0:
                 self.logger.debug('Collected data: %.2f%%' % ((index / countries_length) * 100))
         if unmatched:
-            self.logger.warning('%d country(ies) do not have recent energy sources data: %s'%(len(unmatched),
+            self.logger.warning('%d country(ies) do not have recent energy sources data: %s' % (len(unmatched),
                     sorted(unmatched)))
         # No available countries is not an error
-        if not countries['data']:
+        if not countries:
             self.logger.info('No countries are available. Data collection will be stopped.')
             self.advisedly_no_data_collected = True
             self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']

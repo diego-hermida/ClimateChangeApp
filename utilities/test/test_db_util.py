@@ -156,10 +156,10 @@ class TestDbUtil(TestCase):
         c = get_collection()
         c.collection.insert_one({'_id': 1, 'data': 'foo'})
         res = c.find(conditions={'_id': 1})
-        self.assertDictEqual({'_id': 1, 'data': 'foo'}, res['data'][0])
+        self.assertDictEqual({'_id': 1, 'data': 'foo'}, res[0][0])
         utilities.db_util.drop_database(database=database)
         res = c.find(conditions={'_id': 1})
-        self.assertListEqual([], res['data'])
+        self.assertListEqual([], res[0])
 
     def test_create_user(self):
         try:
@@ -169,7 +169,7 @@ class TestDbUtil(TestCase):
             utilities.db_util.create_user('user2', 'password2', [{"role": "read", "db": database}], database=database)
             c = utilities.db_util.MongoDBCollection(collection_name, use_pool=False, username='user2',
                                                     password='password2', database=database)
-            self.assertListEqual([], c.find()['data'])
+            self.assertListEqual([], c.find()[0])
         except AssertionError:
             raise
         finally:
@@ -180,7 +180,7 @@ class TestDbUtil(TestCase):
             utilities.db_util.create_user('user2', 'password2', [{"role": "read", "db": database}], database=database)
             c = utilities.db_util.MongoDBCollection(collection_name, use_pool=False, username='user2',
                                                     password='password2', database=database)
-            self.assertListEqual([], c.find()['data'])
+            self.assertListEqual([], c.find()[0])
             self.assertTrue(utilities.db_util.drop_user('user2', database))
             with self.assertRaises(OperationFailure):
                 utilities.db_util.MongoDBCollection(collection_name, use_pool=False, username='user2',
@@ -204,7 +204,7 @@ class TestDbUtil(TestCase):
         res = c.find()
         self.assertEqual([{'_id': 'test_user', 'token': 'test_token', 'scope': 1},
                 {'_id': 'test_user2', 'token': 'test_token2', 'scope': 1}, {'_id': 'test_user3', 'token':
-                'test_token_with_no_scope', 'scope': None}], res['data'])
+                'test_token_with_no_scope', 'scope': None}], res[0])
 
     def test_get_connection_pool(self):
         self.assertDictEqual({}, utilities.db_util.MongoDBCollection._pools)

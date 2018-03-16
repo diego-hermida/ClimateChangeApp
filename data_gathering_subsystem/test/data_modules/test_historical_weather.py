@@ -67,8 +67,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 10
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
                      {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2},
                      {'_id': 3, 'name': 'City 3', 'wunderground_loc_id': 3},
                      {'_id': 4, 'name': 'City 4', 'wunderground_loc_id': 4},
@@ -77,7 +76,7 @@ class TestHistoricalWeather(TestCase):
                      {'_id': 7, 'name': 'City 7', 'wunderground_loc_id': 7},
                      {'_id': 8, 'name': 'City 8', 'wunderground_loc_id': 8},
                      {'_id': 9, 'name': 'City 9', 'wunderground_loc_id': 9},
-                     {'_id': 10, 'name': 'City 10', 'wunderground_loc_id': 10}]}
+                     {'_id': 10, 'name': 'City 10', 'wunderground_loc_id': 10}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 10, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -126,8 +125,8 @@ class TestHistoricalWeather(TestCase):
         mock_collection.return_value.collection.distinct.return_value = [{'location_id': 1}, {'location_id': 2}]
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 2
-        mock_collection.return_value.find.return_value = {
-            'data': [{'location_id': 1}, {'location_id': 1}, {'location_id': 1}, {'location_id': 2}]}
+        mock_collection.return_value.find.return_value = ([{'location_id': 1}, {'location_id': 1}, {'location_id': 1},
+                                                           {'location_id': 2}], None)
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_check'] = True
@@ -524,9 +523,8 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 2
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 98, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -551,9 +549,8 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 2
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -578,9 +575,8 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 2
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 95, 'nMatched': 5, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -606,9 +602,8 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 2
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 5, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -641,8 +636,8 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.count.return_value = 1
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}]}
+        mock_collection.return_value.find.return_value = (
+            [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 95, 'nMatched': 5, 'nUpserted': 0}
         # Mocking requests (get and response content)

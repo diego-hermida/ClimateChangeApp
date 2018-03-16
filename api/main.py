@@ -276,14 +276,15 @@ def data(module_name: str):
     collection = MongoDBCollection(collection_name=module_name, username=GLOBAL_CONFIG[
             'MONGODB_API_USERNAME'], password=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'], database=GLOBAL_CONFIG[
             'MONGODB_DATABASE'])
-    result = collection.find(conditions={'_execution_id': execution_id} if execution_id else None, sort='_id',
-            start_index=start_index, count=count)
-    for value in result['data']:
+    data, next_start_index = collection.find(conditions={'_execution_id': execution_id} if execution_id else None,
+            sort='_id', start_index=start_index, count=count)
+    for value in data:
         if isinstance(value['_id'], ObjectId):
             value['_id'] = str(value['_id'])
         else:
             break  # All '_id' values have the same type in a collection.
-    return app.response_class(response=_dumps(result), status=200, mimetype='application/json')
+    return app.response_class(response=_dumps({'data': data, 'next_start_index': next_start_index}),
+            status=200, mimetype='application/json')
 
 
 @app.route('/pendingWork/<module_name>')

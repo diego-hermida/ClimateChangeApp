@@ -238,7 +238,7 @@ class MongoDBCollection:
         self.collection = self._client.get_database(self._database_name).get_collection(
                 collection_name if collection_name else self._collection_name)
 
-    def find(self, fields=None, conditions=None, start_index=None, count=None, sort=None) -> dict:
+    def find(self, fields=None, conditions=None, start_index=None, count=None, sort=None) -> (list, int):
         """
             Searches for data in a MongoDB collection. Results are paged (if 'count' and 'start_index' are set).
             :param fields: Fields to be selected. Any field to be selected is tagged with a '1'. Any field to be exclu-
@@ -256,23 +256,24 @@ class MongoDBCollection:
                                 - db.<table>.find().sort('name') --> SELECT * FROM <table> ORDER BY 'name'
                                 - db.<table>.find().sort([('name', 1), ('price', -1)]) --> SELECT * FROM <table>
                                                                                            ORDER BY 'name', 'price' DESC
-            :return: A dict with two values:
+            :return: A tuple with two values:
                         - data: A list of values, or None if there were not values.
                         - next_start_index: The index of the first element of the next page. If no more data are
-                                            available, this value won't appear.
-            :rtype: dict
+                                            available, this value will be None.
+            :rtype: tuple
         """
         cursor = self.collection.find(conditions, fields).sort(sort if sort else '$natural').limit(
                 count + 1 if count else 0).skip(start_index if start_index is not None else 0)
         data = [x for x in cursor]
         cursor.close()
-        data = {'data': data if data else []}
-        if len(data['data']) > count if count else False:
+        data = data if data else []
+        next_start_index = None
+        if len(data) > count if count else False:
             # Discarding last element (necessary to determine if there are more elements, but not requested)
-            data['data'] = data['data'][:-1]
+            data = data[:-1]
             # Retrieving next page's first index, only if there are more data
-            data['next_start_index'] = (start_index if start_index is not None else 0) + count
-        return data
+            next_start_index = (start_index if start_index is not None else 0) + count
+        return data, next_start_index
 
     def is_empty(self) -> bool:
         """

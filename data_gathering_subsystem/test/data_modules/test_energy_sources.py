@@ -45,8 +45,7 @@ class TestEnergySources(TestCase):
     def test_correct_data_collection(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 'ES', 'name': 'Spain'}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -69,7 +68,7 @@ class TestEnergySources(TestCase):
     def test_data_collection_stops_when_reached_limit(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {'data': [{'_id': 'ES', 'name': 'Spain'}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -93,7 +92,7 @@ class TestEnergySources(TestCase):
     def test_data_collection_with_no_countries(self, mock_collection):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {'data': []}
+        mock_collection.return_value.find.return_value = ([], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
@@ -113,8 +112,7 @@ class TestEnergySources(TestCase):
     def test_data_collection_invalid_data_from_server(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 'ES', 'name': 'Spain'}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -138,7 +136,7 @@ class TestEnergySources(TestCase):
     def test_data_collection_with_rejected_request_from_server(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {'data': [{'_id': 'ES', 'name': 'Spain'}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -162,8 +160,8 @@ class TestEnergySources(TestCase):
     def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 'ES', 'name': 'Spain'}, {'_id': 'AR', 'name': 'Argentina'}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'},
+                                                           {'_id': 'AR', 'name': 'Argentina'}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
 
@@ -188,8 +186,8 @@ class TestEnergySources(TestCase):
     def test_data_collection_with_no_items_saved(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 'ES', 'name': 'Spain'}, {'_id': 'AR', 'name': 'Argentina'}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'},
+                                                           {'_id': 'AR', 'name': 'Argentina'}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
 

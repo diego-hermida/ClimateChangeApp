@@ -30,14 +30,14 @@ class _AirPollutionDataCollector(DataCollector):
         super()._collect_data()
         # Retrieves locations with WAQI Station ID from database
         self.collection = MongoDBCollection(collection_name=self.config['LOCATIONS_MODULE_NAME'])
-        locations = self.collection.find(start_index=self.state['start_index'], count=self.config[
+        locations, next_start_index = self.collection.find(start_index=self.state['start_index'], count=self.config[
                 'MAX_REQUESTS_PER_MINUTE'], fields={'_id': 1, 'name': 1, 'waqi_station_id': 1}, sort='_id',
                 conditions={'waqi_station_id':{'$ne': None}})
         self.collection.close()
         self.data = []
         unmatched = []
-        locations_length = len(locations['data'])
-        for index, location in enumerate(locations['data']):
+        locations_length = len(locations)
+        for index, location in enumerate(locations):
             url = self.config['BASE_URL'].replace('{STATION_ID}', str(location['waqi_station_id'])).replace('{TOKEN}',
                     self.config['TOKEN'])
             r = requests.get(url)
@@ -61,13 +61,13 @@ class _AirPollutionDataCollector(DataCollector):
             self.logger.warning('%d location(s) do not have recent air pollution data: %s'%(len(unmatched),
                     sorted(unmatched)))
         # No available locations is not an error
-        if not locations['data']:
+        if not locations:
             self.logger.info('No locations are available. Data collection will be stopped.')
             self.advisedly_no_data_collected = True
-        self.state['start_index'] = locations.get('next_start_index')
+        self.state['start_index'] = next_start_index
         self.state['last_request'] = current_timestamp_utc()
         self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY'] if self.state['start_index'] or not \
-            locations['data'] else self.config['MAX_UPDATE_FREQUENCY']
+            locations else self.config['MAX_UPDATE_FREQUENCY']
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
 

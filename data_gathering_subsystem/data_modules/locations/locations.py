@@ -62,11 +62,12 @@ class _LocationsDataCollector(DataCollector):
             # Optimization: Only updating missing locations.
             self.collection = MongoDBCollection(self.module_name)
             missing_locations = self.collection.find(fields={'name': 1}, conditions={'$and': [{'waqi_station_id':
-                    {'$ne': None}}, {'wunderground_loc_id': {'$ne': None}}, {'owm_station_id': {'$ne': None}}]}, sort='_id')
+                    {'$ne': None}}, {'wunderground_loc_id': {'$ne': None}}, {'owm_station_id': {'$ne': None}}]},
+                    sort='_id')[0]
             self.collection.close()
             omitted = 0
             locations_length = len(self.config['LOCATIONS'])
-            for loc in missing_locations['data']:
+            for loc in missing_locations:
                 try:
                     del self.config['LOCATIONS'][loc['name']]
                     omitted += 1

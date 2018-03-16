@@ -37,7 +37,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {'data': []}
+        mock_collection.return_value.find.return_value = ([], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -107,7 +107,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = {'data': []}
+        mock_collection.return_value.find.return_value = ([], None)
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
@@ -186,7 +186,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(data)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = {'data': []}
+        mock_collection.return_value.find.return_value = ([], None)
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 4, 'nMatched': 0, 'nUpserted': 0}
@@ -277,7 +277,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = {'data': []}
+        mock_collection.return_value.find.return_value = ([], None)
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 3, 'nMatched': 0, 'nUpserted': 0}
@@ -348,7 +348,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = {'data': []}
+        mock_collection.return_value.find.return_value = ([], None)
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
@@ -417,7 +417,7 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = {'data': []}
+        mock_collection.return_value.find.return_value = ([], None)
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
@@ -488,8 +488,8 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = {'data': [{'name': 'Delhi'}, {'name': 'Mexico City'},
-                {'name': 'Guatemala City'}, {'name': 'Cairo'}]}
+        mock_collection.return_value.find.return_value = ([{'name': 'Delhi'}, {'name': 'Mexico City'},
+                {'name': 'Guatemala City'}, {'name': 'Cairo'}], None)
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
@@ -533,8 +533,8 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = {'data': [{'name': 'Delhi'}, {'name': 'Mexico City'},
-                {'name': 'Guatemala City'}, {'name': 'Cairo'}, {'name': 'Kabul'}]}
+        mock_collection.return_value.find.return_value = ([{'name': 'Delhi'}, {'name': 'Mexico City'},
+                {'name': 'Guatemala City'}, {'name': 'Cairo'}, {'name': 'Kabul'}], None)
         mock_collection.return_value.close.return_value = None
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}

@@ -132,7 +132,7 @@ class TestMain(TestCase):
         data = []
         for i in range(1, 6):
             data.append({'_id': i, 'value': i})
-        mock_collection.return_value.find.return_value = {'data': data}
+        mock_collection.return_value.find.return_value = (data, None)
         mock_collection.return_value.collection.find_one.return_value = {'_id': 'aggregated',
                 'per_module': {'module': {}}}
         r = self.app.get('/data/module', headers={'Authorization': 'Bearer test_token'})
@@ -150,7 +150,7 @@ class TestMain(TestCase):
         data = []
         for i in range(5, 9):
             data.append({'_id': i, 'value': i})
-        mock_collection.return_value.find.return_value = {'data': data}
+        mock_collection.return_value.find.return_value = (data, None)
         mock_collection.return_value.collection.find_one.return_value = {'_id': 'aggregated',
                 'per_module': {'module': {}}}
         r = self.app.get('/data/module?startIndex=0', headers={'Authorization': 'Bearer test_token'})
@@ -203,7 +203,8 @@ class TestMain(TestCase):
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertFalse(data['alive'])
 
-    @mock.patch('api.main.ping_database', Mock(side_effect=Exception('Test error (to verify anomalous exit). This is OK.')))
+    @mock.patch('api.main.ping_database',
+                Mock(side_effect=Exception('Test error (to verify anomalous exit). This is OK.')))
     def test_alive_endpoint_with_inactive_database_uncaught_exception(self):
         r = self.app.get('/alive')
         self.assertEqual(500, r.status_code)

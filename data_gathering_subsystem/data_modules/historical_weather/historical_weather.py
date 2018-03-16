@@ -85,7 +85,7 @@ class _HistoricalWeatherDataCollector(DataCollector):
             if len(current_locations) < locations_count:
                 self.state['missing_data_ids'] = [x['_id'] for x in self.collection.find(fields={'_id': 1}, 
                         sort='_id', conditions={'wunderground_loc_id': {'$ne': None}, '_id': {'$nin': 
-                        current_locations}})['data']]
+                        current_locations}})[0]]
                 self.logger.info('One or more locations must have been recently added, since not all locations have '
                         'recent historical data collected.')
             # If no new locations, checking if existing ones have missing recent data
@@ -95,7 +95,7 @@ class _HistoricalWeatherDataCollector(DataCollector):
                                                                 tzinfo=UTC) - datetime.timedelta(
                     days=(self.config['TIME_INTERVAL'] + self.config['TIMEDELTA']))
                 self.state['missing_data_ids'] = list(set([x['location_id'] for x in self.collection.find(sort='_id',
-                        fields={'location_id': 1}, conditions={'_id.date_utc': {'$not': {'$gt': target_date}}})['data']]))
+                        fields={'location_id': 1}, conditions={'_id.date_utc': {'$not': {'$gt': target_date}}})[0]]))
                 if self.state['missing_data_ids']:
                     self.logger.info(
                         '%d location(s) have missing recent data.' % (len(self.state['missing_data_ids'])))

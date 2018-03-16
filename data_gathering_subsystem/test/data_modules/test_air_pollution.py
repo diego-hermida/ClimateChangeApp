@@ -19,8 +19,7 @@ class TestAirPollution(TestCase):
     def test_correct_data_collection(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -52,8 +51,7 @@ class TestAirPollution(TestCase):
     def test_correct_data_collection_with_more_items_than_allowed_requests(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], 'next_start_index': 1}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], 1)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -85,7 +83,7 @@ class TestAirPollution(TestCase):
     def test_data_collection_with_no_locations(self, mock_collection):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {'data': []}
+        mock_collection.return_value.find.return_value = ([], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
@@ -107,8 +105,7 @@ class TestAirPollution(TestCase):
     def test_data_collection_invalid_data_from_server(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -134,8 +131,7 @@ class TestAirPollution(TestCase):
     def test_data_collection_with_rejected_request_from_server(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -161,9 +157,8 @@ class TestAirPollution(TestCase):
     def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
-                     {'_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
+                     {'_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -195,9 +190,8 @@ class TestAirPollution(TestCase):
     def test_data_collection_with_no_items_saved(self, mock_collection, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = {
-            'data': [{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
-                     {'_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}]}
+        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
+                     {'_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}], None)
         mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
