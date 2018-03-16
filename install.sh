@@ -215,31 +215,6 @@ fi
 
 # ---------- Installation ---------- #
 
-# Telegram Configurator component
-message 4 "[COMPONENT] Building the Telegram Configurator component.";
-
-# Building the Telegram Configurator component
-docker-compose build --build-arg DEPLOY_ARGS="${TELEGRAM_CONFIGURATOR_DEPLOY_ARGS}" "telegram_bot$CI_EXTENSION";
-if [ $? != 0 ]; then
-    exit_with_message 1 "> The Telegram Configurator image could not be built." 1;
-fi
-# Running the Telegram Configurator component
-if [ "$RUN_TELEGRAM" == "true" ]; then
-    message -1 "[INFO] Running the Telegram Configurator component.";
-    echo "";
-    docker run --rm -i -t --name "telegram_bot$CI_EXTENSION" "diegohermida/telegram_bot:latest$CI_EXTENSION";
-
-    # Displaying installation summary
-    if [ $? != 0 ]; then
-        exit_with_message 1 "\n[ERROR] The Telegram Configurator did not exit normally. You should rerun this installer." 1;
-    else
-        message 2 "\n[SUCCESS] The Telegram Configurator was successful.";
-        exit_with_message -1 "[INFO] The installation will finish now. Be sure to follow the Telegrama Configurator
-                    instructions, and restart this installer without RUN_TELEGRAM=true." 0
-    fi
-fi
-
-
 # MongoDB component
 message 4 "[COMPONENT] Building and launching the MongoDB service.";
 
@@ -271,6 +246,31 @@ message -1 "[INFO] Launching the PostgreSQL service.";
 docker-compose up -d "postgres$CI_EXTENSION";
 if [ $? != 0 ]; then
     exit_with_message 1 "[ERROR] The PostgreSQL service could not be initialized." 1;
+fi
+
+
+# Telegram Configurator component
+message 4 "[COMPONENT] Building the Telegram Configurator component.";
+
+# Building the Telegram Configurator component
+docker-compose build --build-arg DEPLOY_ARGS="${TELEGRAM_CONFIGURATOR_DEPLOY_ARGS}" "telegram_bot$CI_EXTENSION";
+if [ $? != 0 ]; then
+    exit_with_message 1 "> The Telegram Configurator image could not be built." 1;
+fi
+# Running the Telegram Configurator component
+if [ "$RUN_TELEGRAM" == "true" ]; then
+    message -1 "[INFO] Running the Telegram Configurator component.";
+    echo "";
+    docker run --rm -i -t --name "telegram_bot$CI_EXTENSION" "diegohermida/telegram_bot:latest$CI_EXTENSION";
+
+    # Displaying installation summary
+    if [ $? != 0 ]; then
+        exit_with_message 1 "\n[ERROR] The Telegram Configurator did not exit normally. You should rerun this installer." 1;
+    else
+        message 2 "\n[SUCCESS] The Telegram Configurator was successful.";
+        exit_with_message -1 "[INFO] The installation will finish now. Be sure to follow the Telegrama Configurator
+                    instructions, and restart this installer without RUN_TELEGRAM=true." 0
+    fi
 fi
 
 
