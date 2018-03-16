@@ -1,4 +1,5 @@
 # .coveragerc to control coverage.py
+
 [run]
 branch = True
 omit =
@@ -10,11 +11,7 @@ omit =
     **/__init__.py
 
 [report]
-# Regexes for lines to exclude from consideration
 exclude_lines =
-    # Have to re-enable the standard pragma
-    pragma: no cover
-
     def __repr__
     def __str__
     raise AssertionError
@@ -24,8 +21,6 @@ exclude_lines =
     from .+ import .+
     def .+(.+):
     @.+(.+)
-
-    # Don't complain if non-runnable code isn't run:
     if __name__ == __main__:
 
 ignore_errors = True
