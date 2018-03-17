@@ -1,12 +1,13 @@
 #! /bin/bash
 
-# ---------- Definitions ---------- #
+# ---------- Functions ---------- #
 
 # Setting default values
 TELEGRAM_CONFIGURATOR_DEPLOY_ARGS=null;
 SKIP_DEPLOY=true;
 FORCE_BUILD=false;
 RUN=true;
+SHOW_HELP=false;
 
 # Exits the installation process, but prints a message to command line before doing so.
 # :param $1: Colour of the output line. This will be reset before exiting.
@@ -37,6 +38,17 @@ function message () {
     tput -T xterm-256color sgr0;
 }
 
+
+# ---------- Definitions ---------- #
+
+# Setting default values
+TELEGRAM_CONFIGURATOR_DEPLOY_ARGS=null;
+SKIP_DEPLOY=true;
+FORCE_BUILD=false;
+RUN=true;
+SHOW_HELP=false;
+
+
 # ---------- Argument manipulation ---------- #
 
 # Parsing arguments
@@ -45,6 +57,8 @@ do
     KEY=$(echo $ARGUMENT | cut -f1 -d=)
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)
     case "$KEY" in
+            -h)                                     SHOW_HELP=true ;;
+            --help)                                 SHOW_HELP=true ;;
             FORCE_BUILD)                            FORCE_BUILD=${VALUE} ;;
             SKIP_DEPLOY)                            SKIP_DEPLOY=${VALUE} ;;
             TELEGRAM_CONFIGURATOR_DEPLOY_ARGS)      TELEGRAM_CONFIGURATOR_DEPLOY_ARGS=${VALUE} ;;
@@ -53,11 +67,13 @@ do
     esac
 done
 
+
 # Setting variables to lower case
 SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 FORCE_BUILD=echo "$FORCE_BUILD" | tr '[:upper:]' '[:lower:]';
 TELEGRAM_CONFIGURATOR_DEPLOY_ARGS=echo "$TELEGRAM_CONFIGURATOR_DEPLOY_ARGS" | tr '[:upper:]' '[:lower:]';
 RUN=echo "$RUN" | tr '[:upper:]' '[:lower:]';
+
 
 # Warnings
 if [ "$TELEGRAM_CONFIGURATOR_DEPLOY_ARGS" != "null" ] && [ "$SKIP_DEPLOY" == "true" ]; then
@@ -76,23 +92,26 @@ if [ "$RUN" == "false" ]; then
 fi
 
 if ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
-   ([ "$FORCE_BUILD" != "true" ] && [ "$FORCE_BUILD" != "false" ]) ||
-   ([ "$RUN" != "true" ] && [ "$RUN" != "false" ]); then
-     exit_with_message 1 "> usage: install.sh [FORCE_BUILD=true] [SKIP_DEPLOY=false] [RUN=false]
-                            [TELEGRAM_CONFIGURATOR_DEPLOY_ARGS=<args>]
-                         \n\t- FORCE_BUILD: builds the Telegram Configurator image even if it already exists. Defaults
-                               to \"false\".
-                         \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
-                         \n\t- RUN: executes the Configurator after building it. Defaults to \"true\".
-                         \n\t- TELEGRAM_CONFIGURATOR_DEPLOY_ARGS: enables \"Expert Mode\", allowing to pass custom
-                               args to the deploy script. Defaults to \"--with-tests\".
-                         \nIMPORTANT: TELEGRAM_CONFIGURATOR_DEPLOY_ARGS must be used in conjunction with
-                                      SKIP_DEPLOY=false." 1;
+            ([ "$FORCE_BUILD" != "true" ] && [ "$FORCE_BUILD" != "false" ]) ||
+            ([ "$RUN" != "true" ] && [ "$RUN" != "false" ]) ||  [ "$SHOW_HELP" == "true" ]; then
+     exit_with_message 1 "> usage: install.sh [-h] [--help] [FORCE_BUILD=true] [SKIP_DEPLOY=false] [RUN=false]
+         \n\t\t[TELEGRAM_CONFIGURATOR_DEPLOY_ARGS=<args>]
+         \n\t- -h, --help: shows this message
+         \n\t- FORCE_BUILD: builds the Telegram Configurator image even if it already exists. Defaults
+               to \"false\".
+         \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
+         \n\t- RUN: executes the Configurator after building it. Defaults to \"true\".
+         \n\t- TELEGRAM_CONFIGURATOR_DEPLOY_ARGS: enables \"Expert Mode\", allowing to pass custom
+               args to the deploy script. Defaults to \"--with-tests\".
+         \nIMPORTANT: TELEGRAM_CONFIGURATOR_DEPLOY_ARGS must be used in conjunction with
+                      SKIP_DEPLOY=false." 1;
 fi
 
 
 # ---------- Installation ---------- #
 
+# Enables compatibility with docker-compose.yml
+export BIND_IP_ADDRESS='0.0.0.0';
 
 # Telegram Configurator component
 message 4 "[COMPONENT] Building the Telegram Configurator component.";
@@ -110,7 +129,7 @@ fi
 if [ "$RUN" == "true" ]; then
     message -1 "[INFO] Running the Telegram Configurator component.";
     echo "";
-    docker run --rm -i -t --name telegram_bot diegohermida/telegram_bot:1.0;
+    docker run --rm -i -t --name telegram_bot diegohermida/telegram_bot:latest;
 
     # Displaying installation summary
     if [ $? != 0 ]; then

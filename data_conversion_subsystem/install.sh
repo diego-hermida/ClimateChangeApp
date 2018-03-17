@@ -52,6 +52,8 @@ EXTERNAL_POSTGRES_SERVER=false;
 SKIP_DEPLOY=true;
 MACOS=false;
 ROOT_DIR="~/ClimateChangeApp";
+SHOW_HELP=false;
+EXPOSE_CONTAINERS=true;
 
 
 # ---------- Argument manipulation ---------- #
@@ -62,10 +64,13 @@ do
     KEY=$(echo $ARGUMENT | cut -f1 -d=)
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)
     case "$KEY" in
+            -h)                                     SHOW_HELP=true ;;
+            --help)                                 SHOW_HELP=true ;;
             SKIP_DEPLOY)                            SKIP_DEPLOY=${VALUE} ;;
             POSTGRES_IP)                            POSTGRES_IP=${VALUE} ;;
             EXTERNAL_POSTGRES_SERVER)               EXTERNAL_POSTGRES_SERVER=${VALUE} ;;
             DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS)  DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS=${VALUE} ;;
+            EXPOSE_CONTAINERS)                      EXPOSE_CONTAINERS=${VALUE} ;;
             API_IP)                                 API_IP=${VALUE} ;;
             MACOS)                                  MACOS=${VALUE} ;;
             ROOT_DIR)                               ROOT_DIR=${VALUE} ;;
@@ -78,16 +83,20 @@ done
 EXTERNAL_POSTGRES_SERVER=echo "$EXTERNAL_POSTGRES_SERVER" | tr '[:upper:]' '[:lower:]';
 SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 MACOS=echo "$MACOS" | tr '[:upper:]' '[:lower:]';
+EXPOSE_CONTAINERS=echo "$EXPOSE_CONTAINERS" | tr '[:upper:]' '[:lower:]';
+
 
 # Ensuring variables contain legit values
-
 if [ "$API_IP" == "null" ] || [ "$POSTGRES_IP" == "null" ] ||
         ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
         ([ "$EXTERNAL_POSTGRES_SERVER" != "true" ] && [ "$EXTERNAL_POSTGRES_SERVER" != "false" ]) ||
-        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]); then
+        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ])
+        ([ "$EXPOSE_CONTAINERS" != "true" ] && [ "$EXPOSE_CONTAINERS" != "false" ]) ||
+        [ "$SHOW_HELP" == "true" ]; then
      exit_with_message 1 "> usage:
-            \n> install.sh [API_IP=xxx.xxx.xxx.xxx] [POSTGRES_IP=xxx.xxx.xxx.xxx] [EXTERNAL_POSTGRES_SERVER={true|false}]
-            [SKIP_DEPLOY={true|false}] [DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS=<args>] [MACOS={true|false}] [ROOT_DIR=<path>]
+            \n> install.sh [-h] [--help] [API_IP=xxx.xxx.xxx.xxx] [POSTGRES_IP=xxx.xxx.xxx.xxx] [EXTERNAL_POSTGRES_SERVER={true|false}]
+            \n\t\t[SKIP_DEPLOY={true|false}] [DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS=<args>] [MACOS={true|false}] [ROOT_DIR=<path>]
+            \n\t- -h, --help: shows this message
             \n\t- API_IP: IP address of the machine containing the Data Gathering Subsystem's API service.
             \n\t- POSTGRES_IP: IP address of the machine containing the PostgreSQL service.
             \n\t- EXTERNAL_POSTGRES_SERVER: indicates that the PostgreSQL server is externally provided,
@@ -99,6 +108,7 @@ if [ "$API_IP" == "null" ] || [ "$POSTGRES_IP" == "null" ] ||
                   local IP address.
             \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
                   \"~/ClimateChangeApp\".
+            \n\t- EXPOSE_CONTAINERS: exposes Docker containers to the outside (0.0.0.0). Defaults to \"true\".
             \nIMPORTANT: DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS must be used in conjunction with SKIP_DEPLOY=false." 1;
 fi
 
@@ -130,6 +140,22 @@ message -1 "[INFO] API_IP has been set to \"$API_IP\".";
 message 3 "Hint: If the value of POSTGRES_IP is incorrect, you can override it by invoking: \"./install.sh POSTGRES_IP=<IP>\".";
 message 3 "Hint: If the value of API_IP is incorrect, you can override it by invoking: \"./install.sh API_IP=<IP>\".";
 
+
+# Binding containers to local?
+if [ "$EXPOSE_CONTAINERS" == "true" ]; then
+    message -1 "[INFO] Exposing Docker containers by using the 0.0.0.0 mask.";
+    export BIND_IP_ADDRESS='0.0.0.0';
+else
+     if [ "$POSTGRES_IP" == "docker.for.mac.localhost" ]; then
+        export BIND_IP_ADDRESS="127.0.0.1";
+     else
+        export BIND_IP_ADDRESS=${POSTGRES_IP};
+     fi
+     message -1 "[INFO] Restricting connections to the POSTGRES_IP address: $POSTGRES_IP.";
+     message 3 "[WARNING] Docker containers will not be reachable from the outside.";
+fi
+
+
 # Overriding default ROOT_DIR?
 if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
     message -1 "[INFO] Deploying the application under custom directory: $ROOT_DIR.";
@@ -137,6 +163,7 @@ else
     message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";
 fi
 export ROOT_DIR="$ROOT_DIR";
+
 
 # ---------- Installation ---------- #
 

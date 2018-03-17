@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# ---------- Definitions ---------- #
+# ---------- Functions ---------- #
 
 # Exits the installation process, but prints a message to command line before doing so.
 # :param $1: Colour of the output line. This will be reset before exiting.
@@ -42,7 +42,9 @@ function calculate_ip_address () {
     printf ${1+-v} $1 "%s${_nl:0:$[${#1}>0?0:1]}" $_myip
 }
 
-# ---------- Functions ---------- #
+
+# ---------- Definitions ---------- #
+
 # Setting default values
 MONGODB_IP=$(calculate_ip_address);
 EXTERNAL_MONGODB_SERVER=false;
@@ -50,6 +52,8 @@ SKIP_DEPLOY=true;
 DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=null;
 MACOS=false;
 ROOT_DIR="~/ClimateChangeApp";
+SHOW_HELP=false;
+EXPOSE_CONTAINERS=true;
 
 
 # ---------- Argument manipulation ---------- #
@@ -60,26 +64,37 @@ do
     KEY=$(echo $ARGUMENT | cut -f1 -d=)
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)
     case "$KEY" in
+            -h)                                     SHOW_HELP=true ;;
+            --help)                                 SHOW_HELP=true ;;
             MONGODB_IP)                             MONGODB_IP=${VALUE} ;;
             SKIP_DEPLOY)                            SKIP_DEPLOY=${VALUE} ;;
             DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS)   DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=${VALUE} ;;
             EXTERNAL_MONGODB_SERVER)                EXTERNAL_MONGODB_SERVER=${VALUE} ;;
+            EXPOSE_CONTAINERS)                      EXPOSE_CONTAINERS=${VALUE} ;;
             MACOS)                                  MACOS=${VALUE} ;;
             ROOT_DIR)                               ROOT_DIR=${VALUE} ;;
             *)
     esac
 done
 
+
 # Setting variables to lower case
 SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
 DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=echo "$DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS" | tr '[:upper:]' '[:lower:]';
 EXTERNAL_MONGODB_SERVER=echo "$EXTERNAL_MONGODB_SERVER" | tr '[:upper:]' '[:lower:]';
+MACOS=echo "$MACOS" | tr '[:upper:]' '[:lower:]';
+EXPOSE_CONTAINERS=echo "$EXPOSE_CONTAINERS" | tr '[:upper:]' '[:lower:]';
+
 
 # Ensuring variables contain legit values
 if [ "$MONGODB_IP" == "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
-            ([ "$EXTERNAL_MONGODB_SERVER" != "true" ] && [ "$EXTERNAL_MONGODB_SERVER" != "false" ]); then
-     exit_with_message 1 "> usage: install.sh MONGODB_IP=xxx.xxx.xxx.xxx [EXTERNAL_MONGODB_SERVER=true] [SKIP_DEPLOY=false]
-            [DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=<args>] [MACOS={true|false}] [ROOT_DIR=<path>]
+        ([ "$EXTERNAL_MONGODB_SERVER" != "true" ] && [ "$EXTERNAL_MONGODB_SERVER" != "false" ]) ||
+        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]) ||
+        ([ "$EXPOSE_CONTAINERS" != "true" ] && [ "$EXPOSE_CONTAINERS" != "false" ]) ||
+        [ "$SHOW_HELP" == "true" ]; then
+     exit_with_message 1 "> usage: install.sh [-h] [MONGODB_IP=xxx.xxx.xxx.xxx] [EXTERNAL_MONGODB_SERVER={true|false}] [SKIP_DEPLOY={true|false}]
+            \n\t\t[DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS=<args>] [MACOS={true|false}] [ROOT_DIR=<path>] [EXPOSE_CONTAINERS={true|false}]
+            \n\t- -h, --help: shows this message
             \n\t- MONGODB_IP: IP address of the machine containing the MongoDB service.
             \n\t- EXTERNAL_MONGODB_SERVER: indicates that the MongoDB server is externally provided,
                   and does not create a Docker container. Defaults to \"false\".
@@ -90,6 +105,7 @@ if [ "$MONGODB_IP" == "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPL
                   local IP address.
             \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
                   \"~/ClimateChangeApp\".
+            \n\t- EXPOSE_CONTAINERS: exposes Docker containers to the outside (0.0.0.0). Defaults to \"true\".
             \nIMPORTANT: DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS must be used in conjunction with SKIP_DEPLOY=false." 1;
 fi
 
@@ -116,6 +132,21 @@ message -1 "[INFO] Deploying the Data Gathering Subsystem to the local machine. 
 message 3 "Hint: If the value of MONGODB_IP is incorrect, you can override it by invoking: \"./install.sh MONGODB_IP=<IP>\".";
 
 
+# Binding containers to local?
+if [ "$EXPOSE_CONTAINERS" == "true" ]; then
+    message -1 "[INFO] Exposing Docker containers by using the 0.0.0.0 mask.";
+    export BIND_IP_ADDRESS='0.0.0.0';
+else
+     if [ "$MONGODB_IP" == "docker.for.mac.localhost" ]; then
+        export BIND_IP_ADDRESS="127.0.0.1";
+     else
+        export BIND_IP_ADDRESS=${MONGODB_IP};
+     fi
+     message -1 "[INFO] Restricting connections to the MONGODB_IP address: $MONGODB_IP.";
+     message 3 "[WARNING] Docker containers will not be reachable from the outside.";
+fi
+
+
 # Overriding default ROOT_DIR?
 if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
     message -1 "[INFO] Deploying the application under custom directory: $ROOT_DIR.";
@@ -128,6 +159,7 @@ export ROOT_DIR="$ROOT_DIR";
 # Setting port address
 message -1 "[INFO] Using default value for MONGODB_PORT."
 MONGODB_PORT=27017;
+
 
 # ---------- Installation ---------- #
 

@@ -54,6 +54,7 @@ SKIP_DEPLOY=true;
 MACOS=false;
 ROOT_DIR="~/ClimateChangeApp";
 CI=false;
+SHOW_HELP=false;
 
 # ---------- Argument manipulation ---------- #
 
@@ -63,13 +64,15 @@ do
     KEY=$(echo ${ARGUMENT} | cut -f1 -d=)
     VALUE=$(echo ${ARGUMENT} | cut -f2 -d=)
     case "$KEY" in
-            HOST_IP)        HOST_IP=${VALUE} ;;
-            RUN_API)        RUN_API=${VALUE} ;;
-            EXPOSE_CONTAINERS)     EXPOSE_CONTAINERS=${VALUE} ;;
-            SKIP_DEPLOY)    SKIP_DEPLOY=${VALUE} ;;
-            MACOS)          MACOS=${VALUE} ;;
-            ROOT_DIR)       ROOT_DIR=${VALUE} ;;
-            CI)             CI=${VALUE} ;;
+            -h)                     SHOW_HELP=true ;;
+            --help)                 SHOW_HELP=true ;;
+            HOST_IP)                HOST_IP=${VALUE} ;;
+            RUN_API)                RUN_API=${VALUE} ;;
+            EXPOSE_CONTAINERS)      EXPOSE_CONTAINERS=${VALUE} ;;
+            SKIP_DEPLOY)            SKIP_DEPLOY=${VALUE} ;;
+            MACOS)                  MACOS=${VALUE} ;;
+            ROOT_DIR)               ROOT_DIR=${VALUE} ;;
+            CI)                     CI=${VALUE} ;;
             *)
     esac
 done
@@ -90,10 +93,11 @@ if  ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
         ([ "$EXPOSE_CONTAINERS" != "true" ] && [ "$EXPOSE_CONTAINERS" != "false" ]) ||
         ([ "$RUN_TELEGRAM" != "true" ] && [ "$RUN_TELEGRAM" != "false" ]) ||
         ([ "$CI" != "true" ] && [ "$CI" != "false" ]) ||
-        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]); then
+        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]) || [ "$SHOW_HELP" == "true" ]; then
     exit_with_message 1 "> usage:
-            \n install.sh [HOST_IP=<IP>] [EXPOSE_CONTAINERS={true|false}] [MACOS={true|false}] [RUN_API={true|false}]
+            \n install.sh [-h] [--help] [HOST_IP=<IP>] [EXPOSE_CONTAINERS={true|false}] [MACOS={true|false}] [RUN_API={true|false}]
             \n\t\t[RUN_TELEGRAM={true|false}] [SKIP_DEPLOY={true|false}] [ROOT_DIR=<path>] [CI={true|false}]
+            \n\t- -h, --help: shows this message
             \n\t- HOST_IP: IP address of the machine. Defaults to the current IP value of the machine.
             \n\t- EXPOSE_CONTAINERS: exposes Docker containers to the outside (0.0.0.0). Defaults to \"true\".
             \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
@@ -302,7 +306,6 @@ if [ "$RUN_API" == "true" ]; then
 else
     message 4 "[COMPONENT] Building the API service.";
 fi
-
 # Deleting the API service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name="data_gathering_subsystem_api_CI$CI_EXTENSION")" ]; then
     message -1 "[INFO] Removing previous API$CI_EXTENSION container.";

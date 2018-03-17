@@ -52,6 +52,8 @@ RUN_API=false;
 API_DEPLOY_ARGS=null;
 MACOS=false;
 ROOT_DIR="~/ClimateChangeApp";
+SHOW_HELP=false;
+EXPOSE_CONTAINERS=true;
 
 # ---------- Argument manipulation ---------- #
 
@@ -61,11 +63,14 @@ do
     KEY=$(echo $ARGUMENT | cut -f1 -d=)
     VALUE=$(echo $ARGUMENT | cut -f2 -d=)
     case "$KEY" in
+            -h)                         SHOW_HELP=true ;;
+            --help)                     SHOW_HELP=true ;;
             MONGODB_IP)                 MONGODB_IP=${VALUE} ;;
             SKIP_DEPLOY)                SKIP_DEPLOY=${VALUE} ;;
             RUN_API)                    RUN_API=${VALUE} ;;
             API_DEPLOY_ARGS)            API_DEPLOY_ARGS=${VALUE} ;;
             EXTERNAL_MONGODB_SERVER)    EXTERNAL_MONGODB_SERVER=${VALUE} ;;
+            EXPOSE_CONTAINERS)          EXPOSE_CONTAINERS=${VALUE} ;;
             MACOS)                      MACOS=${VALUE} ;;
             ROOT_DIR)                   ROOT_DIR=${VALUE} ;;
             *)
@@ -79,15 +84,20 @@ RUN_API=echo "$RUN_API" | tr '[:upper:]' '[:lower:]';
 API_DEPLOY_ARGS=echo "$API_DEPLOY_ARGS" | tr '[:upper:]' '[:lower:]';
 EXTERNAL_MONGODB_SERVER=echo "$EXTERNAL_MONGODB_SERVER" | tr '[:upper:]' '[:lower:]';
 MACOS=echo "$MACOS" | tr '[:upper:]' '[:lower:]';
+EXPOSE_CONTAINERS=echo "$EXPOSE_CONTAINERS" | tr '[:upper:]' '[:lower:]';
 
 
 # Ensuring variables contain legit values
 if [ "$MONGODB_IP" == "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
         ([ "$RUN_API" != "true" ] && [ "$RUN_API" != "false" ]) ||
         ([ "$EXTERNAL_MONGODB_SERVER" != "true" ] && [ "$EXTERNAL_MONGODB_SERVER" != "false" ]) ||
-        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]); then
-    exit_with_message 1 "> usage: install.sh [MONGODB_IP=xxx.xxx.xxx.xxx] [EXTERNAL_MONGODB_SERVER={true|false}]
-            [SKIP_DEPLOY={true|false}] [RUN_API={true|false}] [API_DEPLOY_ARGS=<args>] [MACOS={true|false}] [ROOT_DIR=<path>]
+        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]) ||
+        ([ "$EXPOSE_CONTAINERS" != "true" ] && [ "$EXPOSE_CONTAINERS" != "false" ]) ||
+        [ "$SHOW_HELP" == "true" ]; then
+    exit_with_message 1 "> usage: install.sh [-h] [--help] [MONGODB_IP=xxx.xxx.xxx.xxx] [EXTERNAL_MONGODB_SERVER={true|false}]
+            \n\t\t[SKIP_DEPLOY={true|false}] [RUN_API={true|false}] [API_DEPLOY_ARGS=<args>] [MACOS={true|false}]
+            \n\t\t[ROOT_DIR=<path>] [EXPOSE_CONTAINERS={true|false}]
+            \n\t- -h, --help: shows this message
             \n\t- MONGODB_IP: IP address of the machine containing the MongoDB service.
             \n\t- EXTERNAL_MONGODB_SERVER: indicates that the MongoDB server is externally provided,
                   and does not create a Docker container. Defaults to \"false\".
@@ -99,6 +109,7 @@ if [ "$MONGODB_IP" == "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPL
                   local IP address.
             \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
                   \"~/ClimateChangeApp\".
+            \n\t- EXPOSE_CONTAINERS: exposes Docker containers to the outside (0.0.0.0). Defaults to \"true\".
             \nIMPORTANT: API_DEPLOY_ARGS must be used in conjunction with SKIP_DEPLOY=false." 1;
 fi
 
@@ -123,6 +134,21 @@ if ([ "$MACOS" == "true" ] && [ "$EXTERNAL_MONGODB_SERVER" == "false" ] ); then
 fi
 message -1 "[INFO] Deploying the API component to the local machine. MONGODB_IP has been set to \"$MONGODB_IP\".";
 message 3 "Hint: If the value of MONGODB_IP is incorrect, you can override it by invoking: \"./install.sh MONGODB_IP=<IP>\".";
+
+
+# Binding containers to local?
+if [ "$EXPOSE_CONTAINERS" == "true" ]; then
+    message -1 "[INFO] Exposing Docker containers by using the 0.0.0.0 mask.";
+    export BIND_IP_ADDRESS='0.0.0.0';
+else
+     if [ "$MONGODB_IP" == "docker.for.mac.localhost" ]; then
+        export BIND_IP_ADDRESS="127.0.0.1";
+     else
+        export BIND_IP_ADDRESS=${MONGODB_IP};
+     fi
+     message -1 "[INFO] Restricting connections to the MONGODB_IP address: $MONGODB_IP.";
+     message 3 "[WARNING] Docker containers will not be reachable from the outside.";
+fi
 
 
 # Overriding default ROOT_DIR?
@@ -158,8 +184,11 @@ fi
 
 
 # API component
-message 4 "[COMPONENT] Building and (optionally) launching the API service.";
-
+if [ "$RUN_API" == "true" ]; then
+    message 4 "[COMPONENT] Building and launching the API service.";
+else
+    message 4 "[COMPONENT] Building the API service.";
+fi
 # Deleting the API service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=data_gathering_subsystem_api)" ]; then
     message -1 "[INFO] Removing previous API container.";
@@ -187,10 +216,11 @@ echo "";
 message 2 "[SUCCESS] Installation results:";
 if [ "$EXTERNAL_MONGODB_SERVER" == "true" ]; then
     message 2 "- MongoDB: external";
-    else message 2 "- MongoDB: up";
+else message 2 "- MongoDB: up";
 fi
 if [ "$RUN_API" == "true" ]; then
-    message 2 "- API: built & up";
-    else message 2 "- API: built";
+    message 2 "- API: up";
+else
+    message 2 "- API: built";
 fi
 echo "";
