@@ -135,6 +135,7 @@ if [ "$MACOS" == "true" ]; then
         API_IP="docker.for.mac.localhost";
     fi
 fi
+export HOST_IP=${POSTGRES_IP}
 message -1 "[INFO] Deploying the Data Gathering Subsystem to the local machine. POSTGRES_IP has been set to \"$POSTGRES_IP\".";
 message -1 "[INFO] API_IP has been set to \"$API_IP\".";
 message 3 "Hint: If the value of POSTGRES_IP is incorrect, you can override it by invoking: \"./install.sh POSTGRES_IP=<IP>\".";

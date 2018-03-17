@@ -128,6 +128,7 @@ if ([ "$MACOS" == "true" ] && [ "$EXTERNAL_MONGODB_SERVER" == "false" ] ); then
     message -1 "[INFO] Since host OS is macOS/OS X, setting MONGODB_IP to \"docker.for.mac.localhost\".";
     MONGODB_IP="docker.for.mac.localhost";
 fi
+export HOST_IP=${MONGODB_IP}
 message -1 "[INFO] Deploying the Data Gathering Subsystem to the local machine. MONGODB_IP has been set to \"$MONGODB_IP\".";
 message 3 "Hint: If the value of MONGODB_IP is incorrect, you can override it by invoking: \"./install.sh MONGODB_IP=<IP>\".";
 
