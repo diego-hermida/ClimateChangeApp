@@ -51,6 +51,19 @@ def blue_bold(msg: str) -> str:
 
 
 def main():
+    """
+        Executes the main action of the Telegram Configurator:
+            1. First of all, the user must start a conversation with the Telegram bot, and then hit "Enter".
+            2. Then, the bot will try to get details from any started conversation within the last MAX_VALID_TIME
+               minutes.
+                2.1. If no messages were found, the Configurator will abort.
+            3. For each conversation found, the bot will reply a message containing a CHAT_ID, which is required to
+               receive Telegram messages.
+                3.1. If the bot notices that all users that had started a conversation within the last MAX_VALID_TIME
+                     minutes have blocked it (i.e. pressed the "Delete and remove" button when deleting a chat with the
+                     bot), the Configurator will abort.
+            4. The Configurator will print a message by command line, indicating the following steps to be performed.
+    """
     # Waiting until the user has established a conversation with the bot.
     try:
         input('%s\nHit "%s" when done: ' % (

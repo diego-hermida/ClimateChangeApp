@@ -30,6 +30,18 @@ def _execute_tests(xml_results=False) -> bool:
 
 
 def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
+    """
+        Executes deployment actions. Possible actions are:
+            - Creating the API MongoDB user.
+            - Adding a list of authorized users to database.
+            - Executing all the tests. Depending on the invocation (parameters '--with-tests' or '--with-test-reports')
+              coverage and test results reports will be generated.
+            - Removing all '.state' and log files.
+        :param log_to_file: If True, saves log records into a log file.
+        :param log_to_stdout: If True, emits log records to stdout.
+        :param log_to_telegram: If True, sends CRITICAL log records via Telegram messages. Defaults to None, which means
+                                that the default configuration will be used (global_config.config).
+    """
 
     # Getting a logger instance
     logger = get_logger(__file__, 'DeployAPILogger', to_file=log_to_file, to_stdout=log_to_stdout, is_subsystem=False,
@@ -138,7 +150,7 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                 logger.error('Some tests did not pass. Further info is available in the command line output.')
                 exit(1)
 
-        # 5. Emptying Subsystem's logs and '.state' files.
+        # 5. Emptying API logs and '.state' files.
         if args.all or args.remove_files:
             logger.info('Removing log base directory: %s' % (API_CONFIG['API_LOG_FILES_ROOT_FOLDER']))
             try:

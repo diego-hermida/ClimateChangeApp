@@ -30,7 +30,19 @@ def _execute_tests(xml_results=False) -> bool:
 
 
 def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
-
+    """
+        Executes deployment actions. Possible actions are:
+            - Recreating the PostgreSQL database and user.
+            - Creating database tables from Django models.
+            - Verifying that all DataConverters are instantiable and runnable.
+            - Removing all '.state' and log files.
+            - Executing all the tests. Depending on the invocation (parameters '--with-tests' or '--with-test-reports')
+              coverage and test results reports will be generated.
+        :param log_to_file: If True, saves log records into a log file.
+        :param log_to_stdout: If True, emits log records to stdout.
+        :param log_to_telegram: If True, sends CRITICAL log records via Telegram messages. Defaults to None, which means
+                                that the default configuration will be used (global_config.config).
+    """
     # Getting a logger instance
     logger = get_logger(__file__, 'DeployDataConversionSubsystemLogger', to_file=log_to_file, to_stdout=log_to_stdout,
             is_subsystem=False, component=DCS_CONFIG['COMPONENT'], to_telegram=log_to_telegram)

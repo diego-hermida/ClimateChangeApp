@@ -69,6 +69,14 @@ def get_module_paths(path, recursive=False, base_package=None, matching_names: l
 
 
 def _get_module_names(path, recursive=False, base_package=None, include_paths=False, matching_names=None) -> list:
+    """
+        Internal function that performs the actual work.
+        :param path: Base directory to be scanned.
+        :param recursive: When set to 'True', module paths in all subpackages (and so on) are also retrieved.
+        :param base_package: Python base package (use only when absolute path is provided)
+        :param matching_names: List of module names. If present, it will only import modules with such names.
+        :return: A list of module names.
+    """
     result = []
     for entry in os.listdir(path):
         if entry == '__pycache__': continue

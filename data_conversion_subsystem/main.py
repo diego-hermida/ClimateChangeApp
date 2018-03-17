@@ -39,7 +39,7 @@ def get_execution_id() -> int:
 def main(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
     """
         This function is the entry point to the Data Conversion Subsystem.
-        Imports all DataCollectors, generates and sets up Supervisor, waits until all work has been done, and exits.
+        Imports all DataConverters, generates and sets up Supervisor, waits until all work has been done, and exits.
         A timeout is set, just in case a deadlock occurs.
         :raise TimeoutError: If the timeout is reached.
     """

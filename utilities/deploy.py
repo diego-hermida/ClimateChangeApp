@@ -27,6 +27,13 @@ def _execute_tests(xml_results=False) -> bool:
 
 
 def deploy(log_to_stdout=True):
+    """
+       Executes deployment actions. Possible actions are:
+           - Executing all the tests. Depending on the invocation (parameters '--with-tests' or '--with-test-reports')
+             coverage and test results reports will be generated.
+       :param log_to_stdout: If True, emits log records to stdout.
+   """
+
     # Getting a logger instance
     logger = get_logger(__file__, 'DeployUtilitiesLogger', to_file=False, to_stdout=log_to_stdout,
                         is_subsystem=False, component=['COMPONENT'], to_telegram=False)

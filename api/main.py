@@ -362,6 +362,15 @@ def alive():
 
 
 def main(log_to_stdout=True, log_to_file=True, log_to_telegram=None):
+    """
+        Main function of the API component.
+        Before running the API, initializes the MongoDBCollection pool and prints version info.
+        :param log_to_file: If True, saves log records into a log file.
+        :param log_to_stdout: If True, emits log records to stdout.
+        :param log_to_telegram: If True, sends CRITICAL log records via Telegram messages. Defaults to None, which means
+                                that the default configuration will be used (global_config.config).
+    """
+
     # Getting logger instance
     global _logger
     global _auth_collection
