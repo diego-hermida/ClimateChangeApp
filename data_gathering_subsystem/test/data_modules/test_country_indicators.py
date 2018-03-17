@@ -14,7 +14,14 @@ class TestCountryIndicators(TestCase):
         country_indicators.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
-        self.data_collector.remove_files()
+        if hasattr(self, 'data_collector'):
+            self.data_collector.remove_files()
+
+    def test_instance(self):
+        self.assertIs(country_indicators.instance(), country_indicators.instance())
+        i1 = country_indicators.instance()
+        i1._transition_state = i1._FINISHED
+        self.assertIsNot(i1, country_indicators.instance())
 
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')

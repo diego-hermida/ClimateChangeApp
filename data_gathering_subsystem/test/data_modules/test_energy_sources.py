@@ -38,7 +38,14 @@ class TestEnergySources(TestCase):
         energy_sources.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
-        self.data_collector.remove_files()
+        if hasattr(self, 'data_collector'):
+            self.data_collector.remove_files()
+
+    def test_instance(self):
+        self.assertIs(energy_sources.instance(), energy_sources.instance())
+        i1 = energy_sources.instance()
+        i1._transition_state = i1._FINISHED
+        self.assertIsNot(i1, energy_sources.instance())
 
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.energy_sources.energy_sources.MongoDBCollection')

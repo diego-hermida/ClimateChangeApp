@@ -34,7 +34,14 @@ class TestSeaLevelRise(TestCase):
         self.data_converter.state = deepcopy(self.data_converter.config['STATE_STRUCT'])
 
     def tearDown(self):
-        self.data_converter.remove_files()
+        if hasattr(self, 'data_converter'):
+            self.data_converter.remove_files()
+
+    def test_instance(self):
+        self.assertIs(sea_level_rise.instance(), sea_level_rise.instance())
+        i1 = sea_level_rise.instance()
+        i1._transition_state = i1._FINISHED
+        self.assertIsNot(i1, sea_level_rise.instance())
 
     def test_perform_data_conversion_with_all_values_set(self):
         self.data_converter.elements_to_convert = [DATA, DATA, DATA]

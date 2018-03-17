@@ -69,7 +69,14 @@ class TestFutureEmissions(TestCase):
         self.data_converter.state = deepcopy(self.data_converter.config['STATE_STRUCT'])
 
     def tearDown(self):
-        self.data_converter.remove_files()
+        if hasattr(self, 'data_converter'):
+            self.data_converter.remove_files()
+
+    def test_instance(self):
+        self.assertIs(future_emissions.instance(), future_emissions.instance())
+        i1 = future_emissions.instance()
+        i1._transition_state = i1._FINISHED
+        self.assertIsNot(i1, future_emissions.instance())
 
     def test_perform_data_conversion_with_all_values_set(self):
         self.data_converter.elements_to_convert = [DATA_2005, DATA_RPC26, DATA_RPC45, DATA_RPC60, DATA_RPC85]

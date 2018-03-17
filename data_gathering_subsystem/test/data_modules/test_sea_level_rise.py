@@ -12,7 +12,14 @@ class TestSeaLevelRise(TestCase):
         sea_level_rise.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
-        self.data_collector.remove_files()
+        if hasattr(self, 'data_collector'):
+            self.data_collector.remove_files()
+
+    def test_instance(self):
+        self.assertIs(sea_level_rise.instance(), sea_level_rise.instance())
+        i1 = sea_level_rise.instance()
+        i1._transition_state = i1._FINISHED
+        self.assertIsNot(i1, sea_level_rise.instance())
 
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')

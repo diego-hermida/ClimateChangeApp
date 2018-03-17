@@ -27,7 +27,14 @@ class TestCountries(TestCase):
         self.data_converter.state = deepcopy(self.data_converter.config['STATE_STRUCT'])
 
     def tearDown(self):
-        self.data_converter.remove_files()
+        if hasattr(self, 'data_converter'):
+            self.data_converter.remove_files()
+
+    def test_instance(self):
+        self.assertIs(countries.instance(), countries.instance())
+        i1 = countries.instance()
+        i1._transition_state = i1._FINISHED
+        self.assertIsNot(i1, countries.instance())
 
     @mock.patch('data_conversion_subsystem.data_converters.countries.countries.IncomeLevel.objects.create',
                 Mock(return_value=countries.IncomeLevel(iso3_code='HIC', name='High income')))

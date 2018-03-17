@@ -11,7 +11,14 @@ class TestFutureEmissions(TestCase):
         future_emissions.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
 
     def tearDown(self):
-        self.data_collector.remove_files()
+        if hasattr(self, 'data_collector'):
+            self.data_collector.remove_files()
+
+    def test_instance(self):
+        self.assertIs(future_emissions.instance(), future_emissions.instance())
+        i1 = future_emissions.instance()
+        i1._transition_state = i1._FINISHED
+        self.assertIsNot(i1, future_emissions.instance())
 
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
     def test_correct_data_collection(self, mock_collection):

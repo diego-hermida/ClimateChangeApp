@@ -48,7 +48,14 @@ class TestWeatherForecast(TestCase):
         self.data_converter.state = deepcopy(self.data_converter.config['STATE_STRUCT'])
 
     def tearDown(self):
-        self.data_converter.remove_files()
+        if hasattr(self, 'data_converter'):
+            self.data_converter.remove_files()
+
+    def test_instance(self):
+        self.assertIs(weather_forecast.instance(), weather_forecast.instance())
+        i1 = weather_forecast.instance()
+        i1._transition_state = i1._FINISHED
+        self.assertIsNot(i1, weather_forecast.instance())
 
     @mock.patch('data_conversion_subsystem.data_converters.weather_forecast.weather_forecast.WeatherType.objects.'
                 'count', Mock(return_value=127))
