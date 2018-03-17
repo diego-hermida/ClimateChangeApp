@@ -198,7 +198,8 @@ if [ "$(docker ps -aq -f name=data_gathering_subsystem_api)" ]; then
 fi
 # Building the API service
 message -1 "[INFO] Building the API image."
-docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" api
+docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" \
+                     --build-arg API_MASK=${BIND_IP_ADDRESS} api
 if [ $? != 0 ]; then
     exit_with_message 1 "[INFO] The API image could not be built." 1;
 fi
