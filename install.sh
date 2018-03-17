@@ -94,8 +94,7 @@ if  ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
         ([ "$RUN_TELEGRAM" != "true" ] && [ "$RUN_TELEGRAM" != "false" ]) ||
         ([ "$CI" != "true" ] && [ "$CI" != "false" ]) ||
         ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]) || [ "$SHOW_HELP" == "true" ]; then
-    exit_with_message 1 "> usage:
-            \n install.sh [-h] [--help] [HOST_IP=<IP>] [EXPOSE_CONTAINERS={true|false}] [MACOS={true|false}] [RUN_API={true|false}]
+    exit_with_message 1 "> usage: install.sh [-h] [--help] [HOST_IP=<IP>] [EXPOSE_CONTAINERS={true|false}] [MACOS={true|false}] [RUN_API={true|false}]
             \n\t\t[RUN_TELEGRAM={true|false}] [SKIP_DEPLOY={true|false}] [ROOT_DIR=<path>] [CI={true|false}]
             \n\t- -h, --help: shows this message
             \n\t- HOST_IP: IP address of the machine. Defaults to the current IP value of the machine.
@@ -108,7 +107,6 @@ if  ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
             \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
                   \"~/ClimateChangeApp\".
             \n\t- CI: uses CI images, containers and services. Defaults to \"false\".
-            \n\tNOTE: This option allows to deploy all the Subsystems to the same machine.
             \n\tIMPORTANT. The \"HOST_IP\" parameter sets the MONGODB_IP, API_IP and POSTGRES_IP parameters." 1;
 fi
 
