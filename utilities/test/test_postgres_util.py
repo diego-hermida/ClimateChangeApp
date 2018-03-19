@@ -6,7 +6,7 @@ import utilities.postgres_util
 
 _GLOBAL_CONFIG = deepcopy(utilities.postgres_util.GLOBAL_CONFIG)
 _GLOBAL_CONFIG['POSTGRES_DATABASE'] = _GLOBAL_CONFIG['POSTGRES_DATABASE'] + '_test'
-
+_GLOBAL_CONFIG['POSTGRES_USERNAME'] = _GLOBAL_CONFIG['POSTGRES_USERNAME'] + '_test'
 
 @mock.patch('utilities.postgres_util.GLOBAL_CONFIG', _GLOBAL_CONFIG)
 class TestPostgresUtil(TestCase):
