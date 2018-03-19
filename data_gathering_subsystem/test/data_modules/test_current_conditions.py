@@ -16,10 +16,11 @@ class TestCurrentConditions(TestCase):
             self.data_collector.remove_files()
 
     def test_instance(self):
-        self.assertIs(current_conditions.instance(), current_conditions.instance())
-        i1 = current_conditions.instance()
+        self.assertIs(current_conditions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      current_conditions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = current_conditions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, current_conditions.instance())
+        self.assertIsNot(i1, current_conditions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.current_conditions.current_conditions.MongoDBCollection')

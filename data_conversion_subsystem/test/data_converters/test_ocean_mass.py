@@ -37,10 +37,11 @@ class TestOceanMass(TestCase):
             self.data_converter.remove_files()
 
     def test_instance(self):
-        self.assertIs(ocean_mass.instance(), ocean_mass.instance())
-        i1 = ocean_mass.instance()
+        self.assertIs(ocean_mass.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      ocean_mass.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = ocean_mass.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, ocean_mass.instance())
+        self.assertIsNot(i1, ocean_mass.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     def test_perform_data_conversion_with_all_values_set(self):
         self.data_converter.elements_to_convert = [DATA_ANTARCTICA, DATA_GREENLAND, DATA_OCEAN]

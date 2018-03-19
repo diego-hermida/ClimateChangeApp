@@ -27,10 +27,11 @@ class TestCurrentConditions(TestCase):
             self.data_collector.remove_files()
 
     def test_instance(self):
-        self.assertIs(weather_forecast.instance(), weather_forecast.instance())
-        i1 = weather_forecast.instance()
+        self.assertIs(weather_forecast.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      weather_forecast.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = weather_forecast.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, weather_forecast.instance())
+        self.assertIsNot(i1, weather_forecast.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.weather_forecast.weather_forecast.MongoDBCollection')

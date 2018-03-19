@@ -18,10 +18,11 @@ class TestCountryIndicators(TestCase):
             self.data_collector.remove_files()
 
     def test_instance(self):
-        self.assertIs(country_indicators.instance(), country_indicators.instance())
-        i1 = country_indicators.instance()
+        self.assertIs(country_indicators.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      country_indicators.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = country_indicators.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, country_indicators.instance())
+        self.assertIsNot(i1, country_indicators.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')

@@ -50,8 +50,8 @@ class TestMain(TestCase):
         mock_modules.return_value = [mock_module1, mock_module2]
         main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
         self.assertTrue(mock_modules.called)
-        self.assertFalse(mock_module1.instance().successful_execution())
-        self.assertTrue(mock_module2.instance().successful_execution())
+        self.assertFalse(mock_module1.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False).successful_execution())
+        self.assertTrue(mock_module2.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False).successful_execution())
 
     @mock.patch('data_conversion_subsystem.main.get_execution_id', Mock(return_value=None))
     @mock.patch('data_conversion_subsystem.main.ping_database', Mock())

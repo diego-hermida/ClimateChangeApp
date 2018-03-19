@@ -16,10 +16,11 @@ class TestAirPollution(TestCase):
             self.data_collector.remove_files()
 
     def test_instance(self):
-        self.assertIs(air_pollution.instance(), air_pollution.instance())
-        i1 = air_pollution.instance()
+        self.assertIs(air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, air_pollution.instance())
+        self.assertIsNot(i1, air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_modules.air_pollution.air_pollution.MongoDBCollection')

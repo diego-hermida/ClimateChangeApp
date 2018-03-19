@@ -59,10 +59,10 @@ class TestAirPollution(TestCase):
             self.data_converter.remove_files()
 
     def test_instance(self):
-        self.assertIs(air_pollution.instance(), air_pollution.instance())
-        i1 = air_pollution.instance()
+        self.assertIs(air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False), air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, air_pollution.instance())
+        self.assertIsNot(i1, air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('data_conversion_subsystem.data_converters.air_pollution.air_pollution.Location.objects.count',
                 Mock(return_value=304))

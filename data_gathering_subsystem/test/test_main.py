@@ -47,8 +47,8 @@ class TestMain(TestCase):
         main.main(log_to_stdout=False, log_to_telegram=False, log_to_file=False)
         self.assertTrue(mock_modules.called)
         self.assertTrue(mock_collection.called)
-        self.assertFalse(mock_module1.instance().successful_execution())
-        self.assertFalse(mock_module2.instance().successful_execution())
+        self.assertFalse(mock_module1.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False).successful_execution())
+        self.assertFalse(mock_module2.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False).successful_execution())
 
     @mock.patch('data_gathering_subsystem.main.ping_database', Mock(side_effect=EnvironmentError('Database is down!')))
     def test_execution_fails_if_database_down(self):

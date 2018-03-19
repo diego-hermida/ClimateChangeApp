@@ -38,10 +38,11 @@ class TestSeaLevelRise(TestCase):
             self.data_converter.remove_files()
 
     def test_instance(self):
-        self.assertIs(sea_level_rise.instance(), sea_level_rise.instance())
-        i1 = sea_level_rise.instance()
+        self.assertIs(sea_level_rise.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      sea_level_rise.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = sea_level_rise.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, sea_level_rise.instance())
+        self.assertIsNot(i1, sea_level_rise.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     def test_perform_data_conversion_with_all_values_set(self):
         self.data_converter.elements_to_convert = [DATA, DATA, DATA]

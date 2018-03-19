@@ -16,10 +16,11 @@ class TestCountries(TestCase):
             self.data_collector.remove_files()
 
     def test_instance(self):
-        self.assertIs(countries.instance(), countries.instance())
-        i1 = countries.instance()
+        self.assertIs(countries.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      countries.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = countries.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, countries.instance())
+        self.assertIsNot(i1, countries.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('requests.get')
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')

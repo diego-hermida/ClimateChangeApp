@@ -62,10 +62,11 @@ class TestHistoricalWeather(TestCase):
             self.data_collector.remove_files()
 
     def test_instance(self):
-        self.assertIs(historical_weather.instance(), historical_weather.instance())
-        i1 = historical_weather.instance()
+        self.assertIs(historical_weather.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      historical_weather.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = historical_weather.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, historical_weather.instance())
+        self.assertIsNot(i1, historical_weather.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.read_state')
     @mock.patch('requests.get')

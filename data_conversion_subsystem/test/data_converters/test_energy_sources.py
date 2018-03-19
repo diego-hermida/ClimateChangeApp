@@ -32,10 +32,11 @@ class TestEnergySources(TestCase):
             self.data_converter.remove_files()
 
     def test_instance(self):
-        self.assertIs(energy_sources.instance(), energy_sources.instance())
-        i1 = energy_sources.instance()
+        self.assertIs(energy_sources.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      energy_sources.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = energy_sources.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, energy_sources.instance())
+        self.assertIsNot(i1, energy_sources.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('data_conversion_subsystem.data_converters.energy_sources.energy_sources.Country.objects.count',
                 Mock(return_value=304))

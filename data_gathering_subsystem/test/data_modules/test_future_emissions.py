@@ -15,10 +15,11 @@ class TestFutureEmissions(TestCase):
             self.data_collector.remove_files()
 
     def test_instance(self):
-        self.assertIs(future_emissions.instance(), future_emissions.instance())
-        i1 = future_emissions.instance()
+        self.assertIs(future_emissions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False),
+                      future_emissions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
+        i1 = future_emissions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         i1._transition_state = i1._FINISHED
-        self.assertIsNot(i1, future_emissions.instance())
+        self.assertIsNot(i1, future_emissions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
     def test_correct_data_collection(self, mock_collection):
