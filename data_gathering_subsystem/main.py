@@ -1,9 +1,11 @@
 import builtins
-from os import environ
-from queue import Queue
+
 from data_gathering_subsystem.data_collector.data_collector import DataCollectorThread, Message, MessageType
 from data_gathering_subsystem.config.config import DGS_CONFIG
 from data_gathering_subsystem.supervisor.supervisor import SupervisorThread
+from global_config.config import GLOBAL_CONFIG
+from os import environ
+from queue import Queue
 from timeit import default_timer as timer
 from threading import Condition
 from utilities.db_util import ping_database, get_and_increment_execution_id
@@ -57,6 +59,8 @@ def main(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         _logger.info('Starting Data Gathering Subsystem. Execution ID is: %d' % (builtins.EXECUTION_ID))
     else:
         _logger.warning('Starting Data Gathering Subsystem. Execution ID is unknown. This may difficult debug operations.')
+
+    _logger.info('Data Gathering Subsystem\'s version is: %s' % GLOBAL_CONFIG['APP_VERSION'])
 
     # Dynamically, recursively imports all Python modules under base directory (and returns them in a list)
     modules = import_modules(DGS_CONFIG['DATA_MODULES_PATH'], recursive=True,

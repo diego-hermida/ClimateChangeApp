@@ -111,6 +111,8 @@ def main(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
     else:
         _logger.warning('Starting Data Conversion Subsystem. Execution ID is unknown. This may difficult debug operations.')
 
+    _logger.info('Data Conversion Subsystem\'s version is: %s' % GLOBAL_CONFIG['APP_VERSION'])
+
     # Dynamically, recursively imports all Python modules under base directory (and returns them in a list)
     modules = import_modules(DCS_CONFIG['DATA_CONVERTERS_PATH'], recursive=True,
             base_package=DCS_CONFIG['DATA_CONVERTERS_BASE_PACKAGE'])

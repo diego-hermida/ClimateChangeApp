@@ -2,6 +2,7 @@ import datetime
 
 import telegram
 
+from global_config.config import GLOBAL_CONFIG
 from telegram_bot.config.config import TELEGRAM_CONFIG
 
 
@@ -118,5 +119,5 @@ def main():
 
 if __name__ == '__main__':
     print('%s Using Climate Change App Telegram Bot configurator %s.\n' % (
-        green_bold('>'), bold(TELEGRAM_CONFIG['TELEGRAM_CONFIGURATOR_VERSION'])))
+        green_bold('>'), bold(GLOBAL_CONFIG['APP_VERSION'])))
     main()

@@ -182,7 +182,7 @@ class Supervisor:
         # Current execution statistics
         self.execution_report['last_execution']['_id']['execution_id'] = builtins.EXECUTION_ID
         self.execution_report['last_execution']['_id']['subsystem_id'] = DCS_CONFIG['SUBSYSTEM_INSTANCE_ID']
-        self.execution_report['last_execution']['subsystem_version'] = DCS_CONFIG['DATA_CONVERSION_SUBSYSTEM_VERSION']
+        self.execution_report['last_execution']['subsystem_version'] = GLOBAL_CONFIG['APP_VERSION']
         self.execution_report['last_execution']['timestamp'] = current_date_in_millis()
         self.execution_report['last_execution']['duration'] = duration
         self.execution_report['last_execution']['execution_succeeded'] = execution_succeeded
