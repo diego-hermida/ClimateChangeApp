@@ -182,7 +182,7 @@ class _HistoricalWeatherDataCollector(DataCollector):
                             tokens.remove(token)
                         except ValueError:
                             pass  # Item has already been removed
-                        self.logger.debug('Collected data: %0.2f%%'%(((token_count - len(tokens)) / token_count) * 100))
+                        self.logger.debug('Collected data: %0.2f%%' % (((token_count - len(tokens)) / token_count) * 100))
                 except StopIteration:  # All missing data for a location has been collected
                     pass
                 if not [x for x in self.config['TOKENS'] if self.state['tokens'][x]['usable']]:

@@ -55,7 +55,7 @@ class _WeatherForecastDataCollector(DataCollector):
             if index > 0 and index % 10 is 0:
                 self.logger.debug('Collected data: %0.2f%%' % (((index + 1) / locations_length) * 100))
         if unmatched:
-            self.logger.warning('Weather forecast data is unavailable for %d location(s): %s'%(len(unmatched),
+            self.logger.warning('Weather forecast data is unavailable for %d location(s): %s' % (len(unmatched),
                     sorted(unmatched)))
         self.state['last_request'] = current_timestamp_utc()
         # No available locations is not an error

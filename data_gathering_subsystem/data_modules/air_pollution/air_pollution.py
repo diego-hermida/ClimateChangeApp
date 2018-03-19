@@ -56,7 +56,7 @@ class _AirPollutionDataCollector(DataCollector):
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 unmatched.append(location['name'])
             if index > 0 and index % 10 is 0:
-                self.logger.debug('Collected data: %.2f%%' % (index / locations_length) * 100)
+                self.logger.debug('Collected data: %.2f%%' % ((index / locations_length) * 100))
         if unmatched:
             self.logger.warning('%d location(s) do not have recent air pollution data: %s'%(len(unmatched),
                     sorted(unmatched)))

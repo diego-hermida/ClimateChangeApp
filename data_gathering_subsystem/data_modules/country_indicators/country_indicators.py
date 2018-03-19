@@ -88,7 +88,7 @@ class _CountryIndicatorsDataCollector(DataCollector):
                         remaining_data = False
                         self._http_error = True
                         continue
-                self.logger.debug('Data collected: %0.2f%%'%(((index + 1) / indicators_length) * 100))
+                self.logger.debug('Data collected: %0.2f%%' % (((index + 1) / indicators_length) * 100))
             # Flattens list of lists
             self.data = list(itertools.chain.from_iterable(self.data)) if self.data else []
             # Removing the "_id" field FIXES [BUG-032].
