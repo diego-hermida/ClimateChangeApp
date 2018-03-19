@@ -1,0 +1,102 @@
+version: "3.4"
+
+services:
+    data_gathering_subsystem_ci:
+        build:
+            context: .
+            dockerfile: ./data_gathering_subsystem/Dockerfile
+        container_name: data_gathering_subsystem_ci
+        image: diegohermida/data_gathering_subsystem:latest_ci
+        environment:
+            - PYTHONUNBUFFERED=1
+        depends_on:
+          - mongodb_ci
+        networks:
+          - ci_network
+    data_conversion_subsystem_ci:
+        build:
+            context: .
+            dockerfile: ./data_conversion_subsystem/Dockerfile
+        container_name: data_conversion_subsystem_ci
+        image: diegohermida/data_conversion_subsystem:latest_ci
+        environment:
+            - PYTHONUNBUFFERED=1
+        networks:
+          - ci_network
+        depends_on:
+          - postgres_ci
+          - api_ci
+    api_ci:
+        build:
+            context: .
+            dockerfile: ./api/Dockerfile
+        container_name: api_ci
+        image: diegohermida/api:latest_ci
+        environment:
+            - PYTHONUNBUFFERED=1
+        ports:
+            - "${BIND_IP_ADDRESS:-127.0.0.1}:${API_PORT:-5001}:5000"
+        networks:
+          - ci_network
+        depends_on:
+          - mongodb_ci
+    mongodb_ci:
+        image: mongo:latest
+        container_name: mongodb_ci
+        environment:
+            - MONGO_DATA_DIR=/data/db
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD=root
+        ports:
+            - "${BIND_IP_ADDRESS:-127.0.0.1}:${MONGODB_PORT:-27018}:27017"
+        networks:
+          - ci_network
+        command: mongod --smallfiles
+    postgres_ci:
+        image: postgres:latest
+        container_name: postgres_ci
+        environment:
+            - PGDATA=/postgresql/data
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=root
+        ports:
+            - "${BIND_IP_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5433}:5432"
+        networks:
+          - ci_network
+    telegram_bot_ci:
+        build:
+            context: .
+            dockerfile: ./telegram_bot/Dockerfile
+        container_name: telegram_bot_ci
+        image: diegohermida/telegram_bot:latest_ci
+        environment:
+            - PYTHONUNBUFFERED=1
+        networks:
+          - ci_network
+    utilities_ci:
+        build:
+            context: .
+            dockerfile: ./utilities/Dockerfile
+        container_name: utilities_ci
+        image: diegohermida/utilities:latest_ci
+        environment:
+            - PYTHONUNBUFFERED=1
+        depends_on:
+          - mongodb_ci
+          - postgres_ci
+        networks:
+          - ci_network
+    coverage_ci:
+        build:
+            context: .
+            dockerfile: ./ci/Dockerfile-coverage
+        container_name: coverage_ci
+        image: diegohermida/coverage:latest_ci
+        environment:
+            - PYTHONUNBUFFERED=1
+        networks:
+          - ci_network
+
+networks:
+    ci_network:
+        driver: bridge

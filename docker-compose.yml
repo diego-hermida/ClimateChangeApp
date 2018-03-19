@@ -8,10 +8,12 @@ services:
         container_name: data_gathering_subsystem
         image: diegohermida/data_gathering_subsystem:latest
         volumes:
-            - ${ROOT_DIR}/log:/ClimateChangeApp/log
-            - ${ROOT_DIR}/state:/ClimateChangeApp/state
+            - ${ROOT_DIR:-~/ClimateChangeApp}/log:/ClimateChangeApp/log
+            - ${ROOT_DIR:-~/ClimateChangeApp}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
+        networks:
+          - app_network
     data_conversion_subsystem:
         build:
             context: .
@@ -19,22 +21,26 @@ services:
         container_name: data_conversion_subsystem
         image: diegohermida/data_conversion_subsystem:latest
         volumes:
-            - ${ROOT_DIR}/log:/ClimateChangeApp/log
-            - ${ROOT_DIR}/state:/ClimateChangeApp/state
+            - ${ROOT_DIR:-~/ClimateChangeApp}/log:/ClimateChangeApp/log
+            - ${ROOT_DIR:-~/ClimateChangeApp}/state:/ClimateChangeApp/state
         environment:
             - PYTHONUNBUFFERED=1
+        networks:
+          - app_network
     api:
         build:
             context: .
             dockerfile: ./api/Dockerfile
-        container_name: data_gathering_subsystem_api
-        image: diegohermida/data_gathering_subsystem_api:latest
+        container_name: api
+        image: diegohermida/api:latest
         environment:
             - PYTHONUNBUFFERED=1
         volumes:
-            - ${ROOT_DIR}/log/api:/ClimateChangeApp/log/api
+            - ${ROOT_DIR:-~/ClimateChangeApp}/log/api:/ClimateChangeApp/log/api
         ports:
-            - "${BIND_IP_ADDRESS}:5000:5000"
+            - "${BIND_IP_ADDRESS:-127.0.0.1}:${API_PORT:-5000}:5000"
+        networks:
+          - app_network
     telegram_bot:
         build:
             context: .
@@ -43,6 +49,8 @@ services:
         image: diegohermida/telegram_bot:latest
         environment:
             - PYTHONUNBUFFERED=1
+        networks:
+          - app_network
     mongodb:
         image: mongo:latest
         container_name: mongodb
@@ -51,9 +59,11 @@ services:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=root
         volumes:
-            - ${ROOT_DIR}/data/db:/data/db
+            - ${ROOT_DIR:-~/ClimateChangeApp}/data/db:/data/db
         ports:
-            - "${BIND_IP_ADDRESS}:27017:27017"
+            - "${BIND_IP_ADDRESS:-127.0.0.1}:${MONGODB_PORT:-27017}:27017"
+        networks:
+          - app_network
         command: mongod --smallfiles
     postgres:
         image: postgres:latest
@@ -63,9 +73,11 @@ services:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=root
         volumes:
-            - ${ROOT_DIR}/postgresql/data:/postgresql/data
+            - ${ROOT_DIR:-~/ClimateChangeApp}/postgresql/data:/postgresql/data
         ports:
-            - "${BIND_IP_ADDRESS}:5432:5432"
+            - "${BIND_IP_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
+        networks:
+          - app_network
     utilities:
         build:
             context: .
@@ -77,6 +89,8 @@ services:
         depends_on:
           - mongodb
           - postgres
+        networks:
+          - app_network
     jenkins:
         build:
             context: .
@@ -84,23 +98,27 @@ services:
         image: diegohermida/jenkins:latest
         container_name: jenkins
         volumes:
-            - ${ROOT_DIR}/jenkins:/var/jenkins_home
+            - ${ROOT_DIR:-~/ClimateChangeApp}/jenkins:/var/jenkins_home
             - /var/run/docker.sock:/var/run/docker.sock
         ports:
-            - "${BIND_IP_ADDRESS}:8090:8080"
-            - "${BIND_IP_ADDRESS}:50000:50000"
+            - "${BIND_IP_ADDRESS:-0.0.0.0}:${JENKINS_PORT:-8090}:8080"
+            - "${BIND_IP_ADDRESS:-0.0.0.0}:${JENKINS_AGENTS_PORT:-50000}:50000"
+        networks:
+          - app_network
     sonar:
         image: sonarqube:latest
         container_name: sonar
         environment:
             - SONARQUBE_JDBC_USERNAME=sonar
             - SONARQUBE_JDBC_PASSWORD=sonar
-            - SONARQUBE_JDBC_URL=jdbc:postgresql://${HOST_IP}:5434/sonar
+            - SONARQUBE_JDBC_URL=jdbc:postgresql://${HOST_IP:-127.0.0.1}:${POSTGRES_SONAR_PORT:-5434}/sonar
         volumes:
-            - ${ROOT_DIR}/sonar/extensions:/opt/sonarqube/extensions
-            - ${ROOT_DIR}/sonar/data:/opt/sonarqube/data
+            - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/extensions:/opt/sonarqube/extensions
+            - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/data:/opt/sonarqube/data
         ports:
-            - "${BIND_IP_ADDRESS}:9000:9000"
+            - "${BIND_IP_ADDRESS:-0.0.0.0}:${SONAR_PORT:-9000}:9000"
+        networks:
+          - app_network
         depends_on:
           - sonar_db
     sonar_db:
@@ -112,87 +130,12 @@ services:
             - POSTGRES_PASSWORD=sonar
             - POSRGRES_DB=sonar
         volumes:
-            - ${ROOT_DIR}/sonar/postgresql/data:/postgresql/data
+            - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/postgresql/data:/postgresql/data
         ports:
-            - "${BIND_IP_ADDRESS}:5434:5432"
+            - "${BIND_IP_ADDRESS:-127.0.0.1}:${POSTGRES_SONAR_PORT:-5434}:5432"
+        networks:
+          - app_network
 
-    # CI services
-    data_gathering_subsystem_CI:
-        build:
-            context: .
-            dockerfile: ./data_gathering_subsystem/Dockerfile
-        container_name: data_gathering_subsystem_CI
-        image: diegohermida/data_gathering_subsystem:latest_CI
-        environment:
-            - PYTHONUNBUFFERED=1
-        depends_on:
-          - mongodb_CI
-    data_conversion_subsystem_CI:
-        build:
-            context: .
-            dockerfile: ./data_conversion_subsystem/Dockerfile
-        container_name: data_conversion_subsystem_CI
-        image: diegohermida/data_conversion_subsystem:latest_CI
-        environment:
-            - PYTHONUNBUFFERED=1
-        depends_on:
-          - postgres_CI
-          - api_CI
-    api_CI:
-        build:
-            context: .
-            dockerfile: ./api/Dockerfile
-        container_name: data_gathering_subsystem_api_CI
-        image: diegohermida/data_gathering_subsystem_api:latest_CI
-        environment:
-            - PYTHONUNBUFFERED=1
-        ports:
-            - "${BIND_IP_ADDRESS}:5001:5000"
-        depends_on:
-          - mongodb_CI
-    mongodb_CI:
-        image: mongo:latest
-        container_name: mongodb_CI
-        environment:
-            - MONGO_DATA_DIR=/data/db
-            - MONGO_INITDB_ROOT_USERNAME=root
-            - MONGO_INITDB_ROOT_PASSWORD=root
-        ports:
-            - "${BIND_IP_ADDRESS}:27018:27017"
-        command: mongod --smallfiles
-    postgres_CI:
-        image: postgres:latest
-        container_name: postgres_CI
-        environment:
-            - PGDATA=/postgresql/data
-            - POSTGRES_USER=root
-            - POSTGRES_PASSWORD=root
-        ports:
-            - "${BIND_IP_ADDRESS}:5433:5432"
-    telegram_bot_CI:
-        build:
-            context: .
-            dockerfile: ./telegram_bot/Dockerfile
-        container_name: telegram_bot_CI
-        image: diegohermida/telegram_bot:latest_CI
-        environment:
-            - PYTHONUNBUFFERED=1
-    utilities_CI:
-        build:
-            context: .
-            dockerfile: ./utilities/Dockerfile
-        container_name: utilities_CI
-        image: diegohermida/utilities:latest_CI
-        environment:
-            - PYTHONUNBUFFERED=1
-        depends_on:
-          - mongodb_CI
-          - postgres_CI
-    coverage_CI:
-        build:
-            context: .
-            dockerfile: ./ci/Dockerfile-coverage
-        container_name: coverage_CI
-        image: diegohermida/coverage:latest_CI
-        environment:
-            - PYTHONUNBUFFERED=1
+networks:
+    app_network:
+        driver: bridge

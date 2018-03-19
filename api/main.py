@@ -394,7 +394,7 @@ def main(log_to_stdout=True, log_to_file=True, log_to_telegram=None):
             GLOBAL_CONFIG['MONGODB_API_USERNAME'], password=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'])
 
     # API info
-    _logger.info('Current API version is: %s' % API_CONFIG['API_VERSION'])
+    _logger.info('Current API version is: %s' % GLOBAL_CONFIG['APP_VERSION'])
     _logger.info('API docs are available at: %s' % API_CONFIG['API_DOCS_URL'])
     _logger.info('Awaiting for incoming connections on port %d.' % int(environ.get(GLOBAL_CONFIG['API_PORT'], 5000)))
 

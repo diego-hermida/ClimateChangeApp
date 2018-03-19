@@ -1,24 +1,48 @@
 #!/bin/bash
 
-# Prints a message. Message output uses bold by default.
-# :param $1: Colour of the output line. This will be reset before exiting.
-#            If this value equals -1, the default color is used.
-# :param $2: Message to be printed.
-function message () {
-    tput -T xterm-256color bold;
-    if [ $1 != -1 ]; then
-        tput -T xterm-256color setaf $1;
-    fi
-    echo -e $2
-    tput -T xterm-256color sgr0;
+# ---------- Functions ---------- #
+
+source "./utilities/bash_util.sh";
+
+# Displays script usage and exits.
+# :param $1: Exit code.
+function usage () {
+    exit_with_message 1 " Removes Docker containers/images whose tag matches the regular expression \".*_ci.*\". Examples:
+                           \n\t foo/baz:latest       \t-\t    not removed
+                           \n\t foo/baz:1.0          \t\t-\t    not removed
+                           \n\t foo/baz:latest_ci    \t-\t      removed
+                           \n\t foo/baz:1.0_ci       \t-\t    removed
+            \n\n> usage: remove_docker_ci.sh [-h] [--help] [--version]
+            \n• -h, --help: shows this message.
+            \n• --version: displays app's version." $1;
 }
+
+
+# ---------- Argument manipulation ---------- #
+
+EXPECTED_INPUT=":h-:"
+while getopts "$EXPECTED_INPUT" ARG; do
+    case "${ARG}" in
+        h) usage 0 ;;
+        -) case ${OPTARG} in
+                help) usage 0 ;;
+                version) show_app_version ;;
+                :) exit_with_message 1 "Illegal option: \"--$OPTARG\" requires an argument" >&2 ;;
+                *) exit_with_message 1 "Unrecognized option: --$OPTARG" >&2 ;;
+            esac
+        ;;
+        :) exit_with_message 1 "Illegal option: \"-$OPTARG\" requires an argument" >&2 ;;
+        *) exit_with_message 1 "Unrecognized option: -$OPTARG" >&2 ;;
+    esac
+done
 
 
 # ---------- Actions ---------- #
 
 # Remove Docker CI containers
 message 4 "[ACTION] Removing all Docker CI containers.";
-CONTAINERS=$(docker ps -aq -f name="_CI" | tr '\n' ' ' | awk '{$1=$1};1');
+
+CONTAINERS=$(docker ps -aq -f name="_ci" | tr '\n' ' ' | awk '{$1=$1};1');
 if [ "$CONTAINERS" != "" ]; then
     docker rm --force ${CONTAINERS};
     if [ $? != 0 ]; then
@@ -32,7 +56,8 @@ fi
 
 # Remove Docker CI images
 message 4 "[ACTION] Removing all Docker CI images.";
-IMAGES=$(docker images | grep "_CI" | tr -s ' ' | cut -d ' ' -f 3 | tr '\n' ' ' | awk '{$1=$1};1');
+
+IMAGES=$(docker images | grep "_ci" | tr -s ' ' | cut -d ' ' -f 3 | tr '\n' ' ' | awk '{$1=$1};1');
 if [ "$IMAGES" != "" ]; then
     docker rmi --force ${IMAGES};
     if [ $? != 0 ]; then

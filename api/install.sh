@@ -2,128 +2,111 @@
 
 # ---------- Functions ---------- #
 
-# Exits the installation process, but prints a message to command line before doing so.
-# :param $1: Colour of the output line. This will be reset before exiting.
-#            If this value equals -1, the default color is used.
-# :param $2: Message to be printed.
-# :param $3: Exit code.
-function exit_with_message () {
-    if [ $1 != -1 ]; then
-        tput -T xterm-256color setaf $1;
-    fi
-    tput -T xterm-256color bold;
-    echo -e $2;
-    tput -T xterm-256color sgr0;
-    echo ""
-    exit $3;
+source "./utilities/bash_util.sh"
+
+# Displays script usage and exits.
+# :param $1: Exit code.
+function usage () {
+    exit_with_message 1 "Installs the Data Gathering Subsystem's API component.
+            \n\n> usage: install.sh [-h] [--help] [--version] [--api-port xxxxx] [--deploy-args \"<args>\"]
+            \n\t[--external-mongodb-server] [--hide-containers] [--macos] [--mongodb-ip xxx.xxx.xxx.xxx]
+            \n\t[--mongodb-port xxxxx] [--perform-deploy-actions] [--root-dir <path>] [--run-api] [--show-ip]
+            \n • -h, --help: shows this message.
+            \n • --version: displays app's version.
+            \n • --api-port xxxxx: sets the exposed API port. Defaults to 5000.
+            \n • --deploy-args \"<args>\": enables \"Expert Mode\", allowing to pass custom args to the deploy script.
+            \n\t   Defaults to \"--all --with-tests\". Must be used in conjunction with --perform-deploy-actions.
+            \n • --external-mongodb-server: indicates that the MongoDB server is externally provided, and does not
+            \n\t   create a Docker container.
+            \n • --hide-containers: makes Docker containers not reachable from the Internet.
+            \n • --macos: sets \"docker.for.mac.localhost\" as the local IP address (Docker issue).
+            \n • --mongodb-ip xxx.xxx.xxx.xxx: sets the IP address of the MongoDB server. Defaults to the machine's
+            \n\t   IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
+            \n • --mongodb-port xxxxx: sets the exposed MongoDB port. Defaults to 27017.
+            \n • --perform-deploy-actions: installs the application performing all deploy steps. By default, deploy
+            \n\t   steps are skipped.
+            \n • --root-dir <path>: installs the Application under a custom directory. Defaults to \"~/ClimateChangeApp\".
+            \n • --run-api: launches the API service after building it.
+            \n • --show-ip: displays the IP address of the machine. If multiple IP's, displays them all." $1;
 }
 
-# Prints a message. Message output uses bold by default.
-# :param $1: Colour of the output line. This will be reset before exiting.
-#            If this value equals -1, the default color is used.
-# :param $2: Message to be printed.
-function message () {
-    tput -T xterm-256color bold;
-    if [ $1 != -1 ]; then
-        tput -T xterm-256color setaf $1;
-    fi
-    echo -e $2
-    tput -T xterm-256color sgr0;
-}
-
-# Calculates the machine's IPv4 address.
-function calculate_ip_address () {
-    local _ip _myip _line _nl=$'\n'
-    while IFS=$': \t' read -a _line ;do
-        [ -z "${_line%inet}" ] &&
-           _ip=${_line[${#_line[1]}>4?1:2]} &&
-           [ "${_ip#127.0.0.1}" ] && _myip=$_ip
-      done< <(LANG=C /sbin/ifconfig)
-    printf ${1+-v} $1 "%s${_nl:0:$[${#1}>0?0:1]}" $_myip
-}
 
 # ---------- Definitions ---------- #
 
 # Setting default values
-MONGODB_IP=$(calculate_ip_address);
-EXTERNAL_MONGODB_SERVER=false;
-SKIP_DEPLOY=true;
-RUN_API=false;
-API_DEPLOY_ARGS=null;
-MACOS=false;
-ROOT_DIR="~/ClimateChangeApp";
-SHOW_HELP=false;
+DEPLOY_ARGS=null;
+API_PORT=5000;
 EXPOSE_CONTAINERS=true;
+EXTERNAL_MONGODB_SERVER=false;
+MACOS=false;
+MONGODB_IP=$(get_ip_address);
+MONGODB_PORT=27017;
+ROOT_DIR="~/ClimateChangeApp";
+RUN_API=false;
+SKIP_DEPLOY=true;
+
 
 # ---------- Argument manipulation ---------- #
 
 # Parsing arguments
-for ARGUMENT in "$@"
-do
-    KEY=$(echo $ARGUMENT | cut -f1 -d=)
-    VALUE=$(echo $ARGUMENT | cut -f2 -d=)
-    case "$KEY" in
-            -h)                         SHOW_HELP=true ;;
-            --help)                     SHOW_HELP=true ;;
-            MONGODB_IP)                 MONGODB_IP=${VALUE} ;;
-            SKIP_DEPLOY)                SKIP_DEPLOY=${VALUE} ;;
-            RUN_API)                    RUN_API=${VALUE} ;;
-            API_DEPLOY_ARGS)            API_DEPLOY_ARGS=${VALUE} ;;
-            EXTERNAL_MONGODB_SERVER)    EXTERNAL_MONGODB_SERVER=${VALUE} ;;
-            EXPOSE_CONTAINERS)          EXPOSE_CONTAINERS=${VALUE} ;;
-            MACOS)                      MACOS=${VALUE} ;;
-            ROOT_DIR)                   ROOT_DIR=${VALUE} ;;
-            *)
+EXPECTED_INPUT=":h-:"
+while getopts "$EXPECTED_INPUT" ARG; do
+    case ${ARG} in
+        h) usage 0 ;;
+        -) case ${OPTARG} in
+                help) usage 0 ;;
+                version) show_app_version ;;
+                api-port)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--api-port" ${VAL};
+                    API_PORT=${VAL};
+                ;;
+                deploy-args)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--deploy-args" ${VAL};
+                    DEPLOY_ARGS=${VAL};
+                ;;
+                external-mongodb-server) EXTERNAL_MONGODB_SERVER=true ;;
+                hide-containers) EXPOSE_CONTAINERS=false ;;
+                macos) MACOS=true ;;
+                mongodb-ip)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--mongodb-ip" ${VAL};
+                    MONGODB_IP=${VAL};
+                ;;
+                mongodb-port)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--mongodb-port" ${VAL};
+                    MONGODB_PORT=${VAL};
+                ;;
+                perform-deploy-actions) SKIP_DEPLOY=false ;;
+                root-dir)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--root-dir" ${VAL};
+                    ROOT_DIR=${VAL};
+                ;;
+                run-api) RUN_API=true ;;
+                show-ip) show_ip_addresses ;;
+                :) exit_with_message 1 "Illegal option: \"--$OPTARG\" requires an argument" >&2 ;;
+                *) exit_with_message 1 "Unrecognized option: --$OPTARG" >&2 ;;
+            esac
+        ;;
+        :) exit_with_message 1 "Illegal option: \"-$OPTARG\" requires an argument" >&2 ;;
+        *) exit_with_message 1 "Unrecognized option: -$OPTARG" >&2 ;;
     esac
 done
 
 
-# Setting variables to lower case
-SKIP_DEPLOY=echo "$SKIP_DEPLOY" | tr '[:upper:]' '[:lower:]';
-RUN_API=echo "$RUN_API" | tr '[:upper:]' '[:lower:]';
-API_DEPLOY_ARGS=echo "$API_DEPLOY_ARGS" | tr '[:upper:]' '[:lower:]';
-EXTERNAL_MONGODB_SERVER=echo "$EXTERNAL_MONGODB_SERVER" | tr '[:upper:]' '[:lower:]';
-MACOS=echo "$MACOS" | tr '[:upper:]' '[:lower:]';
-EXPOSE_CONTAINERS=echo "$EXPOSE_CONTAINERS" | tr '[:upper:]' '[:lower:]';
-
-
-# Ensuring variables contain legit values
-if [ "$MONGODB_IP" == "null" ] || ([ "$SKIP_DEPLOY" != "true" ] && [ "$SKIP_DEPLOY" != "false" ]) ||
-        ([ "$RUN_API" != "true" ] && [ "$RUN_API" != "false" ]) ||
-        ([ "$EXTERNAL_MONGODB_SERVER" != "true" ] && [ "$EXTERNAL_MONGODB_SERVER" != "false" ]) ||
-        ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]) ||
-        ([ "$EXPOSE_CONTAINERS" != "true" ] && [ "$EXPOSE_CONTAINERS" != "false" ]) ||
-        [ "$SHOW_HELP" == "true" ]; then
-    exit_with_message 1 "> usage: install.sh [-h] [--help] [MONGODB_IP=xxx.xxx.xxx.xxx] [EXTERNAL_MONGODB_SERVER={true|false}]
-            \n\t\t[SKIP_DEPLOY={true|false}] [RUN_API={true|false}] [API_DEPLOY_ARGS=<args>] [MACOS={true|false}]
-            \n\t\t[ROOT_DIR=<path>] [EXPOSE_CONTAINERS={true|false}]
-            \n\t- -h, --help: shows this message
-            \n\t- MONGODB_IP: IP address of the machine containing the MongoDB service.
-            \n\t- EXTERNAL_MONGODB_SERVER: indicates that the MongoDB server is externally provided,
-                  and does not create a Docker container. Defaults to \"false\".
-            \n\t- SKIP_DEPLOY: omits all deploy steps. Defaults to \"true\".
-            \n\t- RUN_API: launches the API service after building it. Defaults to \"false\".
-            \n\t- API_DEPLOY_ARGS: enables \"Expert Mode\", allowing to pass custom args to the deploy
-                  script. Defaults to \"--all --with-tests\".
-            \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
-                  local IP address.
-            \n\t- ROOT_DIR: installs the Application under a custom directory. Defaults to
-                  \"~/ClimateChangeApp\".
-            \n\t- EXPOSE_CONTAINERS: exposes Docker containers to the outside (0.0.0.0). Defaults to \"true\".
-            \nIMPORTANT: API_DEPLOY_ARGS must be used in conjunction with SKIP_DEPLOY=false." 1;
-fi
-
-
 # Warnings
-if [ "$API_DEPLOY_ARGS" != "null" ] && [ "$SKIP_DEPLOY" == "true" ]; then
-    message 3 "[WARNING] Parameter API_DEPLOY_ARGS has been set, but SKIP_DEPLOY is true. The value will be overridden
+if [ "$DEPLOY_ARGS" != "null" ] && [ "$SKIP_DEPLOY" == "true" ]; then
+    message 3 "[WARNING] Parameter DEPLOY_ARGS has been set, but SKIP_DEPLOY is true. The value will be overridden
               to \"--skip-all\".";
 elif [ "$SKIP_DEPLOY" == "true" ]; then
     message -1 "[INFO] Deploy operations will be skipped for the API component.";
-    API_DEPLOY_ARGS="--skip-all"
-elif [ "$API_DEPLOY_ARGS" == "null" ]; then
-    message -1 "[INFO] Using default values for API_DEPLOY_ARGS.";
-    API_DEPLOY_ARGS="--all --with-tests";
+    DEPLOY_ARGS="--skip-all"
+elif [ "$DEPLOY_ARGS" == "null" ]; then
+    message -1 "[INFO] Using default values for DEPLOY_ARGS.";
+    DEPLOY_ARGS="--all --with-tests";
 fi
 
 
@@ -139,22 +122,18 @@ message 3 "Hint: If the value of MONGODB_IP is incorrect, you can override it by
 
 # Binding containers to local?
 if [ "$EXPOSE_CONTAINERS" == "true" ]; then
-    message -1 "[INFO] Exposing Docker containers by using the 0.0.0.0 mask.";
+    message -1 "[INFO] Docker containers will be reachable from the Internet.";
     export BIND_IP_ADDRESS='0.0.0.0';
 else
-     if [ "$MONGODB_IP" == "docker.for.mac.localhost" ]; then
-        export BIND_IP_ADDRESS="127.0.0.1";
-     else
-        export BIND_IP_ADDRESS=${MONGODB_IP};
-     fi
-     message -1 "[INFO] Restricting connections to the MONGODB_IP address: $MONGODB_IP.";
-     message 3 "[WARNING] Docker containers will not be reachable from the outside.";
+     export BIND_IP_ADDRESS='127.0.0.1'
+     message -1 "[INFO] Restricting connections to the local machine.";
+     message 3 "[WARNING] Docker containers will not be reachable from the Internet.";
 fi
 
 
 # Overriding default ROOT_DIR?
 if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
-    message -1 "[INFO] Deploying the application under custom directory: $ROOT_DIR.";
+    message -1 "[INFO] Deploying the API component under custom directory: $ROOT_DIR.";
 else
     message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";
 fi
@@ -173,6 +152,7 @@ if [ "$EXTERNAL_MONGODB_SERVER" == "false" ]; then
         docker stop mongodb;
         docker rm mongodb;
     fi
+
     # Launching the MongoDB service
     message -1 "[INFO] Launching the MongoDB service.";
     docker-compose up -d mongodb;
@@ -190,19 +170,22 @@ if [ "$RUN_API" == "true" ]; then
 else
     message 4 "[COMPONENT] Building the API service.";
 fi
+
 # Deleting the API service if it was already been created: Brand-new container.
-if [ "$(docker ps -aq -f name=data_gathering_subsystem_api)" ]; then
+if [ "$(docker ps -aq -f name=api)" ]; then
     message -1 "[INFO] Removing previous API container.";
-    docker stop data_gathering_subsystem_api;
-    docker rm data_gathering_subsystem_api;
+    docker stop api;
+    docker rm api;
 fi
+
 # Building the API service
 message -1 "[INFO] Building the API image."
-docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" \
-                     --build-arg API_MASK=${BIND_IP_ADDRESS} api
+docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
+                 --build-arg API_PORT=${API_PORT} --build-arg DEPLOY_ARGS="${DEPLOY_ARGS}" api
 if [ $? != 0 ]; then
     exit_with_message 1 "[INFO] The API image could not be built." 1;
 fi
+
 # Launching the API service
 if [ "$RUN_API" == "true" ]; then
     message -1 "[INFO] Launching the API service.";
@@ -217,12 +200,13 @@ fi
 echo "";
 message 2 "[SUCCESS] Installation results:";
 if [ "$EXTERNAL_MONGODB_SERVER" == "true" ]; then
-    message 2 "- MongoDB: external";
-else message 2 "- MongoDB: up";
+    message 2 "\t• MongoDB: external";
+else
+    message 2 "\t• MongoDB: up";
 fi
 if [ "$RUN_API" == "true" ]; then
-    message 2 "- API: up";
+    message 2 "\t• API: up";
 else
-    message 2 "- API: built";
+    message 2 "\t• API: built";
 fi
 echo "";

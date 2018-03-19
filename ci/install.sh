@@ -2,110 +2,86 @@
 
 # ---------- Functions ---------- #
 
-# Exits the installation process, but prints a message to command line before doing so.
-# :param $1: Colour of the output line. This will be reset before exiting.
-#            If this value equals -1, the default color is used.
-# :param $2: Message to be printed.
-# :param $3: Exit code.
-function exit_with_message () {
-    if [ $1 != -1 ]; then
-        tput -T xterm-256color setaf $1;
-    fi
-    tput -T xterm-256color bold;
-    echo -e $2;
-    tput -T xterm-256color sgr0;
-    echo ""
-    exit $3;
-}
+source "./utilities/bash_util.sh"
 
-# Prints a message. Message output uses bold by default.
-# :param $1: Colour of the output line. This will be reset before exiting.
-#            If this value equals -1, the default color is used.
-# :param $2: Message to be printed.
-function message () {
-    tput -T xterm-256color bold;
-    if [ $1 != -1 ]; then
-        tput -T xterm-256color setaf $1;
-    fi
-    echo -e $2
-    tput -T xterm-256color sgr0;
-}
-
-# Calculates the machine's IPv4 address.
-function calculate_ip_address () {
-    local _ip _myip _line _nl=$'\n'
-    while IFS=$': \t' read -a _line ;do
-        [ -z "${_line%inet}" ] &&
-           _ip=${_line[${#_line[1]}>4?1:2]} &&
-           [ "${_ip#127.0.0.1}" ] && _myip=$_ip
-      done< <(LANG=C /sbin/ifconfig)
-    printf ${1+-v} $1 "%s${_nl:0:$[${#1}>0?0:1]}" $_myip
+# Displays script usage and exits.
+# :param $1: Exit code.
+function usage () {
+    exit_with_message 1 "Installs the Jenkins and SonarQube services for Continuous Integration and Continuous Inspection.
+            \nA PostgreSQL instance will also be installed, in order to persist Sonar analysis and configuration data.
+            \n\n> Security note: Jenkins and SonarQube containers will be reachable from the Internet. However, the
+            \nSonarQube database will only accept local connections.
+            \n\n> usage: install.sh [-h] [--help] [--version] [--force-build] [--host-ip xxx.xxx.xxx.xxx] [--macos]
+            \n\t[--root-dir <path>] [--show-ip]
+            \n • -h, --help: shows this message.
+            \n • --version: displays app's version.
+            \n • --force-build: builds the CI images even if they already exist.
+            \n • --host-ip xxx.xxx.xxx.xxx: specifies the IP address of the machine. By default, this installer attempts
+            \n\t  to resolve the machine's IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
+            \n • --macos: sets \"docker.for.mac.localhost\" as the local IP address (Docker issue).
+            \n • --root-dir <path>: installs the CI components under a custom directory. Defaults to \"~/ClimateChangeApp\".
+            \n • --show-ip: displays the IP address of the machine. If multiple IP's, displays them all." $1;
 }
 
 
 # ---------- Definitions ---------- #
 
-HOST_IP=$(calculate_ip_address)
-MACOS=false;
 FORCE_BUILD=false;
+HOST_IP=$(get_ip_address)
+MACOS=false;
 ROOT_DIR="~/ClimateChangeApp";
-SHOW_HELP=false;
+
 
 # ---------- Argument manipulation ---------- #
 
 # Parsing arguments
-for ARGUMENT in "$@"
-do
-    KEY=$(echo ${ARGUMENT} | cut -f1 -d=)
-    VALUE=$(echo ${ARGUMENT} | cut -f2 -d=)
-    case "$KEY" in
-            -h)             SHOW_HELP=true ;;
-            --help)         SHOW_HELP=true ;;
-            FORCE_BUILD)    FORCE_BUILD=${VALUE} ;;
-            MACOS)          MACOS=${VALUE} ;;
-            HOST_IP)        HOST_IP=${VALUE} ;;
-            ROOT_DIR)       ROOT_DIR=${VALUE} ;;
-            *)
+EXPECTED_INPUT=":h-:"
+while getopts "$EXPECTED_INPUT" ARG; do
+    case "${ARG}" in
+        h) usage 0 ;;
+        -) case ${OPTARG} in
+                help) usage 0 ;;
+                version) show_app_version ;;
+                force-build) FORCE_BUILD=true ;;
+                host-ip)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--host-ip" ${VAL};
+                    HOST_IP=${VAL};
+                ;;
+                macos) MACOS=true ;;
+                root-dir)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--root-dir" ${VAL};
+                    ROOT_DIR=${VAL};
+                ;;
+                show-ip) show_ip_addresses ;;
+                :) exit_with_message 1 "Illegal option: \"--$OPTARG\" requires an argument" >&2 ;;
+                *) exit_with_message 1 "Unrecognized option: --$OPTARG" >&2 ;;
+            esac
+        ;;
+        :) exit_with_message 1 "Illegal option: \"-$OPTARG\" requires an argument" >&2 ;;
+        *) exit_with_message 1 "Unrecognized option: -$OPTARG" >&2 ;;
     esac
 done
 
 
-# Showing help if required
-if  [ "$SHOW_HELP" == "true" ] || ([ "$MACOS" != "true" ] && [ "$MACOS" != "false" ]) ||
-            ([ "$FORCE_BUILD" != "true" ] && [ "$FORCE_BUILD" != "false" ]); then
-     exit_with_message 1 "> usage: install.sh [HOST_IP=xxx.xxx.xxx.xxx] [MACOS={true|false}] [ROOT_DIR=<path>]
-                            [FORCE_BUILD={true|false}]
-            \n\t- -h, --help: shows this message
-            \n\t- HOST_IP: IP address of the machine. Defaults to the current IP value of the machine.
-            \n\t- MACOS: if set, indicates that \"docker.for.mac.localhost\" should be used instead of the
-                   local IP address.
-            \n\t- ROOT_DIR: installs the CI components under a custom directory. Defaults to
-                  \"~/ClimateChangeApp\".
-            \n\t- FORCE_BUILD: builds the CI components' images even if they already exist. Defaults to \"false\"." 1;
-fi
-
-
 # Overriding IP values if HOST_IP is present
 if [ "$MACOS" == "true" ]; then
-    message -1 "[INFO] Since host OS is macOS/OS X, setting HOST_IP to \"docker.for.mac.localhost\".";
+    message -1 "[INFO] Setting HOST_IP to \"docker.for.mac.localhost\".";
     HOST_IP="docker.for.mac.localhost";
 fi
-export HOST_IP=${HOST_IP}
-message -1 "[INFO] Deploying Jenkins and Sonar components to the local machine. HOST_IP has been set to \"$HOST_IP\".";
+export HOST_IP=${HOST_IP};
+message -1 "[INFO] Deploying all components to the local machine. HOST_IP has been set to \"$HOST_IP\".";
 message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install.sh HOST_IP=<IP>\".";
 
 
 # Overriding default ROOT_DIR?
 if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
-    message -1 "[INFO] Deploying the Jenkins server under custom directory: $ROOT_DIR.";
+    message -1 "[INFO] Deploying Jenkins and Sonar servers under custom directory: $ROOT_DIR.";
 else
     message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";
 fi
 export ROOT_DIR="$ROOT_DIR";
-
-
-# Making Jenkins and SonarQube accessible from any host
-export BIND_IP_ADDRESS="0.0.0.0"
 
 
 # ---------- Installation ---------- #
@@ -119,6 +95,7 @@ if [ "$(docker ps -aq -f name="jenkins")" ]; then
     docker stop jenkins;
     docker rm jenkins;
 fi
+
 # Launching the Jenkins service
 message -1 "[INFO] Launching the Jenkins service.";
 if [ "$FORCE_BUILD" == "true" ]; then
@@ -156,7 +133,7 @@ fi
 # Displaying installation summary
 echo "";
 message 2 "[SUCCESS] Installation results:";
-message 2 "- Jenkins: up"
-message 2 "- Sonar: up"
-message 2 "- Sonar (db): up"
+message 2 "\t• Jenkins: up"
+message 2 "\t• Sonar: up"
+message 2 "\t• Sonar (db): up"
 echo ""
