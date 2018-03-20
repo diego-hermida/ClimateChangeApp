@@ -101,8 +101,8 @@ services:
             - ${ROOT_DIR:-~/ClimateChangeApp}/jenkins:/var/jenkins_home
             - /var/run/docker.sock:/var/run/docker.sock
         ports:
-            - "${BIND_IP_ADDRESS:-0.0.0.0}:${JENKINS_PORT:-8090}:8080"
-            - "${BIND_IP_ADDRESS:-0.0.0.0}:${JENKINS_AGENTS_PORT:-50000}:50000"
+            - "0.0.0.0:${JENKINS_PORT:-8090}:8080"
+            - "0.0.0.0:${JENKINS_AGENTS_PORT:-50000}:50000"
         networks:
           - app_network
     sonar:
@@ -116,7 +116,7 @@ services:
             - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/extensions:/opt/sonarqube/extensions
             - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/data:/opt/sonarqube/data
         ports:
-            - "${BIND_IP_ADDRESS:-0.0.0.0}:${SONAR_PORT:-9000}:9000"
+            - "0.0.0.0:${SONAR_PORT:-9000}:9000"
         networks:
           - app_network
         depends_on:

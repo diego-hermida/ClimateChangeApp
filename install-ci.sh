@@ -80,6 +80,14 @@ export MONGODB_PORT=27018;
 export API_PORT=5001;
 export POSTGRES_PORT=5433;
 
+# Setting CI bind IP address
+if [ "$MACOS" == "true" ]; then
+    export BIND_IP_ADDRESS='127.0.0.1'
+else
+    export BIND_IP_ADDRESS=${HOST_IP}
+fi
+message 3 "[WARNING] Docker containers will not be reachable from the Internet. Binding connections to IP address: $BIND_IP_ADDRESS";
+
 
 # ---------- Installation ---------- #
 
