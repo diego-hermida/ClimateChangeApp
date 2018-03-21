@@ -8,7 +8,7 @@ from pymongo import UpdateOne
 from pytz import UTC
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from unidecode import unidecode
-from utilities.db_util import MongoDBCollection
+from utilities.mongo_util import MongoDBCollection
 from utilities.util import check_coordinates, date_to_millis_since_epoch, deserialize_date, MeasureUnits, \
         serialize_date, current_timestamp_utc
 

@@ -1,6 +1,5 @@
 import datetime
 from unittest import TestCase, mock
-from unittest.mock import Mock
 
 from copy import deepcopy
 from pytz import UTC
@@ -9,7 +8,7 @@ import data_gathering_subsystem.data_collector.data_collector as data_collector
 from data_gathering_subsystem.data_collector.data_collector import ABORTED, CONFIG, CREATED, DATA_COLLECTED, DATA_SAVED, \
     EXECUTION_CHECKED, FINISHED, INITIALIZED, PENDING_WORK_CHECKED, STATE_RESTORED, STATE_SAVED
 from data_gathering_subsystem.config.config import DGS_CONFIG
-from data_gathering_subsystem.supervisor.supervisor import Supervisor
+from data_gathering_subsystem.supervisor.supervisor import DataCollectorSupervisor
 
 
 class SimpleDataCollector(data_collector.DataCollector):
@@ -121,7 +120,7 @@ class TestDataCollector(TestCase):
         class Thief:  # isinstance(o, Supervisor) is False
             pass
 
-        class FakeSupervisor(Supervisor):  # isinstance(o, Supervisor) is True
+        class FakeSupervisor(DataCollectorSupervisor):  # isinstance(o, Supervisor) is True
             pass
 
         # Negative cases
@@ -135,7 +134,7 @@ class TestDataCollector(TestCase):
         self.assertFalse(self.data_collector.execute_actions(CREATED, who=elegant_thief))
 
         # Positive case
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         expected = [CREATED, INITIALIZED]
         result = self.data_collector.expose_transition_states(who=supervisor)
         self.assertIsNotNone(result)
@@ -156,7 +155,7 @@ class TestDataCollector(TestCase):
                 'test/simple_data_collector/simple_data_collector.py'))
 
     def test_positive_execution_with_pending_work(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(data_collected=1000, data_inserted=1000)
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, DATA_SAVED,
@@ -172,7 +171,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_normal_execution_with_no_pending_work(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(pending_work=False)
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, EXECUTION_CHECKED, STATE_SAVED,
@@ -187,7 +186,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_pending_work_less_saved_than_collected(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(data_collected=1000, data_inserted=987)
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, DATA_SAVED,
@@ -203,7 +202,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_pending_work_less_collected_than_saved(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(data_collected=987, data_inserted=1000)
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, DATA_SAVED,
@@ -219,7 +218,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_pending_work_collected_not_saved(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(data_collected=1000, data_inserted=0)
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, DATA_SAVED,
@@ -237,7 +236,7 @@ class TestDataCollector(TestCase):
 
 
     def test_abnormal_execution_failure_INITIALIZED(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(fail_on='_restore_state')
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, ABORTED]
@@ -251,7 +250,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_failure_STATE_RESTORED(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(fail_on='_has_pending_work')
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, ABORTED]
@@ -265,7 +264,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_failure_PENDING_WORK_CHECKED(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(fail_on='_collect_data')
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, ABORTED]
@@ -279,7 +278,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_failure_DATA_COLLECTED(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(fail_on='_save_data', data_collected=1000)
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, ABORTED]
@@ -294,7 +293,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_failure_DATA_SAVED(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(fail_on='_check_execution', data_collected=1000, data_inserted=1000)
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, DATA_SAVED, ABORTED]
@@ -310,7 +309,7 @@ class TestDataCollector(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_failure_EXECUTION_CHECKED(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         self.create_run(fail_on='_save_state', data_collected=1000, data_inserted=1000)
         transitions = self.data_collector.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_COLLECTED, DATA_SAVED,
@@ -329,7 +328,7 @@ class TestDataCollector(TestCase):
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.get_config')
     def test_exponential_backoff_mechanism(self, mock_config):
         mock_config.return_value = CONFIG
-        supervisor = Supervisor(None, None)
+        supervisor = DataCollectorSupervisor(None, None)
         dc = SimpleDataCollector(fail_on='_restore_state')
         dc.run()
         # Checking exponential backoff update, and error saving
@@ -390,64 +389,3 @@ class TestDataCollector(TestCase):
         for line in data:
             r(line)
         self.assertEqual(['Actual data'], r.get_data())
-
-    def test_message(self):
-        from queue import Queue
-        from threading import Condition
-
-        channel = Queue(maxsize=1)
-        condition = Condition()
-        message = data_collector.Message(data_collector.MessageType.exit, content='Exit NOW')
-        message.send(channel, condition)
-        self.assertTrue(channel.not_empty)
-        self.assertTrue(message, channel.get_nowait())
-
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.get_config')
-    def test_data_collector_thread(self, mock_config):
-        from unittest.mock import MagicMock
-        from queue import Queue
-        from threading import Condition
-
-        mock_config.return_value = CONFIG
-        channel = Queue(maxsize=2)
-        condition = Condition()
-        self.data_collector = SimpleDataCollector()
-        data_module = MagicMock()
-        data_module.return_value.instance.return_value = self.data_collector
-        thread = data_collector.DataCollectorThread(data_module, channel, condition)
-        thread.start()
-        thread.join()
-        self.assertTrue(channel.not_empty)
-        self.assertEqual(2, channel.qsize())
-        self.assertEqual(data_collector.MessageType.register, channel.get_nowait().type)
-        self.assertEqual(data_collector.MessageType.finished, channel.get_nowait().type)
-
-    def test_transition_state(self):
-        supervisor = Supervisor(None, None)
-        self.create_run(data_collected=1000, data_inserted=1000)
-        transitions = self.data_collector.expose_transition_states(supervisor)
-        self.assertLess(transitions[0], transitions[1])
-        self.assertLess(transitions[0], INITIALIZED)
-        self.assertLessEqual(transitions[0], transitions[1])
-        self.assertLessEqual(transitions[0], INITIALIZED)
-        self.assertEqual(transitions[0], transitions[0])
-        self.assertEqual(transitions[0], CREATED)
-        self.assertGreater(transitions[1], transitions[0])
-        self.assertGreater(transitions[1], CREATED)
-        self.assertGreaterEqual(transitions[1], transitions[0])
-        self.assertGreaterEqual(transitions[1], CREATED)
-        self.assertNotEqual(transitions[0], transitions[1])
-        self.assertNotEqual(transitions[0], INITIALIZED)
-
-        with self.assertRaises(TypeError):
-            self.assertLess(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertLessEqual(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertEqual(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertGreater(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertGreaterEqual(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertNotEqual(transitions[0], 'foo')

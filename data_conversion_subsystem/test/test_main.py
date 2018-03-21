@@ -33,7 +33,7 @@ class TestMain(TestCase):
 
     @mock.patch('data_conversion_subsystem.main.get_execution_id', Mock(return_value=1))
     @mock.patch('data_conversion_subsystem.main.ping_database', Mock())
-    @mock.patch('data_conversion_subsystem.supervisor.supervisor.Supervisor.generate_report', Mock())
+    @mock.patch('data_conversion_subsystem.supervisor.supervisor.DataConverterSupervisor.generate_report', Mock())
     @mock.patch('requests.get')
     @mock.patch('os.environ', {'POSTGRES_IP': 'test_ip', 'API_IP': 'test_ip'})
     @mock.patch('data_conversion_subsystem.data_converter.data_converter.get_config', Mock(return_value=CONFIG))

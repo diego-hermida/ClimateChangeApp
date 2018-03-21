@@ -128,7 +128,7 @@ if  [ "$SKIP_DEPLOY" == "true" ]; then
     TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--skip-all";
     UTILITIES_DEPLOY_ARGS="--skip-all";
 else
-    message -1 "[INFO] Using default values for all *_DEPLOY_ARGS.";
+    message -1 "[INFO] Using default values for all DEPLOY_ARGS.";
     API_DEPLOY_ARGS="--all --with-tests";
     DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
     DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";

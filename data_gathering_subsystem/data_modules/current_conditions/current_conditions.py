@@ -3,7 +3,7 @@ import requests
 
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
-from utilities.db_util import MongoDBCollection
+from utilities.mongo_util import MongoDBCollection
 from utilities.util import current_timestamp_utc
 
 _singleton = None

@@ -6,7 +6,7 @@ from global_config.config import GLOBAL_CONFIG
 from flask import json, request
 from functools import wraps
 from os import environ
-from utilities.db_util import MongoDBCollection, ping_database
+from utilities.mongo_util import MongoDBCollection, ping_database
 from utilities.log_util import get_logger
 from utilities.util import current_date_in_millis
 

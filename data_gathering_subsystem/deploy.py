@@ -7,7 +7,7 @@ from global_config.config import GLOBAL_CONFIG
 from os import environ
 from pymongo.errors import DuplicateKeyError
 from unittest import TestLoader, TextTestRunner
-from utilities.db_util import create_user, drop_database, ping_database, MongoDBCollection
+from utilities.mongo_util import create_user, drop_database, ping_database, MongoDBCollection
 from utilities.import_dir import import_modules
 from utilities.log_util import get_logger
 from utilities.util import remove_all_under_directory, get_config, recursive_makedir
@@ -141,12 +141,12 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                                      base_package=DGS_CONFIG['DATA_COLLECTOR_BASE_PACKAGE'])
             failed = []
             for module in modules:
-                data_collector = module.instance(log_to_stdout=False, log_to_file=False)
+                data_collector = module.instance(log_to_stdout=False, log_to_file=False, log_to_telegram=False)
                 try:
                     assert data_collector.is_runnable()
                 except AssertionError:
                     failed.append(str(data_collector))
-                    logger.error('"%s" is not instantiable nor runnable.' % (data_collector))
+                    logger.error('"%s" is not instantiable nor runnable.' % data_collector)
             if failed:
                 logger.warning(
                     'Some DataCollector(s) are not runnable (%d out of %d): %s' % (len(failed), len(modules), failed))

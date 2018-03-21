@@ -23,6 +23,7 @@ TimeUnits = enum('s', 'min', 'h', 'day', 'NEVER')
 MeasureUnits = enum('mm', 'm', 'km', 'Gt')
 MassType = enum('antarctica', 'greenland', 'ocean')
 
+
 def date_to_millis_since_epoch(date: datetime.datetime) -> int:
     """
         Given a date, converts it to milliseconds since epoch (UNIX time, 01/01/1970 00:00:00.0 UTC).

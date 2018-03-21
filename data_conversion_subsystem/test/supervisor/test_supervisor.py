@@ -3,9 +3,11 @@ from os import environ
 from unittest import TestCase, mock
 from unittest.mock import Mock
 
-from data_conversion_subsystem.data_converter.data_converter import CONFIG, Message, MessageType
+from data_conversion_subsystem.data_converter.data_converter import CONFIG
 from data_conversion_subsystem.supervisor import supervisor as supervisor
 from data_conversion_subsystem.test.data_converter.test_data_converter import SimpleDataConverter
+from utilities.execution_util import Message, MessageType, SupervisorThreadRunner
+
 
 ENVIRON = deepcopy(environ)
 ENVIRON['API_IP'] = 'test_ip'
@@ -33,8 +35,9 @@ class TestSupervisor(TestCase):
         channel = Queue(maxsize=5)
         condition = Condition()
         # Creating supervisor and DataCollectors
-        thread = supervisor.SupervisorThread(channel, condition, log_to_file=False, log_to_stdout=False,
-                                             log_to_telegram=False)
+        s = supervisor.DataConverterSupervisor(channel, condition, log_to_file=False, log_to_stdout=False,
+                                               log_to_telegram=False)
+        thread = SupervisorThreadRunner(s)
         thread.supervisor.state = thread.supervisor.config['STATE_STRUCT']
         d1 = SimpleDataConverter(elements_to_convert=1, data_converted=1, data_inserted=1, log_to_stdout=False,
                                  log_to_telegram=False)
@@ -72,7 +75,7 @@ class TestSupervisor(TestCase):
         response.status_code = 200
         response.content = '{"data": [{"foo": true}]}'.encode()
 
-        s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        s = supervisor.DataConverterSupervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         # First execution
         d1 = SimpleDataConverter(fail_on='_has_pending_work', log_to_stdout=False, log_to_telegram=False)
         d2 = SimpleDataConverter(elements_to_convert=1, data_converted=1, data_inserted=1, log_to_stdout=False,
@@ -128,7 +131,7 @@ class TestSupervisor(TestCase):
         mock_aggregated_statistics.get.return_value = data = Mock()
         data.data = supervisor.CONFIG['STATE_STRUCT']['aggregated']
 
-        s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        s = supervisor.DataConverterSupervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         # First execution
         d1 = SimpleDataConverter(fail_on='_has_pending_work', log_to_stdout=False, log_to_telegram=False)
         d2 = SimpleDataConverter(elements_to_convert=1, data_converted=1, data_inserted=1, log_to_stdout=False,
@@ -173,7 +176,7 @@ class TestSupervisor(TestCase):
                          s.execution_report['aggregated']['per_module']['simple_data_converter']['failure_details'][
                              'Exception'])
         # Second execution
-        s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        s = supervisor.DataConverterSupervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         d3 = SimpleDataConverter(elements_to_convert=1234, data_converted=1234, data_inserted=1234)
         d4 = SimpleDataConverter(pending_work=False)
         d5 = SimpleDataConverter(elements_to_convert=1, data_converted=1, data_inserted=1)
@@ -219,7 +222,7 @@ class TestSupervisor(TestCase):
         self.assertEqual(1236, s.execution_report['aggregated']['inserted_elements'])
 
         # Third execution
-        s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        s = supervisor.DataConverterSupervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
         d6 = SimpleDataConverter(elements_to_convert=1, data_converted=1, data_inserted=1)
         d7 = SimpleDataConverter(fail_on='_restore_state')
         d8 = SimpleDataConverter(elements_to_convert=0, data_converted=0, data_inserted=0, log_to_stdout=False,

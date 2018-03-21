@@ -1,9 +1,10 @@
 from unittest import TestCase, mock
 from unittest.mock import Mock
 
+from data_gathering_subsystem.data_collector.data_collector import CONFIG
 from data_gathering_subsystem.supervisor import supervisor as supervisor
-from data_gathering_subsystem.data_collector.data_collector import CONFIG, Message, MessageType
 from data_gathering_subsystem.test.data_collector.test_data_collector import SimpleDataCollector
+from utilities.execution_util import Message, MessageType, SupervisorThreadRunner
 
 
 class TestSupervisor(TestCase):
@@ -16,7 +17,9 @@ class TestSupervisor(TestCase):
         channel = Queue(maxsize=5)
         condition = Condition()
         # Creating supervisor and DataCollectors
-        thread = supervisor.SupervisorThread(channel, condition, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        s = supervisor.DataCollectorSupervisor(channel, condition, log_to_file=False, log_to_stdout=False,
+                                               log_to_telegram=False)
+        thread = SupervisorThreadRunner(s)
         thread.supervisor.state = thread.supervisor.config['STATE_STRUCT']
         d1 = SimpleDataCollector(data_collected=1, data_inserted=1, log_to_stdout=False, log_to_telegram=False)
         d2 = SimpleDataCollector(fail_on='_save_data', log_to_stdout=False, log_to_telegram=False)
@@ -47,7 +50,8 @@ class TestSupervisor(TestCase):
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.get_config', Mock(return_value=CONFIG))
     def test_generate_report(self, mock_collection):
         mock_collection.return_value.get_last_elements.return_value = None
-        s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        s = supervisor.DataCollectorSupervisor(None, None, log_to_file=False, log_to_stdout=False,
+                                               log_to_telegram=False)
         # First execution
         d1 = SimpleDataCollector(data_collected=1, data_inserted=1)
         d2 = SimpleDataCollector(fail_on='_save_data')
@@ -92,7 +96,8 @@ class TestSupervisor(TestCase):
         # Second execution
         execution_report = s.execution_report
         mock_collection.return_value.get_last_elements = Mock(return_value=execution_report['aggregated'])
-        s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        s = supervisor.DataCollectorSupervisor(None, None, log_to_file=False, log_to_stdout=False,
+                                               log_to_telegram=False)
         d3 = SimpleDataCollector(data_collected=1234, data_inserted=1234)
         d4 = SimpleDataCollector(pending_work=False)
         d5 = SimpleDataCollector(data_collected=1, data_inserted=1)
@@ -138,10 +143,12 @@ class TestSupervisor(TestCase):
         # Third execution
         execution_report = s.execution_report
         mock_collection.return_value.get_last_elements = Mock(return_value=execution_report['aggregated'])
-        s = supervisor.Supervisor(None, None, log_to_file=False, log_to_stdout=False, log_to_telegram=False)
+        s = supervisor.DataCollectorSupervisor(None, None, log_to_file=False, log_to_stdout=False,
+                                               log_to_telegram=False)
         d6 = SimpleDataCollector(data_collected=1, data_inserted=1)
         d7 = SimpleDataCollector(fail_on='_restore_state')
-        d8 = SimpleDataCollector(data_collected=0, data_inserted=0, pending_work=True, log_to_stdout=False, log_to_telegram=False)
+        d8 = SimpleDataCollector(data_collected=0, data_inserted=0, pending_work=True, log_to_stdout=False,
+                                 log_to_telegram=False)
         d6.run()
         d7.run()
         d8.run()
@@ -160,8 +167,8 @@ class TestSupervisor(TestCase):
         self.assertDictEqual({'simple_data_collector': {'collected_elements': 0, 'saved_elements': 0}},
                              s.execution_report['last_execution']['modules_with_pending_work'])
         self.assertEqual(2, s.execution_report['last_execution']['modules_failed']['amount'])
-        self.assertEqual(['simple_data_collector', 'simple_data_collector'], s.execution_report['last_execution'][
-                'modules_failed']['modules'])
+        self.assertEqual(['simple_data_collector', 'simple_data_collector'],
+                         s.execution_report['last_execution']['modules_failed']['modules'])
         self.assertEqual(8, s.execution_report['aggregated']['per_module']['simple_data_collector']['total_executions'])
         self.assertEqual(6, s.execution_report['aggregated']['per_module']['simple_data_collector'][
             'executions_with_pending_work'])

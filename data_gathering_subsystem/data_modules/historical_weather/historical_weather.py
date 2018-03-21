@@ -5,7 +5,7 @@ import requests
 from pymongo import UpdateOne
 from pytz import UTC
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
-from utilities.db_util import MongoDBCollection
+from utilities.mongo_util import MongoDBCollection
 from utilities.util import date_to_millis_since_epoch, current_timestamp_utc
 
 _singleton = None

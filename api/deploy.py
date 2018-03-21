@@ -8,7 +8,7 @@ from global_config.config import GLOBAL_CONFIG
 from os import environ
 from pymongo.errors import DuplicateKeyError
 from unittest import TestLoader, TextTestRunner
-from utilities.db_util import bulk_create_authorized_users, ping_database, create_user
+from utilities.mongo_util import bulk_create_authorized_users, ping_database, create_user
 from utilities.log_util import get_logger
 from utilities.util import remove_all_under_directory, recursive_makedir
 from xmlrunner.runner import XMLTestRunner

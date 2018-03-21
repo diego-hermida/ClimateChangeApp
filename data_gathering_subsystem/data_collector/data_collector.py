@@ -2,11 +2,9 @@ import builtins
 
 from abc import ABC, abstractmethod
 from data_gathering_subsystem.config.config import DGS_CONFIG
-from functools import wraps
-from queue import Queue
-from threading import Condition, Thread
-from utilities.db_util import MongoDBCollection
-from utilities.util import date_plus_timedelta_gt_now, deserialize_date, enum, get_config, get_exception_info, \
+from utilities.mongo_util import MongoDBCollection
+from utilities.execution_util import Runnable, TransitionState, Before, AbortedStateReachedError, StateChanged
+from utilities.util import date_plus_timedelta_gt_now, deserialize_date, get_config, get_exception_info, \
     get_module_name, next_exponential_backoff, read_state, serialize_date, write_state, remove_state_file, \
     current_timestamp_utc
 
@@ -24,64 +22,7 @@ ABORTED = 100
 
 MIN_BACKOFF = {'value': 60, 'units': 's'}
 MAX_BACKOFF_SECONDS = 86400  # One day
-
-MessageType = enum('register', 'finished', 'report', 'exit')
 CONFIG = get_config(__file__)
-
-
-class DataCollectorThread(Thread):
-    """
-        The purpose of this class is to run a DataCollector inside its own thread.
-    """
-    def __init__(self, data_module, channel: Queue, condition: Condition, log_to_stdout=True, log_to_file=True, 
-                 log_to_telegram=None):
-        """
-            Creates a Thread instance. Name is set as <DataCollector>Thread, being <DataCollector> the name of the
-            DataCollector class.
-            The thread is set as a Daemon thread, as we want the thread to be stopped when Main component exits.
-            :param data_module: DataCollector module object.
-            :param channel: A synchronized queue, which allows passing messages between threads and the Supervisor.
-            :param log_to_stdout: If True, the DataCollector will log its output to stdout.
-            :param log_to_file: If True, the DataCollector will log its output to a log file.
-        """
-        self._channel = channel
-        self._condition = condition
-        self._data_collector = data_module.instance(log_to_stdout=log_to_stdout, log_to_file=log_to_file, 
-                                                    log_to_telegram=log_to_telegram)
-        Thread.__init__(self)
-        self.setDaemon(True)
-        self.setName(self._data_collector.__str__() + 'Thread')
-
-    def run(self):
-        """
-            Runs the DataCollector.
-        """
-        Message(MessageType.register, content=self._data_collector).send(self._channel, self._condition)
-        self._data_collector.run()
-        Message(MessageType.finished, content=self._data_collector).send(self._channel, self._condition)
-
-
-class Message:
-    """
-        Provides an unified interface to send messages through a shared channel.
-    """
-    def __init__(self, message_type: MessageType, content=None):
-        self.type = message_type
-        self.content = content
-
-    def send(self, channel: Queue, condition: Condition):
-        """
-            Sends the message itself through the channel.
-            :param channel: A synchronized queue.Queue object.
-            :param condition: A threading.Condition object, which notifies the receiver that a message has arrived.
-        """
-        condition.acquire()
-        channel.put_nowait(self)
-        condition.notify()
-        condition.release()
-
-    def __str__(self):
-        return 'Message [\n\t(*) type: ' + self.type + '\n\t(*) content: ' + str(self.content) + ']'
 
 
 class Reader:
@@ -99,131 +40,7 @@ class Reader:
         return self._data
 
 
-class Before:
-    """
-    Executes an action before the DataCollector's decorated method execution.
-    :param action: A function object.
-    :return: Whatever callee returns.
-    """
-    def __init__(self, action):
-        self.action = action
-
-    def __call__(self, callee):
-        @wraps(callee)
-        def post_action(*args):
-            self.action(args[0])
-            return callee(args[0])  # args[0] is the DataCollector object.
-
-        return post_action
-
-
-class AbortedStateReachedError(RuntimeError):
-    """
-    This Exception should be raised when 'ABORTED' state is reached.
-    """
-    def __init__(self, message='Unhandled exception caused execution to be aborted.', cause=None):
-        super(AbortedStateReachedError, self).__init__(message)
-        if cause:
-            self.__cause__ = cause
-
-
-class StateChanged(BaseException):
-    """
-        This Exception does not represent an error. It's used to indicate the next state and the actions that need to be
-        performed to reach it.
-    """
-
-    def __init__(self, current_state, next_state, actions):
-        """
-            Initializes the Exception.
-            :param current_state: State from which the Exception is raised.
-            :param next_state: State to reach.
-            :param actions: A function that needs to be executed to reach that state.
-        """
-        self.actions = actions
-        self.current_state = current_state
-        self.next_state = next_state
-        self.message = 'Transitioning from "%s" to "%s" by calling "%s".'%(current_state, next_state, actions.__name__)
-        super(StateChanged, self).__init__(self.message)
-
-
-class TransitionState:
-    """
-        This class represents a valid state within the set of data collector's states.
-        Supports equality, comparisons and String representation.
-    """
-
-    def __init__(self, name: str, code: int, next_state, actions):
-        """
-            Initializes an state.
-            :param name: State's name (to make it more readable). By convention, same name as variable.
-            :param code: An unique, numerical identifier (to make comparisons between states faster).
-            :param next_state: If actions succeeded, this determines the subsequent state.
-        """
-        self.name = name
-        self.code = code
-        self.next_state = next_state
-        self.actions = actions
-
-    def __eq__(self, other):
-        if isinstance(other, TransitionState):
-            return self.code == other.code
-        elif isinstance(other, int):
-            return self.code == other
-        else:
-            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
-
-    def __ne__(self, other):
-        if isinstance(other, TransitionState):
-            return self.code != other.code
-        elif isinstance(other, int):
-            return self.code != other
-        else:
-            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
-
-    def __gt__(self, other):
-        if isinstance(other, TransitionState):
-            return self.code > other.code
-        elif isinstance(other, int):
-            return self.code > other
-        else:
-            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
-
-    def __lt__(self, other):
-        if isinstance(other, TransitionState):
-            return self.code < other.code
-        elif isinstance(other, int):
-            return self.code < other
-        else:
-            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
-
-    def __ge__(self, other):
-        if isinstance(other, TransitionState):
-            return self.code >= other.code
-        elif isinstance(other, int):
-            return self.code >= other
-        else:
-            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
-
-    def __le__(self, other):
-        if isinstance(other, TransitionState):
-            return self.code <= other.code
-        elif isinstance(other, int):
-            return self.code <= other
-        else:
-            raise TypeError("<<class 'TransitionState'>> cannot be compared with <" + str(type(other)) + '>.')
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return 'TransitionState [' + \
-               '\n\t(*) name: ' + self.name + \
-               '\n\t(*) code: ' + str(self.code) + \
-               '\n\t(*) next_state: ' + self.next_state.__str__() + ']'
-
-
-class DataCollector(ABC):
+class DataCollector(ABC, Runnable):
     """
        Base class for all DataCollectors. This class provides:
            - Default implementation in some methods.
@@ -543,9 +360,9 @@ class DataCollector(ABC):
             :param who: Any class who wants to know the internal transition states.
             :return: A list, containing the transition states if 'who' is a Supervisor; or None, otherwise.
         """
-        from data_gathering_subsystem.supervisor.supervisor import Supervisor
+        from data_gathering_subsystem.supervisor.supervisor import DataCollectorSupervisor
 
-        return self._state_transitions if type(who) is Supervisor else None
+        return self._state_transitions if type(who) is DataCollectorSupervisor else None
 
     def execute_actions(self, state: int, who) -> bool:
         """
@@ -556,9 +373,9 @@ class DataCollector(ABC):
             :param who: Any class who wants to execute TransitionState's actions.
             :return: True, if actions have been executed; otherwise, False.
         """
-        from data_gathering_subsystem.supervisor.supervisor import Supervisor
+        from data_gathering_subsystem.supervisor.supervisor import DataCollectorSupervisor
 
-        if not type(who) is Supervisor:
+        if not type(who) is DataCollectorSupervisor:
             return False
         if state == self._INITIALIZED and self._INITIALIZED.actions:
             self._INITIALIZED.actions()

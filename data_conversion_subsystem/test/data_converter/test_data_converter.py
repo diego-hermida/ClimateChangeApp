@@ -11,7 +11,7 @@ import data_conversion_subsystem.data_converter.data_converter as data_converter
 from data_conversion_subsystem.config.config import DCS_CONFIG
 from data_conversion_subsystem.data_converter.data_converter import ABORTED, CONFIG, CREATED, DATA_CONVERTED, \
     DATA_SAVED, EXECUTION_CHECKED, FINISHED, INITIALIZED, PENDING_WORK_CHECKED, STATE_RESTORED, STATE_SAVED
-from data_conversion_subsystem.supervisor.supervisor import Supervisor
+from data_conversion_subsystem.supervisor.supervisor import DataConverterSupervisor
 
 ENVIRON = deepcopy(environ)
 ENVIRON['API_IP'] = 'test_ip'
@@ -171,7 +171,7 @@ class TestDataConverter(TestCase):
         class Thief:  # isinstance(o, Supervisor) is False
             pass
 
-        class FakeSupervisor(Supervisor):  # isinstance(o, Supervisor) is True
+        class FakeSupervisor(DataConverterSupervisor):  # isinstance(o, Supervisor) is True
             pass
 
         # Negative cases
@@ -185,7 +185,7 @@ class TestDataConverter(TestCase):
         self.assertFalse(self.data_converter.execute_actions(CREATED, who=elegant_thief))
 
         # Positive case
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         expected = [CREATED, INITIALIZED]
         result = self.data_converter.expose_transition_states(who=supervisor)
         self.assertIsNotNone(result)
@@ -214,7 +214,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(elements_to_convert=2, data_converted=2, data_inserted=2)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -230,7 +230,7 @@ class TestDataConverter(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_normal_execution_with_no_pending_work(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(pending_work=False)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, EXECUTION_CHECKED, STATE_SAVED,
@@ -250,7 +250,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(elements_to_convert=2, data_converted=2, data_inserted=1)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -272,7 +272,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(elements_to_convert=2, data_converted=1, data_inserted=2)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -293,7 +293,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(elements_to_convert=2, data_converted=0, data_inserted=0)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -313,7 +313,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(elements_to_convert=2, data_converted=2, data_inserted=0)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -329,7 +329,7 @@ class TestDataConverter(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_failure_INITIALIZED(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(fail_on='_restore_state')
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, ABORTED]
@@ -343,7 +343,7 @@ class TestDataConverter(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_abnormal_execution_failure_STATE_RESTORED(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(fail_on='_has_pending_work')
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, ABORTED]
@@ -361,7 +361,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(fail_on='_convert_data')
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, ABORTED]
@@ -379,7 +379,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(fail_on='_save_data', elements_to_convert=2, data_converted=2)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, ABORTED]
@@ -398,7 +398,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(fail_on='_check_execution', elements_to_convert=2, data_converted=2, data_inserted=2)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED, ABORTED]
@@ -417,7 +417,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(fail_on='_save_state', elements_to_convert=2, data_converted=2, data_inserted=2)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -433,7 +433,7 @@ class TestDataConverter(TestCase):
         self.assertListEqual(expected, transitions)
 
     def test_dependencies_unsatisfied(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(dependencies_satisfied=False)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -452,7 +452,7 @@ class TestDataConverter(TestCase):
 
     @mock.patch('requests.get', Mock(side_effect=Timeout('Test error to verify requests timeout. This is OK.')))
     def test_requests_timed_out(self):
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(dependencies_satisfied=True)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, ABORTED]
@@ -471,7 +471,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 500
         response.content = '<html><h1>Internal Error</h1></html>'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(dependencies_satisfied=True)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, ABORTED]
@@ -491,7 +491,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 500
         response.content = '\xf9291\x32'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(dependencies_satisfied=True)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, ABORTED]
@@ -511,7 +511,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": []}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(dependencies_satisfied=True)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -533,7 +533,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(dependencies_satisfied=True, elements_to_convert=2, data_converted=2, data_inserted=2)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -558,7 +558,7 @@ class TestDataConverter(TestCase):
                                                     '{"data": [{"foo": true}, {"baz": false}], "next_start_index": 4}',
                                                     '{"data": [{"foo": true}, {"baz": false}], "next_start_index": 6}',
                                                     '{"data": [{"foo": true}, {"baz": false}], "next_start_index": 8}'])
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         self.create_run(dependencies_satisfied=True, elements_to_convert=8, data_converted=8, data_inserted=8)
         transitions = self.data_converter.expose_transition_states(supervisor)
         expected = [CREATED, INITIALIZED, STATE_RESTORED, PENDING_WORK_CHECKED, DATA_CONVERTED, DATA_SAVED,
@@ -581,7 +581,7 @@ class TestDataConverter(TestCase):
         mock_requests.return_value = response = Mock()
         response.status_code = 200
         response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
+        supervisor = DataConverterSupervisor(None, None)
         dc = SimpleDataConverter(fail_on='_restore_state')
         dc.run()
         # Checking exponential backoff update, and error saving
@@ -635,68 +635,3 @@ class TestDataConverter(TestCase):
         self.data_converter.run()
         self.assertTrue(self.data_converter.successful_execution())
         self.assertDictEqual(data_converter.MIN_BACKOFF, self.data_converter.state['backoff_time'])
-
-    def test_message(self):
-        from queue import Queue
-        from threading import Condition
-
-        channel = Queue(maxsize=1)
-        condition = Condition()
-        message = data_converter.Message(data_converter.MessageType.exit, content='Exit NOW')
-        message.send(channel, condition)
-        self.assertTrue(channel.not_empty)
-        self.assertTrue(message, channel.get_nowait())
-
-    @mock.patch('data_conversion_subsystem.data_converter.data_converter.get_config')
-    def test_data_converter_thread(self, mock_config):
-        from unittest.mock import MagicMock
-        from queue import Queue
-        from threading import Condition
-
-        mock_config.return_value = CONFIG
-        channel = Queue(maxsize=2)
-        condition = Condition()
-        self.data_converter = SimpleDataConverter()
-        data_module = MagicMock()
-        data_module.return_value.instance.return_value = self.data_converter
-        thread = data_converter.DataConverterThread(data_module, channel, condition)
-        thread.start()
-        thread.join()
-        self.assertTrue(channel.not_empty)
-        self.assertEqual(2, channel.qsize())
-        self.assertEqual(data_converter.MessageType.register, channel.get_nowait().type)
-        self.assertEqual(data_converter.MessageType.finished, channel.get_nowait().type)
-
-    @mock.patch('requests.get')
-    def test_transition_state(self, mock_requests):
-        mock_requests.return_value = response = Mock()
-        response.status_code = 200
-        response.content = '{"data": [{"foo": true}, {"baz": false}]}'.encode()
-        supervisor = Supervisor(None, None)
-        self.create_run(data_converted=1000, data_inserted=1000)
-        transitions = self.data_converter.expose_transition_states(supervisor)
-        self.assertLess(transitions[0], transitions[1])
-        self.assertLess(transitions[0], INITIALIZED)
-        self.assertLessEqual(transitions[0], transitions[1])
-        self.assertLessEqual(transitions[0], INITIALIZED)
-        self.assertEqual(transitions[0], transitions[0])
-        self.assertEqual(transitions[0], CREATED)
-        self.assertGreater(transitions[1], transitions[0])
-        self.assertGreater(transitions[1], CREATED)
-        self.assertGreaterEqual(transitions[1], transitions[0])
-        self.assertGreaterEqual(transitions[1], CREATED)
-        self.assertNotEqual(transitions[0], transitions[1])
-        self.assertNotEqual(transitions[0], INITIALIZED)
-
-        with self.assertRaises(TypeError):
-            self.assertLess(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertLessEqual(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertEqual(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertGreater(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertGreaterEqual(transitions[0], 'foo')
-        with self.assertRaises(TypeError):
-            self.assertNotEqual(transitions[0], 'foo')

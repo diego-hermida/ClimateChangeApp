@@ -1,6 +1,5 @@
 from unittest import TestCase
-from data_gathering_subsystem.config.config import DGS_CONFIG 
-
+from global_config.config import GLOBAL_CONFIG
 import utilities.util
 
 
@@ -114,9 +113,9 @@ class TestUtil(TestCase):
 
         # When file does not exist, 'repair_struct' is returned
         non_existing_file = './script.py'
-        expected_file = DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'] + 'script.state'
+        expected_file = GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER'] + 'script.state'
         content = utilities.util.read_state(non_existing_file, repair_struct={'repair': True},
-                                            root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
+                                            root_dir=GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER'])
         self.assertTrue(exists(expected_file))
         self.assertEqual(content, {'repair': True})
 
@@ -125,7 +124,7 @@ class TestUtil(TestCase):
             f.truncate()
             f.write('{invalid_json: {missing_brace: true}')
         content = utilities.util.read_state(non_existing_file, repair_struct={'repair': True},
-                                            root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
+                                            root_dir=GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER'])
         self.assertEqual(content, {'repair': True})
 
         # Valid JSON file
@@ -134,7 +133,7 @@ class TestUtil(TestCase):
             f.truncate()
             dump(valid_json, f)
         content = utilities.util.read_state(non_existing_file, repair_struct={'repair': True},
-                                            root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
+                                            root_dir=GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER'])
         self.assertEqual(content, valid_json)
         remove(expected_file)
 
@@ -143,14 +142,14 @@ class TestUtil(TestCase):
 
         # Write state
         file = './script.py'
-        expected_file = DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'] + 'script.state'
+        expected_file = GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER'] + 'script.state'
         content = {'valid_json': True, 'reasons': [{'braces': True}, {'indent': None}, 'foo', 1]}
         utilities.util.create_state_file(expected_file)
         self.assertTrue(exists(expected_file))
-        utilities.util.write_state(content, file, root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
+        utilities.util.write_state(content, file, root_dir=GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER'])
         self.assertEqual(utilities.util.read_state(file, repair_struct={},
-                root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER']), content)
-        utilities.util.remove_state_file(file, root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_STATE_FILES_ROOT_FOLDER'])
+                root_dir=GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER']), content)
+        utilities.util.remove_state_file(file, root_dir=GLOBAL_CONFIG['STATE_FILES_ROOT_FOLDER'])
         self.assertFalse(exists(expected_file))
 
     def test_serialize_date(self):

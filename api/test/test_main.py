@@ -4,7 +4,7 @@ import json
 from pymongo.errors import DuplicateKeyError
 from unittest import TestCase, mock
 from unittest.mock import Mock
-from utilities.db_util import create_user, bulk_create_authorized_users, drop_user, drop_database
+from utilities.mongo_util import create_user, bulk_create_authorized_users, drop_user, drop_database
 
 
 database = 'test_database'
