@@ -55,7 +55,7 @@ def main(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         _logger.debug('MongoDB daemon is up and reachable.')
     except EnvironmentError:
         _logger.critical('The MongoDB server is down. The Subsystem will exit now, since it\'s useless to collect '
-                         'data for not being able to save them.')
+                         'data for not being able to save them.', exc_info=True)
         exit(1)
 
     if builtins.EXECUTION_ID is not None:

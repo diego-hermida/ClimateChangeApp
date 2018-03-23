@@ -75,4 +75,4 @@ class TestExecutionUtil(TestCase):
         s = utilities.execution_util.Supervisor()
         s.logger = Mock()
         utilities.execution_util.SupervisorThreadRunner(s).run()
-        self.assertTrue(s.logger.exception.called)
+        self.assertTrue(s.logger.critical.called)

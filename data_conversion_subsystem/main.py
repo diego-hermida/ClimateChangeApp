@@ -84,7 +84,7 @@ def main(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         _logger.info('PostgreSQL server is up and reachable.')
     except EnvironmentError:
         _logger.critical('The PostgreSQL server is down. The Subsystem will exit now, since it\'s useless to '
-                         'convert data for not being able to save them.')
+                         'convert data for not being able to save them.', exc_info=True)
         exit(1)
 
         # Testing Data Gathering Subsystem's API is alive.
@@ -94,7 +94,7 @@ def main(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                 str(os.environ.get(GLOBAL_CONFIG['API_PORT'], 5000))), timeout=5)
     except requests.RequestException:
         _logger.critical('An HTTP error occurred. The Subsystem will exit now, since the Data Gathering Subsystem API'
-                         ' is unreachable.')
+                         ' is unreachable.', exc_info=True)
         exit(1)
     try:
         content = json.loads(r.content.decode('utf-8', errors='replace'))
@@ -103,9 +103,8 @@ def main(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
     if r.status_code == 200 and isinstance(content, dict) and content['alive'] is True:
         _logger.debug('Data Gathering Subsystem\'s API is alive.')
     else:
-        _logger.critical(
-            'Received response from API with HTTP error code %d and content: %s' % (r.status_code, content))
-        _logger.critical('The Subsystem will exit now, since the Data Gathering Subsystem API is unreachable.')
+        _logger.critical('Received response from API with HTTP error code %d and content: %s.\nThe Subsystem will exit '
+                'now, since the Data Gathering Subsystem API is unreachable.' % (r.status_code, content), exc_info=True)
         exit(1)
 
     # Start message

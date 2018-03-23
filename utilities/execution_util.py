@@ -43,7 +43,7 @@ class SupervisorThreadRunner(Thread):
             self.supervisor.supervise()
         except Exception:
             if self.supervisor.logger:
-                self.supervisor.logger.exception('Supervisor execution has been aborted due to an error.')
+                self.supervisor.logger.critical('Supervisor execution has been aborted due to an error.', exc_info=True)
 
 
 class RunnableComponentThread(Thread):
