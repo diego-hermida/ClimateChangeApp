@@ -140,6 +140,9 @@ class _LocationsDataCollector(DataCollector):
                                 unmatched.append(location['name'])
                             location['waqi_station_id'] = matches[0]['uid'] if matches else None
 
+                            # Adding climate zone (Koppen)
+                            location['climate_zone'] = loc['climate_zone']
+
                             self.data.append(location)
                             if index > 0 and index % 10 is 0:
                                 self.logger.debug('Collected data: %.2f%%' % ((index / locations_length) * 100))
@@ -179,7 +182,7 @@ class _LocationsDataCollector(DataCollector):
                 loc['owm_station_id'] = values[0] if check_coordinates(loc['latitude'], loc['longitude'], float(
                         values[2]), float(values[3]), margin=0.35) and loc['country_code'] == values[4] else None
                 if loc['owm_station_id']:
-                    locations.remove(loc) # Removing found location (so that false positives cannot overwrite the ID)
+                    locations.remove(loc)  # Removing found location (so that false positives cannot overwrite the ID)
             for loc in self.data:
                 loc['owm_station_id'] = self.config['LOCATIONS'][loc['name']].get('owm_station_id', None)
                 if loc['owm_station_id'] is None:

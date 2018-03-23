@@ -7,9 +7,10 @@ mock.patch('django.db.transaction.atomic', lambda x: x).start()
 
 import data_conversion_subsystem.data_converters.locations.locations as locations
 
-DATA = {"_id": 51, "country_code": "AE", "elevation": {"value": "", "units": "m"}, "last_modified": 1417478400000,
-    "latitude": 25.0657, "longitude": 55.17128, "name": "Dubai", "owm_station_id": "292223", "population": "1137347",
-    "timezone": "Asia/Dubai", "waqi_station_id": None, "wunderground_loc_id": "/q/zmw:00000.1.41194"}
+DATA = {"_id": 51, "country_code": "AE", "climate_zone": "A", ''"elevation": {"value": "", "units": "m"},
+    "last_modified": 1417478400000, "latitude": 25.0657, "longitude": 55.17128, "name": "Dubai", "owm_station_id":
+    "292223", "population": "1137347", "timezone": "Asia/Dubai", "waqi_station_id": None, "wunderground_loc_id":
+    "/q/zmw:00000.1.41194"}
 
 DATA_UNEXPECTED = {"_id": 51, "country_code": "AE", "elevation": {"value": "", "units": "m"}, "last_modified": None,
     "latitude": 25.0657, "longitude": 55.17128, "name": "Dubai", "owm_station_id": "292223", "population": "1137347",

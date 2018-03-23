@@ -60,6 +60,9 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                 'and a XML test results report', required=False, action='store_true')
         parser.add_argument('--skip-all', help='does not execute any deploy step', required=False, action='store_true')
 
+        parser.add_argument('--adapt-legacy-data', help='adds climate zones to existent locations', required=False,
+                            action='store_true')
+
         # Deploy args can be added from the "install.sh" script using environment variables.
         env_args = environ.get('DEPLOY_ARGS', None)
         if env_args:
@@ -157,6 +160,24 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
                 remove_all_under_directory(API_CONFIG['API_LOG_FILES_ROOT_FOLDER'])
             except FileNotFoundError:
                 logger.info('Log base directory does not exist, so it cannot be removed.')
+
+        if args.adapt_legacy_data:
+            from data_gathering_subsystem.data_modules.locations.locations import instance
+            from utilities.mongo_util import MongoDBCollection
+            from pymongo import InsertOne
+
+            obj = instance()
+            c = MongoDBCollection('locations', use_pool=False)
+            locations, more = c.find()
+            ops = []
+            for location in locations:
+                try:
+                    location['climate_zone'] = obj.config['LOCATIONS'][location['name']]['climate_zone']
+                except KeyError:
+                    continue
+                ops.append(InsertOne(location))
+            c.remove_all()
+            c.collection.bulk_write(ops)
 
     except Exception:
         logger.exception('An error occurred while performing deploy operations.')

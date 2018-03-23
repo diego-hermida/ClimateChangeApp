@@ -42,6 +42,7 @@ class _LocationsDataConverter(DataConverter):
                 id = value['_id']
                 name = value['name'].strip()
                 country_id = value['country_code']
+                climate_zone = value['climate_zone']
                 elevation = parse_int(value['elevation'].get('value'))
                 elevation_units = 'M' if elevation is not None else None
                 last_modified = datetime.datetime.utcfromtimestamp(parse_int(value['last_modified'], nullable=False) / 1000)
@@ -52,10 +53,10 @@ class _LocationsDataConverter(DataConverter):
                 owm_data = value.get('owm_station_id') is not None
                 wunderground_data = value.get('waqi_station_id') is not None
                 air_pollution_data = value.get('wunderground_loc_id') is not None
-                self.data.append(Location(id=id, name=name, country_id=country_id, elevation=elevation,
-                        elevation_units=elevation_units, last_modified=last_modified, longitude=longitude,
-                        latitude=latitude, population=population, timezone=timezone, owm_data=owm_data,
-                        wunderground_data=wunderground_data, air_pollution_data=air_pollution_data))
+                self.data.append(Location(id=id, name=name, country_id=country_id, climate_zone=climate_zone,
+                        elevation=elevation, elevation_units=elevation_units, last_modified=last_modified,
+                        longitude=longitude, latitude=latitude, population=population, timezone=timezone,
+                        owm_data=owm_data, wunderground_data=wunderground_data, air_pollution_data=air_pollution_data))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. Location with ID "%s" will not be '

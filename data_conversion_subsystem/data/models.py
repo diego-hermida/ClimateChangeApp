@@ -141,6 +141,7 @@ class Location(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True)
     name = models.CharField(max_length=50, null=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
+    climate_zone = models.CharField(max_length=3, db_index=True)
     elevation = models.SmallIntegerField(null=True)
     elevation_units = models.CharField(max_length=1, choices=MEASURE_UNITS, default=None, null=True)
     last_modified = models.DateTimeField()
@@ -154,12 +155,12 @@ class Location(models.Model):
     air_pollution_attributions = JSONField(null=True, default=None)
 
     def __str__(self):
-        return 'Location [id (PK): %d, name: %s, country (FK): %s, elevation: %d, elevation_units: %s, last_modified:' \
-               ' %s, latitude: %0.4f, longitude: %0.4f, population: %d, owm_data: %s, wunderground_data: %s, ' \
-               'air_pollution_data: %s, timezone: %s, air_pollution_attributions: %s]' % (self.id, self.name,
-                self.country, self.elevation, self.elevation_units, self.last_modified, self.latitude, self.longitude,
-                self.population, self.owm_data, self.wunderground_data, self.air_pollution_data, self.timezone,
-                self.air_pollution_attributions)
+        return 'Location [id (PK): %d, name: %s, country (FK): %s, climate_zone: %s, elevation: %d, ' \
+               'elevation_units: %s, last_modified: %s, latitude: %0.4f, longitude: %0.4f, population: %d, ' \
+               'owm_data: %s, wunderground_data: %s, air_pollution_data: %s, timezone: %s, ' \
+               'air_pollution_attributions: %s]' % (self.id, self.name, self.country, self.elevation,
+                self.elevation_units, self.last_modified, self.latitude, self.longitude, self.population, self.owm_data,
+                self.wunderground_data, self.air_pollution_data, self.timezone, self.air_pollution_attributions)
 
 
 class AirPollutionMeasure(models.Model):
