@@ -1,0 +1,13 @@
+FROM sonarqube:latest
+
+# Setting ENV variables from ARGs.
+ARG HOST_IP
+ARG SONAR_PORT
+
+ENV HOST_IP=$HOST_IP
+ENV SONAR_PORT=$SONAR_PORT
+
+# Adding HEALTHCHECK
+COPY ./ci/sonar-healthcheck /usr/local/bin/sonar-healthcheck
+RUN chmod +x /usr/local/bin/sonar-healthcheck
+HEALTHCHECK --start-period=120s CMD ["/usr/local/bin/sonar-healthcheck"]

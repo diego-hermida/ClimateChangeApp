@@ -145,10 +145,13 @@ fi
 message -1 "[INFO] Launching the Jenkins service.";
 if [ "$FORCE_BUILD" == "true" ]; then
     message -1 "[INFO] Recreating Jenkins image.";
-    docker-compose up -d --build jenkins;
-else
-    docker-compose up -d jenkins;
+    docker-compose build --build-arg HOST_IP=${HOST_IP} --build-arg JENKINS_PORT=${JENKINS_PORT} \
+                         --build-arg JENKINS_AGENTS_PORT=${JENKINS_AGENTS_PORT} jenkins;
+    if [ $? != 0 ]; then
+        exit_with_message 1 "[ERROR] The Jenkins image could not be built." 1;
+    fi
 fi
+docker-compose up -d jenkins;
 if [ $? != 0 ]; then
     exit_with_message 1 "[ERROR] The Jenkins service could not be initialized." 1;
 fi
@@ -167,10 +170,12 @@ fi
 message -1 "[INFO] Launching the Sonar service.";
 if [ "$FORCE_BUILD" == "true" ]; then
     message -1 "[INFO] Recreating Sonar image.";
-    docker-compose up -d --build sonar;
-else
-    docker-compose up -d sonar;
+    docker-compose build --build-arg HOST_IP=${HOST_IP} --build-arg SONAR_PORT=${SONAR_PORT} sonar;
+    if [ $? != 0 ]; then
+        exit_with_message 1 "[ERROR] The Sonar image could not be built." 1;
+    fi
 fi
+docker-compose up -d sonar;
 if [ $? != 0 ]; then
     exit_with_message 1 "[ERROR] The Sonar service could not be initialized." 1;
 fi

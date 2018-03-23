@@ -1,7 +1,18 @@
 FROM jenkins:latest
 
+# Setting ENV variables from ARGs.
+ARG HOST_IP
+ARG JENKINS_PORT
+ARG JENKINS_AGENTS_PORT
+
+ENV HOST_IP=$HOST_IP
+ENV JENKINS_PORT=$JENKINS_PORT
+ENV JENKINS_AGENTS_PORT=$JENKINS_AGENTS_PORT
+
+# Performing actions as root user
 USER root
 
+# Installing docker and docker-compose
 RUN apt-get update && \
 apt-get -y install apt-transport-https ca-certificates curl \
      gnupg2 software-properties-common && \
@@ -18,3 +29,11 @@ RUN apt-get update -y
 RUN apt-get -y install python-pip
 RUN pip install --upgrade pip setuptools
 RUN pip install --upgrade pip setuptools docker-compose
+
+# Adding HEALTHCHECK
+COPY ./ci/sonar-healthcheck /usr/local/bin/jenkins-healthcheck
+RUN chmod +x /usr/local/bin/jenkins-healthcheck
+HEALTHCHECK --start-period=120s CMD ["/usr/local/bin/jenkins-healthcheck"]
+
+# Falling back to non-root user
+USER jenkins

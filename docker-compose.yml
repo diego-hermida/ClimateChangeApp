@@ -103,7 +103,7 @@ services:
     jenkins:
         build:
             context: .
-            dockerfile: ./ci/Dockerfile
+            dockerfile: ci/Dockerfile-jenkins
         image: diegohermida/jenkins:latest
         container_name: jenkins
         volumes:
@@ -115,7 +115,9 @@ services:
         networks:
           - app_network
     sonar:
-        image: sonarqube:latest
+        build:
+            context: .
+            dockerfile: ci/Dockerfile-sonar
         container_name: sonar
         environment:
             - SONARQUBE_JDBC_USERNAME=sonar
@@ -131,7 +133,7 @@ services:
         depends_on:
           - sonar_db
     sonar_db:
-        image: postgres:latest
+        image: healthcheck/postgres:latest
         container_name: sonar_db
         environment:
             - PGDATA=/postgresql/data
