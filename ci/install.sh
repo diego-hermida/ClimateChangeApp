@@ -37,7 +37,7 @@ JENKINS_PORT=8090;
 JENKINS_AGENTS_PORT=50000;
 MACOS=false;
 POSTGRES_SONAR_PORT=5434;
-ROOT_DIR="~/ClimateChangeApp";
+ROOT_DIR=~/ClimateChangeApp;
 SONAR_PORT=9000;
 
 
@@ -114,7 +114,7 @@ message -1 "[INFO] SonarQube PostgreSQL database will not be reachable from the 
 
 
 # Overriding default ROOT_DIR?
-if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
+if [ "$ROOT_DIR" != ~/ClimateChangeApp ]; then
     message -1 "[INFO] Deploying Jenkins and Sonar servers under custom directory: $ROOT_DIR.";
 else
     message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";

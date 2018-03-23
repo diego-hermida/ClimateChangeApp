@@ -41,7 +41,7 @@ EXTERNAL_MONGODB_SERVER=false;
 MACOS=false;
 MONGODB_IP=$(get_ip_address);
 MONGODB_PORT=27017;
-ROOT_DIR="~/ClimateChangeApp";
+ROOT_DIR=~/ClimateChangeApp;
 RUN_API=false;
 SKIP_DEPLOY=true;
 
@@ -135,7 +135,7 @@ fi
 
 
 # Overriding default ROOT_DIR?
-if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
+if [ "$ROOT_DIR" != ~/ClimateChangeApp ]; then
     message -1 "[INFO] Deploying the API component under custom directory: $ROOT_DIR.";
 else
     message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";

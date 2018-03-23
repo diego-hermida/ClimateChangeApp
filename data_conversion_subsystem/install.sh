@@ -44,7 +44,7 @@ EXTERNAL_POSTGRES_SERVER=false;
 MACOS=false;
 POSTGRES_IP=$(get_ip_address);
 POSTGRES_PORT=5432;
-ROOT_DIR="~/ClimateChangeApp";
+ROOT_DIR=~/ClimateChangeApp;
 SKIP_DEPLOY=true;
 
 
@@ -141,7 +141,7 @@ fi
 
 
 # Overriding default ROOT_DIR?
-if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
+if [ "$ROOT_DIR" != ~/ClimateChangeApp ]; then
     message -1 "[INFO] Deploying the Data Conversion Subsystem component under custom directory: $ROOT_DIR.";
 else
     message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";

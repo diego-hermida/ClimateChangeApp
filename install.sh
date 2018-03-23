@@ -38,7 +38,7 @@ HOST_IP=$(get_ip_address);
 MACOS=false;
 MONGODB_PORT=27017;
 POSTGRES_PORT=5432;
-ROOT_DIR="~/ClimateChangeApp";
+ROOT_DIR=~/ClimateChangeApp;
 RUN_API=false;
 RUN_TELEGRAM=false;
 SKIP_DEPLOY=true;
@@ -138,7 +138,7 @@ fi
 
 
 # Overriding default ROOT_DIR?
-if [ "$ROOT_DIR" != "~/ClimateChangeApp" ]; then
+if [ "$ROOT_DIR" != ~/ClimateChangeApp ]; then
     message -1 "[INFO] Deploying the application under custom directory: $ROOT_DIR.";
 else
     message -1 "[INFO] Using default directory for deployment: $ROOT_DIR.";
