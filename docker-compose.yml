@@ -7,7 +7,7 @@ services:
         container_name: auto_heal
         environment:
           - AUTOHEAL_CONTAINER_LABEL=all
-          - AUTOHEAL_INTERVAL=5
+          - AUTOHEAL_INTERVAL=15
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
     data_gathering_subsystem:
