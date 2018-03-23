@@ -1,6 +1,15 @@
 version: "3.4"
 
 services:
+    auto_heal:
+        restart: always
+        image: willfarrell/autoheal
+        container_name: auto_heal
+        environment:
+          - AUTOHEAL_CONTAINER_LABEL=all
+          - AUTOHEAL_INTERVAL=5
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
     data_gathering_subsystem:
         build:
             context: .
@@ -52,7 +61,7 @@ services:
         networks:
           - app_network
     mongodb:
-        image: mongo:latest
+        image: healthcheck/mongo:latest
         container_name: mongodb
         environment:
             - MONGO_DATA_DIR=/data/db
@@ -66,7 +75,7 @@ services:
           - app_network
         command: mongod --smallfiles
     postgres:
-        image: postgres:latest
+        image: healthcheck/postgres:latest
         container_name: postgres
         environment:
             - PGDATA=/postgresql/data
