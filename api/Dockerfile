@@ -1,6 +1,10 @@
 # Using PyPy 3 as the Python interpreter.
 FROM pypy:latest
 
+# Adding user and group: avoiding running containers as root
+RUN groupadd -g 999 climatechange && useradd -r -u 999 -g climatechange climatechange
+
+# Setting ENV variables from ARGs.
 ARG MONGODB_IP
 ARG API_MASK
 ARG MONGODB_PORT=27017
@@ -39,8 +43,15 @@ ENV PYTHONPATH /ClimateChangeApp:/ClimateChangeApp/code
 # API log files will be generated under this directory.
 VOLUME /ClimateChangeApp/log/api
 
+# Adding HEALTHCHECK
+RUN chmod +x /ClimateChangeApp/code/api/docker-healthcheck
+HEALTHCHECK CMD ["/ClimateChangeApp/code/api/docker-healthcheck"]
+
 # Deploy script which performs necessary operations before running the Subsystem for the first time.
 RUN ["pypy3", "deploy.py"]
+
+# Falling back to non-root user
+USER climatechange
 
 # API executable.
 ENTRYPOINT ["pypy3", "main.py"]

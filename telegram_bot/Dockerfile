@@ -1,8 +1,10 @@
 # Using PyPy 3 as the Python interpreter.
 FROM pypy:latest
 
-# Allows setting custom args to execute the deploy script. Use --build-arg DEPLOY_ARGS=<args> when building the Subsystem
-# service with docker-compose.
+# Adding user and group: avoiding running containers as root
+RUN groupadd -g 999 climatechange && useradd -r -u 999 -g climatechange climatechange
+
+# Setting ENV variables from ARGs.
 ARG DEPLOY_ARGS
 ENV DEPLOY_ARGS=$DEPLOY_ARGS
 
@@ -28,6 +30,9 @@ ENV PYTHONPATH /ClimateChangeApp:/ClimateChangeApp/code
 
 # Deploy script which performs necessary operations before running the Subsystem for the first time.
 RUN ["pypy3", "deploy.py"]
+
+# Falling back to non-root user
+USER climatechange
 
 # Subsystem executable.
 ENTRYPOINT ["pypy3", "main.py"]

@@ -1,7 +1,10 @@
 # Using PyPy 3 as the Python interpreter.
 FROM pypy:latest
 
-# Setting environment variables.
+# Adding user and group: avoiding running containers as root
+RUN groupadd -g 999 climatechange && useradd -r -u 999 -g climatechange climatechange
+
+# Setting ENV variables from ARGs.
 ARG MONGODB_IP
 ARG POSTGRES_IP
 ARG MONGODB_PORT=27017
@@ -40,4 +43,8 @@ ENV PYTHONPATH /ClimateChangeApp:/ClimateChangeApp/code
 # Component executable.
 RUN ["pypy3", "deploy.py"]
 
+# Falling back to non-root user
+USER climatechange
+
+# Blank entrypoint
 ENTRYPOINT ['']
