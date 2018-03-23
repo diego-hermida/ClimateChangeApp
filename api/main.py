@@ -388,7 +388,7 @@ def main(log_to_stdout=True, log_to_file=True, log_to_telegram=None):
                      'MONGODB_IP=<IP> when invoking "docker run".' % (environ.get('MONGODB_IP')))
 
     # Initializing collections
-    _auth_collection =  MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'],
+    _auth_collection = MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION'],
             username=GLOBAL_CONFIG['MONGODB_API_USERNAME'], password=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'])
     _stats_collection = MongoDBCollection(collection_name=GLOBAL_CONFIG['MONGODB_STATS_COLLECTION'], username=
             GLOBAL_CONFIG['MONGODB_API_USERNAME'], password=GLOBAL_CONFIG['MONGODB_API_USER_PASSWORD'])
@@ -399,6 +399,7 @@ def main(log_to_stdout=True, log_to_file=True, log_to_telegram=None):
     _logger.info('Awaiting for incoming connections on port %d.' % int(environ.get(GLOBAL_CONFIG['API_PORT'], 5000)))
 
     # Launching API
+    # TODO: Enable SSL (using ssl_context)
     app.run(host=environ.get(GLOBAL_CONFIG['API_MASK'], GLOBAL_CONFIG['API_BROADCAST']),
             port=int(environ.get(GLOBAL_CONFIG['API_PORT'], 5000)))
 
