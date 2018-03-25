@@ -1,24 +1,22 @@
 # Using PyPy 3 as the Python interpreter.
 FROM pypy:latest
 
-# Adding user and group: avoiding running containers as root
-RUN groupadd -g 999 climatechange && useradd -r -u 999 -g climatechange climatechange
-
 # Setting ENV variables from ARGs.
 ARG API_IP
-ARG POSTGRES_IP
 ARG API_PORT=5000
+ARG DEPLOY_ARGS
+ARG POSTGRES_IP
 ARG POSTGRES_PORT=5432
+ARG USER=1000
 
 ENV API_IP=$API_IP
-ENV POSTGRES_IP=$POSTGRES_IP
 ENV API_PORT=$API_PORT
+ENV DEPLOY_ARGS=$DEPLOY_ARGS
+ENV POSTGRES_IP=$POSTGRES_IP
 ENV POSTGRES_PORT=$POSTGRES_PORT
 
-# Allows setting custom args to execute the deploy script. Use --build-arg DEPLOY_ARGS=<args> when building the Subsystem
-# service with docker-compose.
-ARG DEPLOY_ARGS
-ENV DEPLOY_ARGS=$DEPLOY_ARGS
+# Adding user and group: avoiding running containers as root
+RUN useradd -r -N -u $USER climatechange || true
 
 # Getting the last package updates.
 RUN apt-get update
@@ -50,7 +48,7 @@ VOLUME /ClimateChangeApp/state
 RUN ["pypy3", "deploy.py"]
 
 # Falling back to non-root user
-USER climatechange
+USER $USER
 
 # Subsystem executable.
 ENTRYPOINT ["pypy3", "main.py"]

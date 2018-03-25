@@ -81,9 +81,9 @@ fi
 export BIND_IP_ADDRESS='0.0.0.0';
 
 # Telegram Configurator component
-message 4 "[COMPONENT] Building the Telegram Configurator component.";
+message 4 "[COMPONENT] Telegram Configurator";
 
-# Building the Data Gathering Subsystem component
+# Building the Telegram Configurator component
 if [ "$(docker image ls | grep telegram_bot | wc -c | tr -d ' ')" == 0 ] || [ "$FORCE_BUILD" == "true" ]; then
     docker-compose build --build-arg DEPLOY_ARGS="${DEPLOY_ARGS}" telegram_bot;
     if [ $? != 0 ]; then

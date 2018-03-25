@@ -42,6 +42,16 @@ function ensure_not_empty () {
 }
 
 
+# Ensures that an option's argument is a positive integer.
+# :param $1: Option's name.
+# :param $2: Option's argument (this is what will be checked).
+function ensure_positive_integer () {
+    if ! [[ $2 =~ ^[+]?[0-9]+$ ]]; then
+        exit_with_message 1 "Illegal option: \"$1\" requires a positive integer as its argument." 2
+    fi
+}
+
+
 # Calculates all IPv4 addresses.
 function get_all_ip_addresses () {
     ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'

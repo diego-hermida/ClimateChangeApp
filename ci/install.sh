@@ -132,7 +132,7 @@ export SONAR_PORT=${SONAR_PORT}
 # ---------- Installation ---------- #
 
 # Jenkins component
-message 4 "[COMPONENT] Building and launching the Jenkins service.";
+message 4 "[COMPONENT] Jenkins";
 
 # Deleting the Jenkins service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name="jenkins")" ]; then
@@ -158,7 +158,7 @@ fi
 
 
 # Sonar component
-message 4 "[COMPONENT] Building and launching the Sonar service.";
+message 4 "[COMPONENT] SonarQube";
 
 # Deleting the Sonar service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name="sonar")" ]; then

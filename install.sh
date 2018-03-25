@@ -25,7 +25,9 @@ function usage () {
             \n • --root-dir <path>: installs the Application under a custom directory. Defaults to \"~/ClimateChangeApp\".
             \n • --run-api: launches the API service after building it.
             \n • --run-telegram: launches the Telegram Configurator service after building it.
-            \n • --show-ip: displays the IP address of the machine. If multiple IP's, displays them all." $1;
+            \n • --show-ip: displays the IP address of the machine. If multiple IP's, displays them all.
+            \n • --uid <val>: sets the UID of the user executing the Subsystem. Using \"0\" or \"root\" is not recommended.
+            \n\t   Defaults to the current user's UID." $1;
 }
 
 
@@ -42,6 +44,7 @@ ROOT_DIR=~/ClimateChangeApp;
 RUN_API=false;
 RUN_TELEGRAM=false;
 SKIP_DEPLOY=true;
+USER=$(id -u)
 
 
 # ---------- Argument manipulation ---------- #
@@ -85,6 +88,12 @@ while getopts "$EXPECTED_INPUT" ARG; do
                 run-api) RUN_API=true ;;
                 run-telegram) RUN_TELEGRAM=true ;;
                 show-ip) show_ip_addresses ;;
+                uid)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--uid" ${VAL};
+                    ensure_positive_integer "--uid" ${VAL}
+                    USER=${VAL};
+                ;;
                 :) exit_with_message 1 "Illegal option: \"--$OPTARG\" requires an argument" >&2 ;;
                 *) exit_with_message 1 "Unrecognized option: --$OPTARG" >&2 ;;
             esac
@@ -93,6 +102,14 @@ while getopts "$EXPECTED_INPUT" ARG; do
         *) exit_with_message 1 "Unrecognized option: -$OPTARG" >&2 ;;
     esac
 done
+
+
+# Displaying GID and UID info
+if [ "$USER" == "0" ]; then
+    message 3 "[WARNING] Running the Subsystem as the root is not recommended.";
+else
+    message -1 "[INFO] Setting Subsystem's UID: $USER."
+fi
 
 
 # Overriding IP values if HOST_IP is present
@@ -225,7 +242,8 @@ message 4 "[COMPONENT] Building the Data Gathering Subsystem.";
 
 # Building the Data Gathering Subsystem component
 docker-compose build --build-arg MONGODB_IP=${HOST_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
-                     --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" data_gathering_subsystem;
+                     --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" \
+                     --build-arg USER=${USER} data_gathering_subsystem;
 if [ $? != 0 ]; then
     exit_with_message 1 "> The Data Gathering Subsystem image could not be built." 1;
 fi
@@ -248,7 +266,7 @@ fi
 # Building the API service
 message -1 "[INFO] Building the API image."
 docker-compose build --build-arg MONGODB_IP=${HOST_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
-                     --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" api;
+                     --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" --build-arg USER=${USER} api;
 if [ $? != 0 ]; then
     exit_with_message 1 "[INFO] The API image could not be built." 1;
 fi
@@ -269,7 +287,8 @@ message 4 "[COMPONENT] Building the Data Conversion Subsystem.";
 # Building the Data Conversion Subsystem component
 docker-compose build --build-arg POSTGRES_IP=${HOST_IP} --build-arg API_IP=${HOST_IP} \
                      --build-arg POSTGRES_PORT=${POSTGRES_PORT} --build-arg API_PORT=${API_PORT} \
-                     --build-arg DEPLOY_ARGS="${DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS}" data_conversion_subsystem;
+                     --build-arg DEPLOY_ARGS="${DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS}" \
+                     --build-arg USER=${USER} data_conversion_subsystem;
 if [ $? != 0 ]; then
     exit_with_message 1 "> The Data Conversion Subsystem image could not be built." 1;
 fi

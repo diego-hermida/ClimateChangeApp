@@ -1,24 +1,22 @@
 # Using PyPy 3 as the Python interpreter.
 FROM pypy:latest
 
-# Adding user and group: avoiding running containers as root
-RUN groupadd -g 999 climatechange && useradd -r -u 999 -g climatechange climatechange
-
 # Setting ENV variables from ARGs.
-ARG MONGODB_IP
 ARG API_MASK
-ARG MONGODB_PORT=27017
 ARG API_PORT=5000
+ARG DEPLOY_ARGS
+ARG MONGODB_IP
+ARG MONGODB_PORT=27017
+ARG USER=1000
 
 ENV API_MASK=$API_MASK
+ENV API_PORT=$API_PORT
+ENV DEPLOY_ARGS=$DEPLOY_ARGS
 ENV MONGODB_IP=$MONGODB_IP
 ENV MONGODB_PORT=$MONGODB_PORT
-ENV API_PORT=$API_PORT
 
-# Allows setting custom args to execute the deploy script. Use --build-arg DEPLOY_ARGS=<args> when building the API
-# service with docker-compose.
-ARG DEPLOY_ARGS
-ENV DEPLOY_ARGS=$DEPLOY_ARGS
+# Adding user and group: avoiding running containers as root
+RUN useradd -r -N -u $USER climatechange || true
 
 # Getting the last package updates.
 RUN apt-get update

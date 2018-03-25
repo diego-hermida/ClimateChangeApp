@@ -10,7 +10,7 @@ function usage () {
     exit_with_message 1 "Installs the Data Gathering Subsystem's API component.
             \n\n> usage: install.sh [-h] [--help] [--version] [--api-port xxxxx] [--deploy-args \"<args>\"]
             \n\t[--external-mongodb-server] [--hide-containers] [--macos] [--mongodb-ip xxx.xxx.xxx.xxx]
-            \n\t[--mongodb-port xxxxx] [--perform-deploy-actions] [--root-dir <path>] [--run-api] [--show-ip]
+            \n\t[--mongodb-port xxxxx] [--perform-deploy-actions] [--root-dir <path>] [--run] [--show-ip] [--uid <val>]
             \n • -h, --help: shows this message.
             \n • --version: displays app's version.
             \n • --api-port xxxxx: sets the exposed API port. Defaults to 5000.
@@ -26,8 +26,10 @@ function usage () {
             \n • --perform-deploy-actions: installs the application performing all deploy steps. By default, deploy
             \n\t   steps are skipped.
             \n • --root-dir <path>: installs the Application under a custom directory. Defaults to \"~/ClimateChangeApp\".
-            \n • --run-api: launches the API service after building it.
-            \n • --show-ip: displays the IP address of the machine. If multiple IP's, displays them all." $1;
+            \n • --run: launches the API service after building it.
+            \n • --show-ip: displays the IP address of the machine. If multiple IP's, displays them all.
+            \n • --uid <val>: sets the UID of the user executing the Subsystem. Using \"0\" or \"root\" is not recommended.
+            \n\t   Defaults to the current user's UID." $1;
 }
 
 
@@ -42,8 +44,9 @@ MACOS=false;
 MONGODB_IP=$(get_ip_address);
 MONGODB_PORT=27017;
 ROOT_DIR=~/ClimateChangeApp;
-RUN_API=false;
+RUN=false;
 SKIP_DEPLOY=true;
+USER=$(id -u)
 
 
 # ---------- Argument manipulation ---------- #
@@ -85,8 +88,14 @@ while getopts "$EXPECTED_INPUT" ARG; do
                     ensure_not_empty  "--root-dir" ${VAL};
                     ROOT_DIR=${VAL};
                 ;;
-                run-api) RUN_API=true ;;
+                run) RUN=true ;;
                 show-ip) show_ip_addresses ;;
+                uid)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--uid" ${VAL};
+                    ensure_positive_integer "--uid" ${VAL}
+                    USER=${VAL};
+                ;;
                 :) exit_with_message 1 "Illegal option: \"--$OPTARG\" requires an argument" >&2 ;;
                 *) exit_with_message 1 "Unrecognized option: --$OPTARG" >&2 ;;
             esac
@@ -107,6 +116,14 @@ elif [ "$SKIP_DEPLOY" == "true" ]; then
 elif [ "$DEPLOY_ARGS" == "null" ]; then
     message -1 "[INFO] Using default values for DEPLOY_ARGS.";
     DEPLOY_ARGS="--all --with-tests";
+fi
+
+
+# Displaying GID and UID info
+if [ "$USER" == "0" ]; then
+    message 3 "[WARNING] Running the Subsystem as the root is not recommended.";
+else
+    message -1 "[INFO] Setting Subsystem's UID: $USER."
 fi
 
 
@@ -146,7 +163,7 @@ export ROOT_DIR="$ROOT_DIR";
 # ---------- Installation ---------- #
 
 # MongoDB component
-message 4 "[COMPONENT] Building and launching the MongoDB service.";
+message 4 "[COMPONENT] MongoDB";
 
 if [ "$EXTERNAL_MONGODB_SERVER" == "false" ]; then
     # Deleting the MongoDB service if it was already been created: Brand-new container.
@@ -168,11 +185,7 @@ fi
 
 
 # API component
-if [ "$RUN_API" == "true" ]; then
-    message 4 "[COMPONENT] Building and launching the API service.";
-else
-    message 4 "[COMPONENT] Building the API service.";
-fi
+message 4 "[COMPONENT] API";
 
 # Deleting the API service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=api)" ]; then
@@ -184,13 +197,13 @@ fi
 # Building the API service
 message -1 "[INFO] Building the API image."
 docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
-                 --build-arg API_PORT=${API_PORT} --build-arg DEPLOY_ARGS="${DEPLOY_ARGS}" api
+                 --build-arg API_PORT=${API_PORT} --build-arg DEPLOY_ARGS="${DEPLOY_ARGS}" --build-arg USER=${USER} api
 if [ $? != 0 ]; then
     exit_with_message 1 "[INFO] The API image could not be built." 1;
 fi
 
 # Launching the API service
-if [ "$RUN_API" == "true" ]; then
+if [ "$RUN" == "true" ]; then
     message -1 "[INFO] Launching the API service.";
     docker-compose up -d api;
     if [ $? != 0 ]; then
@@ -207,7 +220,7 @@ if [ "$EXTERNAL_MONGODB_SERVER" == "true" ]; then
 else
     message 2 "\t• MongoDB: up";
 fi
-if [ "$RUN_API" == "true" ]; then
+if [ "$RUN" == "true" ]; then
     message 2 "\t• API: up";
 else
     message 2 "\t• API: built";

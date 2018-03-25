@@ -10,6 +10,7 @@ ENV JENKINS_PORT=$JENKINS_PORT
 ENV JENKINS_AGENTS_PORT=$JENKINS_AGENTS_PORT
 
 # Performing actions as root user
+# In this case, user MUST be root, since accessing /var/run/docker.sock requires privileges.
 USER root
 
 # Installing docker and docker-compose
@@ -34,6 +35,3 @@ RUN pip install --upgrade pip setuptools docker-compose
 COPY ./ci/sonar-healthcheck /usr/local/bin/jenkins-healthcheck
 RUN chmod +x /usr/local/bin/jenkins-healthcheck
 HEALTHCHECK --start-period=120s CMD ["/usr/local/bin/jenkins-healthcheck"]
-
-# Falling back to non-root user
-USER jenkins
