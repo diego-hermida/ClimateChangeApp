@@ -80,8 +80,9 @@ class _AirPollutionDataCollector(DataCollector):
         super()._save_data()
         if self.data:
             operations = []
+            # Using `location_id` instead of `station_id` FIXES [BUG-037].
             for value in self.data:
-                operations.append(UpdateOne({'station_id': value['station_id'], 'time_utc': value['time_utc']},
+                operations.append(UpdateOne({'location_id': value['location_id'], 'time_utc': value['time_utc']},
                         update={'$setOnInsert': value}, upsert=True))
             result = self.collection.collection.bulk_write(operations)
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
