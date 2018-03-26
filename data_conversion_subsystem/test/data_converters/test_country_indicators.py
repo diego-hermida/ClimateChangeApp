@@ -11,6 +11,9 @@ import data_conversion_subsystem.data_converters.country_indicators.country_indi
 DATA = {"_id": "5a92ac02dd571bdf0ff2456c", "country_id": "ES", "indicator": "SP.POP.TOTL", "year": "2016",
     "_execution_id": 1, "value": "46443959"}
 
+DATA_EMPTY = {"_id": "5a92ac02dd571bdf0ff2456c", "country_id": "", "indicator": "SP.POP.TOTL", "year": "2016",
+    "_execution_id": 1, "value": "46443959"}
+
 DATA_UNEXPECTED = {"_id": "5a92ac02dd571bdf0ff2456c", "country_id": "ES", "indicator": "SP.POP.TOTL", "year": None,
     "_execution_id": 1, "value": "46443959"}
 
@@ -70,6 +73,12 @@ class TestCountryIndicators(TestCase):
         self.data_converter.elements_to_convert = [DATA_UNEXPECTED]
         self.data_converter._perform_data_conversion()
         self.assertTrue(self.data_converter.advisedly_no_data_converted)
+        self.assertListEqual([], self.data_converter.data)
+
+    def test_convert_data_with_empty_country(self):
+        self.data_converter.state['created_indicators'] = True
+        self.data_converter.elements_to_convert = [DATA_EMPTY]
+        self.data_converter._perform_data_conversion()
         self.assertListEqual([], self.data_converter.data)
 
     @mock.patch('data_conversion_subsystem.data_converters.country_indicators.country_indicators.CountryIndicator.'

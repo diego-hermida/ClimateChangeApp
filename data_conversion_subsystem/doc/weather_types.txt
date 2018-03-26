@@ -377,7 +377,8 @@ WEATHER_TYPES:
         description: Heavy shower snow
         icon: 13n
     -
-        id: -700
+        # Changing ID from -700 to -701 FIXES [BUG-035].
+        id: -701
         description: Mist
         icon: 50n
     -

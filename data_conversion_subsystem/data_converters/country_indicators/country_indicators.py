@@ -17,7 +17,7 @@ _singleton = None
 def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> DataConverter:
     global _singleton
     if not _singleton or _singleton and _singleton.finished_execution():
-        _singleton = _CountryIndicatorsDataConverter(log_to_file=log_to_file, log_to_stdout=log_to_stdout, 
+        _singleton = _CountryIndicatorsDataConverter(log_to_file=log_to_file, log_to_stdout=log_to_stdout,
                                                      log_to_telegram=log_to_telegram)
     return _singleton
 
@@ -25,7 +25,7 @@ def instance(log_to_file=True, log_to_stdout=True, log_to_telegram=None) -> Data
 class _CountryIndicatorsDataConverter(DataConverter):
 
     def __init__(self, log_to_file=True, log_to_stdout=True, log_to_telegram=None):
-        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout, 
+        super().__init__(file_path=__file__, log_to_file=log_to_file, log_to_stdout=log_to_stdout,
                          log_to_telegram=log_to_telegram)
 
     def _check_dependencies_satisfied(self):
@@ -66,6 +66,10 @@ class _CountryIndicatorsDataConverter(DataConverter):
             try:
                 indicator = value['indicator']
                 country = value['country_id']
+                # Excluding empty country IDs FIXES [BUG-036].
+                if country is None or country == '':
+                    raise ValueError('Country ID is not present. Inserting this indicator would violate a foreign key '
+                                     'restriction.')
                 year = parse_int(value['year'], nullable=False)
                 value = parse_float(value['value'])
                 self.data.append(CountryIndicator(indicator_id=indicator, country_id=country, year=year, value=value))

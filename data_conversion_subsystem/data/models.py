@@ -158,7 +158,7 @@ class Location(models.Model):
         return 'Location [id (PK): %d, name: %s, country (FK): %s, climate_zone: %s, elevation: %d, ' \
                'elevation_units: %s, last_modified: %s, latitude: %0.4f, longitude: %0.4f, population: %d, ' \
                'owm_data: %s, wunderground_data: %s, air_pollution_data: %s, timezone: %s, ' \
-               'air_pollution_attributions: %s]' % (self.id, self.name, self.country, self.elevation,
+               'air_pollution_attributions: %s]' % (self.id, self.name, self.country, self.climate_zone, self.elevation,
                 self.elevation_units, self.last_modified, self.latitude, self.longitude, self.population, self.owm_data,
                 self.wunderground_data, self.air_pollution_data, self.timezone, self.air_pollution_attributions)
 
