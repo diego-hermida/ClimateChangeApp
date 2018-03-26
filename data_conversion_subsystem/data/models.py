@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import JSONField
 from utilities.postgres_util import import_psycopg2
 
 # This is required to work with PyPy.
