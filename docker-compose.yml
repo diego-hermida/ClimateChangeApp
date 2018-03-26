@@ -118,6 +118,7 @@ services:
         build:
             context: .
             dockerfile: ci/Dockerfile-sonar
+        image: diegohermida/sonarqube:latest
         container_name: sonar
         environment:
             - SONARQUBE_JDBC_USERNAME=sonar
