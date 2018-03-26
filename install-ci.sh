@@ -94,7 +94,7 @@ message 3 "[WARNING] Docker containers will not be reachable from the Internet. 
 message 5 "[ACTION] Creating Docker CI containers. Application containers will not be affected.";
 
 # MongoDB component
-message 4 "[COMPONENT] Building and launching the MongoDB CI service.";
+message 4 "[COMPONENT] MongoDB";
 
 # Deleting the MongoDB service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=mongodb_ci)" ]; then
@@ -112,7 +112,7 @@ fi
 
 
 # PostgreSQL component
-message 4 "[COMPONENT] Building and launching the PostgreSQL CI service.";
+message 4 "[COMPONENT] PostgreSQL";
 
 # Deleting the PostgreSQL service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=postgres_ci)" ]; then
@@ -130,7 +130,7 @@ fi
 
 
 # Telegram Configurator component
-message 4 "[COMPONENT] Building the Telegram Configurator CI component.";
+message 4 "[COMPONENT] Telegram Configurator";
 
 # Building the Telegram Configurator component
 docker-compose -f docker-compose-ci.yml build \
@@ -141,7 +141,7 @@ fi
 
 
 # Utilities component
-message 4 "[COMPONENT] Building and testing the Utilities CI component.";
+message 4 "[COMPONENT] Utilities";
 docker-compose -f docker-compose-ci.yml build \
                      --build-arg MONGODB_IP=${HOST_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
                      --build-arg POSTGRES_IP=${HOST_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
@@ -153,7 +153,7 @@ fi
 
 
 # Data Gathering Subsystem component
-message 4 "[COMPONENT] Building the Data Gathering Subsystem CI component.";
+message 4 "[COMPONENT] Data Gathering Subsystem";
 
 # Building the Data Gathering Subsystem component
 docker-compose -f docker-compose-ci.yml build \
@@ -165,7 +165,7 @@ fi
 
 
 # API component
-message 4 "[COMPONENT] Building the API CI service.";
+message 4 "[COMPONENT] API";
 
 # Deleting the API service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=api_ci)" ]; then
@@ -186,7 +186,7 @@ docker-compose -f docker-compose-ci.yml up -d api_ci;
 
 
 # Data Conversion Subsystem component
-message 4 "[COMPONENT] Building the Data Conversion Subsystem CI component.";
+message 4 "[COMPONENT] Data Conversion Subsystem";
 
 # Building the Data Conversion Subsystem component
 docker-compose -f docker-compose-ci.yml build \

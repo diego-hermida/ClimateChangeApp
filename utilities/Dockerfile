@@ -38,4 +38,4 @@ ENV PYTHONPATH /ClimateChangeApp:/ClimateChangeApp/code
 RUN ["pypy3", "deploy.py"]
 
 # Null entrypoint
-ENTRYPOINT []
+ENTRYPOINT ['']
