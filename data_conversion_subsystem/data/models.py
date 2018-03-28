@@ -81,6 +81,7 @@ class IncomeLevel(models.Model):
 class Country(models.Model):
     iso2_code = models.CharField(max_length=2, primary_key=True)
     iso3_code = models.CharField(max_length=3, unique=True)
+    name = models.CharField(max_length=50, null=True)
     capital_city_name = models.CharField(max_length=50, null=True)
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
@@ -88,9 +89,9 @@ class Country(models.Model):
     income_level = models.ForeignKey(IncomeLevel, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return 'Country [iso2_code (PK): %s, iso3_code: %s, capital_city_name: %s, latitude: %0.4f, longitude: %0.4f,' \
-               ' region (FK): %s, income_level (FK): %s]' % (self.iso2_code, self.iso3_code, self.capital_city_name,
-                self.latitude, self.longitude, self.region, self.income_level)
+        return 'Country [iso2_code (PK): %s, iso3_code: %s, name: %s, capital_city_name: %s, latitude: %s, ' \
+               'longitude: %s, region (FK): %s, income_level (FK): %s]' % (self.iso2_code, self.iso3_code, self.name,
+                self.capital_city_name, self.latitude, self.longitude, self.region, self.income_level)
 
 
 class IndicatorDetails(models.Model):
@@ -116,7 +117,7 @@ class CountryIndicator(models.Model):
         unique_together = ('indicator', 'country', 'year')
 
     def __str__(self):
-        return 'CountryIndicator [indicator (FK): %s, country (FK): %s, year: %d, value: %0.4f]' % (self.indicator,
+        return 'CountryIndicator [indicator (FK): %s, country (FK): %s, year: %s, value: %s]' % (self.indicator,
                 self.country, self.year, self.value)
 
 
@@ -132,14 +133,14 @@ class EnergySourcesMeasure(models.Model):
         unique_together = ('timestamp', 'country')
 
     def __str__(self):
-        return 'EnergySourcesMeasure [country (FK): %s, timestamp: %s, carbon_intensity: %0.4f, ' \
-               'carbon_intensity_units: %s, fossil_fuel: %0.4f, fossil_fuel_units: %s]' % (self.country, self.timestamp,
+        return 'EnergySourcesMeasure [country (FK): %s, timestamp: %s, carbon_intensity: %s, ' \
+               'carbon_intensity_units: %s, fossil_fuel: %s, fossil_fuel_units: %s]' % (self.country, self.timestamp,
                 self.carbon_intensity, self.carbon_intensity_units, self.fossil_fuel, self.fossil_fuel_units)
 
 
 class Location(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True)
-    name = models.CharField(max_length=50, null=True)
+    name = models.CharField(max_length=80, db_index=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
     climate_zone = models.CharField(max_length=3, db_index=True)
     elevation = models.SmallIntegerField(null=True)
@@ -155,8 +156,8 @@ class Location(models.Model):
     air_pollution_attributions = JSONField(null=True, default=None)
 
     def __str__(self):
-        return 'Location [id (PK): %d, name: %s, country (FK): %s, climate_zone: %s, elevation: %d, ' \
-               'elevation_units: %s, last_modified: %s, latitude: %0.4f, longitude: %0.4f, population: %d, ' \
+        return 'Location [id (PK): %s, name: %s, country (FK): %s, climate_zone: %s, elevation: %s, ' \
+               'elevation_units: %s, last_modified: %s, latitude: %s, longitude: %s, population: %s, ' \
                'owm_data: %s, wunderground_data: %s, air_pollution_data: %s, timezone: %s, ' \
                'air_pollution_attributions: %s]' % (self.id, self.name, self.country, self.climate_zone, self.elevation,
                 self.elevation_units, self.last_modified, self.latitude, self.longitude, self.population, self.owm_data,
@@ -198,9 +199,9 @@ class AirPollutionMeasure(models.Model):
         unique_together = ('location', 'timestamp')
 
     def __str__(self):
-        return 'AirPollutionMeasure [location (FK): %s, dominant_pollutant: %s, timestamp: %s, co_aqi: %0.4f, ' \
-               'co_aqi_units: %s, no2_aqi: %0.4f, no2_aqi_units: %s, o3_aqi: %0.4f, o3_aqi_units: %s, pm25_aqi: %0.4f,'\
-               'pm25_aqi_units: %s, pm10_aqi: %0.4f, pm10_aqi_units: %s, so2_aqi: %0.4f, so2_aqi_units: %s]' % (
+        return 'AirPollutionMeasure [location (FK): %s, dominant_pollutant: %s, timestamp: %s, co_aqi: %s, ' \
+               'co_aqi_units: %s, no2_aqi: %s, no2_aqi_units: %s, o3_aqi: %s, o3_aqi_units: %s, pm25_aqi: %s,'\
+               'pm25_aqi_units: %s, pm10_aqi: %s, pm10_aqi_units: %s, so2_aqi: %s, so2_aqi_units: %s]' % (
                 self.location, self.dominant_pollutant, self.timestamp, self.co_aqi, self.co_aqi_units, self.no2_aqi,
                 self.no2_aqi_units, self.o3_aqi, self.o3_aqi_units, self.pm25_aqi, self.pm25_aqi_units, self.pm10_aqi,
                 self.pm10_aqi_units, self.so2_aqi, self.so2_aqi_units)
@@ -208,11 +209,11 @@ class AirPollutionMeasure(models.Model):
 
 class WeatherType(models.Model):
     id = models.SmallIntegerField(primary_key=True)
-    icon_code = models.CharField(max_length=3, null=True)
+    icon_code = models.CharField(max_length=16, null=True)
     description = models.CharField(max_length=60, null=True)
 
     def __str__(self):
-        return 'WeatherType [id (PK): %d, icon_code: %s, description: %s]' % (self.id, self.icon_code, self.description)
+        return 'WeatherType [id (PK): %s, icon_code: %s, description: %s]' % (self.id, self.icon_code, self.description)
 
 
 class CurrentConditionsObservation(models.Model):
@@ -234,9 +235,9 @@ class CurrentConditionsObservation(models.Model):
     weather = models.ForeignKey(WeatherType, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return 'CurrentConditionsObservation [location (FK): %s, timestamp: %s, temperature: %0.4f, temperature_units:'\
-               ' %s, pressure: %0.4f, pressure_units: %s, humidity: %0.4f, pressure_units: %s, wind_speed: %0.4f, ' \
-               'wind_speed_units: %s, wind_degrees: %d, wind_degrees_units: %s, wind_direction: %s, sunrise: %s, ' \
+        return 'CurrentConditionsObservation [location (FK): %s, timestamp: %s, temperature: %s, temperature_units:'\
+               ' %s, pressure: %s, pressure_units: %s, humidity: %s, pressure_units: %s, wind_speed: %s, ' \
+               'wind_speed_units: %s, wind_degrees: %s, wind_degrees_units: %s, wind_direction: %s, sunrise: %s, ' \
                'sunset: %s, weather (FK): %s]' % (self.location, self.timestamp, self.temperature,
                 self.temperature_units, self.pressure, self.pressure_units, self.humidity, self.humidity_units,
                 self.wind_speed, self.wind_speed_units, self.wind_degrees, self.wind_degrees_units, self.wind_direction,
@@ -265,9 +266,9 @@ class WeatherForecastObservation(models.Model):
         unique_together = ('location', 'timestamp')
 
     def __str__(self):
-        return 'WeatherForecastObservation [location (FK): %s, timestamp: %s, temperature: %0.4f, temperature_units:' \
-               ' %s, pressure: %0.4f, pressure_units: %s, humidity: %0.4f, pressure_units: %s, wind_speed: %0.4f, ' \
-               'wind_speed_units: %s, wind_degrees: %d, wind_degrees_units: %s, wind_direction: %s, sunrise: %s, ' \
+        return 'WeatherForecastObservation [location (FK): %s, timestamp: %s, temperature: %s, temperature_units:' \
+               ' %s, pressure: %s, pressure_units: %s, humidity: %s, pressure_units: %s, wind_speed: %s, ' \
+               'wind_speed_units: %s, wind_degrees: %s, wind_degrees_units: %s, wind_direction: %s, sunrise: %s, ' \
                'sunset: %s, weather (FK): %s]' % (self.location, self.timestamp, self.temperature,
                 self.temperature_units, self.pressure, self.pressure_units, self.humidity, self.humidity_units,
                 self.wind_speed, self.wind_speed_units, self.wind_degrees, self.wind_degrees_units, self.wind_direction,
@@ -340,9 +341,9 @@ class SeaLevelRiseMeasure(models.Model):
     smoothed_variation_GIA_annual_semi_annual_removed = models.FloatField()
 
     def __str__(self):
-        return 'SeaLevelRiseMeasure [timestamp: %s, altimeter: %s, units: %s, variation: %0.4f, deviation: %0.4f, ' \
-               'smoothed_variation: %0.4f, variation_GIA: %0.4f, deviation_GIA: %0.4f, smoothed_variation_GIA: %0.4f,'\
-               'smoothed_variation_GIA_annual_semi_annual_removed: %0.4f]' % (self.timestamp, self.altimeter, self.units,
+        return 'SeaLevelRiseMeasure [timestamp: %s, altimeter: %s, units: %s, variation: %s, deviation: %s, ' \
+               'smoothed_variation: %s, variation_GIA: %s, deviation_GIA: %s, smoothed_variation_GIA: %s,'\
+               'smoothed_variation_GIA_annual_semi_annual_removed: %s]' % (self.timestamp, self.altimeter, self.units,
                 self.variation, self.deviation, self.smoothed_variation, self.variation_GIA, self.deviation_GIA,
                 self.smoothed_variation_GIA, self.smoothed_variation_GIA_annual_semi_annual_removed)
 
@@ -371,8 +372,8 @@ class OceanMassMeasure(models.Model):
         unique_together = ('timestamp', 'type')
 
     def __str__(self):
-        return 'OceanMassMeasure [timestamp: %s, type: %s, mass: %0.4f, mass_units: %s, uncertainty: %0.4f, ' \
-               'uncertainty_units: %s, height: %0.4f, height_units: %s, height_deseasoned: %0.4f, ' \
+        return 'OceanMassMeasure [timestamp: %s, type: %s, mass: %s, mass_units: %s, uncertainty: %s, ' \
+               'uncertainty_units: %s, height: %s, height_units: %s, height_deseasoned: %s, ' \
                'height_deseasoned_units: %s]' % (self.timestamp, self.type, self.mass, self.mass_units,
                 self.uncertainty, self.uncertainty_units, self.height, self.height_units, self.height_deseasoned,
                 self.height_deseasoned_units)
@@ -469,7 +470,7 @@ class RpcDatabaseEmission(models.Model):
         unique_together = ('year', 'scenario')
 
     def __str__(self):
-        return 'RpcDatabaseEmission [year: %d, scenario: %s]' % (self.year, self.scenario)
+        return 'RpcDatabaseEmission [year: %s, scenario: %s]' % (self.year, self.scenario)
 
 
 # Statistics and metadata
@@ -485,7 +486,7 @@ class ExecutionStatistics(models.Model):
         unique_together = ('subsystem_id', 'execution_id')
 
     def __str__(self):
-        return 'ExecutionStatistics [subsystem_id: %d, execution_id: %d, data: %s]' % (self.subsystem_id,
+        return 'ExecutionStatistics [subsystem_id: %s, execution_id: %s, data: %s]' % (self.subsystem_id,
                 self.execution_id, self.data)
 
 
@@ -494,7 +495,7 @@ class AggregatedStatistics(models.Model):
     data = JSONField(null=False)
 
     def __str__(self):
-        return 'AggregatedStatistics [subsystem_id: %d, data: %s]' % (self.subsystem_id, self.data)
+        return 'AggregatedStatistics [subsystem_id: %s, data: %s]' % (self.subsystem_id, self.data)
 
 
 class ExecutionId(models.Model):
@@ -512,4 +513,4 @@ class ExecutionId(models.Model):
         super(ExecutionId, self).save(*args, **kwargs)
 
     def __str__(self):
-        return 'ExecutionId [subsystem_id: %d, execution_id: %d]' % (self.subsystem_id, self.execution_id)
+        return 'ExecutionId [subsystem_id: %s, execution_id: %s]' % (self.subsystem_id, self.execution_id)
