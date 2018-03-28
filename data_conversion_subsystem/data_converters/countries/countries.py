@@ -44,6 +44,7 @@ class _CountriesDataConverter(DataConverter):
             try:
                 iso2_code = value['_id']
                 iso3_code = value['iso3']
+                name = value.get('name').strip()
                 capital_city_name = value.get('capitalCity').strip()
                 latitude = parse_float(value.get('latitude'))
                 longitude = parse_float(value.get('longitude'))
@@ -65,7 +66,7 @@ class _CountriesDataConverter(DataConverter):
                     self.logger.debug('Created IncomeLevel object with ID: "%s", and name: "%s".' %
                             (income_level.iso3_code, income_level.name))
                 self.data.append(Country(iso2_code=iso2_code, iso3_code=iso3_code, capital_city_name=capital_city_name,
-                        latitude=latitude, longitude=longitude, region=region, income_level=income_level))
+                        latitude=latitude, longitude=longitude, region=region, income_level=income_level, name=name))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. Country with ID "%s" will not be converted'
