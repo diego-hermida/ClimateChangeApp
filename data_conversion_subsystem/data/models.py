@@ -81,8 +81,8 @@ class IncomeLevel(models.Model):
 class Country(models.Model):
     iso2_code = models.CharField(max_length=2, primary_key=True)
     iso3_code = models.CharField(max_length=3, unique=True)
-    name = models.CharField(max_length=50, null=True)
-    capital_city_name = models.CharField(max_length=50, null=True)
+    name = models.CharField(max_length=100, null=True)
+    capital_city_name = models.CharField(max_length=100, null=True)
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
     region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True)
@@ -140,7 +140,7 @@ class EnergySourcesMeasure(models.Model):
 
 class Location(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True)
-    name = models.CharField(max_length=80, db_index=True)
+    name = models.CharField(max_length=100, db_index=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
     climate_zone = models.CharField(max_length=3, db_index=True)
     elevation = models.SmallIntegerField(null=True)
