@@ -1,0 +1,385 @@
+# https://openweathermap.org/weather-conditions
+# These weather types will be mapped using this iconset: https://erikflowers.github.io/weather-icons/api-list.html
+WEATHER_TYPES:
+
+  - description: Thunderstom with light rain
+    icon: wi-owm-day-200
+    id: 200
+  - description: Thunderstom with rain
+    icon: wi-owm-day-201
+    id: 201
+  - description: Thunderstom with heavy rain
+    icon: wi-owm-day-202
+    id: 202
+  - description: Light thunderstorm
+    icon: wi-owm-day-210
+    id: 210
+  - description: Thunderstom
+    icon: wi-owm-day-211
+    id: 211
+  - description: Heavy thunderstorm
+    icon: wi-owm-day-212
+    id: 212
+  - description: Ragged thunderstorm
+    icon: wi-owm-day-221
+    id: 221
+  - description: Thunderstorm with light drizzle
+    icon: wi-owm-day-230
+    id: 230
+  - description: Thunderstorm with drizzle
+    icon: wi-owm-day-231
+    id: 231
+  - description: Thunderstorm with heavy drizzle
+    icon: wi-owm-day-232
+    id: 232
+  - description: Light intensity drizzle
+    icon: wi-owm-day-300
+    id: 300
+  - description: Drizzle
+    icon: wi-owm-day-301
+    id: 301
+  - description: Heavy intensity drizzle
+    icon: wi-owm-day-302
+    id: 302
+  - description: Light intensity drizzle rail
+    icon: wi-owm-day-310
+    id: 310
+  - description: Drizzle rain
+    icon: wi-owm-day-311
+    id: 311
+  - description: Heavy intensity drizzle rain
+    icon: wi-owm-day-312
+    id: 312
+  - description: Shower rain and drizzle
+    icon: wi-owm-day-313
+    id: 313
+  - description: Heavy shower rain and drizzle
+    icon: wi-owm-day-314
+    id: 314
+  - description: Shower drizzle
+    icon: wi-owm-day-321
+    id: 321
+  - description: Light rain
+    icon: wi-owm-day-500
+    id: 500
+  - description: Moderate rain
+    icon: wi-owm-day-501
+    id: 501
+  - description: Heavy intensity rain
+    icon: wi-owm-day-502
+    id: 502
+  - description: Very heavy rain
+    icon: wi-owm-day-503
+    id: 503
+  - description: Extreme rain
+    icon: wi-owm-day-504
+    id: 504
+  - description: Freezing rain
+    icon: wi-owm-day-511
+    id: 511
+  - description: Light intensity shower rain
+    icon: wi-owm-day-520
+    id: 520
+  - description: Shower rain
+    icon: wi-owm-day-521
+    id: 521
+  - description: Heavy intensity shower rain
+    icon: wi-owm-day-522
+    id: 522
+  - description: Ragged shower rain
+    icon: wi-owm-day-531
+    id: 531
+  - description: Light snow
+    icon: wi-owm-day-600
+    id: 600
+  - description: Snow
+    icon: wi-owm-day-601
+    id: 601
+  - description: Heavy snow
+    icon: wi-owm-day-602
+    id: 602
+  - description: Sleet
+    icon: wi-owm-day-611
+    id: 611
+  - description: Shower sleet
+    icon: wi-owm-day-612
+    id: 612
+  - description: Light rain and snow
+    icon: wi-owm-day-615
+    id: 615
+  - description: Rain and snow
+    icon: wi-owm-day-616
+    id: 616
+  - description: Light shower snow
+    icon: wi-owm-day-620
+    id: 620
+  - description: Shower snow
+    icon: wi-owm-day-621
+    id: 621
+  - description: Heavy shower snow
+    icon: wi-owm-day-622
+    id: 622
+  - description: Mist
+    icon: wi-owm-day-701
+    id: 701
+  - description: Smoke
+    icon: wi-owm-day-711
+    id: 711
+  - description: Haze
+    icon: wi-owm-day-721
+    id: 721
+  - description: Sand, dust whirls
+    icon: wi-owm-day-731
+    id: 731
+  - description: Fog
+    icon: wi-owm-day-741
+    id: 741
+  - description: Sand
+    icon: wi-owm-day-751
+    id: 751
+  - description: Dust
+    icon: wi-owm-day-761
+    id: 761
+  - description: Volcanic ash
+    icon: wi-owm-day-762
+    id: 762
+  - description: Squalls
+    icon: wi-owm-day-771
+    id: 771
+  - description: Tornado
+    icon: wi-owm-day-781
+    id: 781
+  - description: Clear sky
+    icon: wi-owm-day-800
+    id: 800
+  - description: Few clouds
+    icon: wi-owm-day-801
+    id: 801
+  - description: Scattered clouds
+    icon: wi-owm-day-802
+    id: 802
+  - description: Broken clouds
+    icon: wi-owm-day-803
+    id: 803
+  - description: Overcast clouds
+    icon: wi-owm-day-804
+    id: 804
+  - description: Thunderstom with light rain
+    icon: wi-owm-night-200
+    id: -200
+  - description: Thunderstom with rain
+    icon: wi-owm-night-201
+    id: -201
+  - description: Thunderstom with heavy rain
+    icon: wi-owm-night-202
+    id: -202
+  - description: Light thunderstorm
+    icon: wi-owm-night-210
+    id: -210
+  - description: Thunderstom
+    icon: wi-owm-night-211
+    id: -211
+  - description: Heavy thunderstorm
+    icon: wi-owm-night-212
+    id: -212
+  - description: Ragged thunderstorm
+    icon: wi-owm-night-221
+    id: -221
+  - description: Thunderstorm with light drizzle
+    icon: wi-owm-night-230
+    id: -230
+  - description: Thunderstorm with drizzle
+    icon: wi-owm-night-231
+    id: -231
+  - description: Thunderstorm with heavy drizzle
+    icon: wi-owm-night-232
+    id: -232
+  - description: Light intensity drizzle
+    icon: wi-owm-night-300
+    id: -300
+  - description: Drizzle
+    icon: wi-owm-night-301
+    id: -301
+  - description: Heavy intensity drizzle
+    icon: wi-owm-night-302
+    id: -302
+  - description: Light intensity drizzle rail
+    icon: wi-owm-night-310
+    id: -310
+  - description: Drizzle rain
+    icon: wi-owm-night-311
+    id: -311
+  - description: Heavy intensity drizzle rain
+    icon: wi-owm-night-312
+    id: -312
+  - description: Shower rain and drizzle
+    icon: wi-owm-night-313
+    id: -313
+  - description: Heavy shower rain and drizzle
+    icon: wi-owm-night-314
+    id: -314
+  - description: Shower drizzle
+    icon: wi-owm-night-321
+    id: -321
+  - description: Light rain
+    icon: wi-owm-night-500
+    id: -500
+  - description: Moderate rain
+    icon: wi-owm-night-501
+    id: -501
+  - description: Heavy intensity rain
+    icon: wi-owm-night-502
+    id: -502
+  - description: Very heavy rain
+    icon: wi-owm-night-503
+    id: -503
+  - description: Extreme rain
+    icon: wi-owm-night-504
+    id: -504
+  - description: Freezing rain
+    icon: wi-owm-night-511
+    id: -511
+  - description: Light intensity shower rain
+    icon: wi-owm-night-520
+    id: -520
+  - description: Shower rain
+    icon: wi-owm-night-521
+    id: -521
+  - description: Heavy intensity shower rain
+    icon: wi-owm-night-522
+    id: -522
+  - description: Ragged shower rain
+    icon: wi-owm-night-531
+    id: -531
+  - description: Light snow
+    icon: wi-owm-night-600
+    id: -600
+  - description: Snow
+    icon: wi-owm-night-601
+    id: -601
+  - description: Heavy snow
+    icon: wi-owm-night-602
+    id: -602
+  - description: Sleet
+    icon: wi-owm-night-611
+    id: -611
+  - description: Shower sleet
+    icon: wi-owm-night-612
+    id: -612
+  - description: Light rain and snow
+    icon: wi-owm-night-615
+    id: -615
+  - description: Rain and snow
+    icon: wi-owm-night-616
+    id: -616
+  - description: Light shower snow
+    icon: wi-owm-night-620
+    id: -620
+  - description: Shower snow
+    icon: wi-owm-night-621
+    id: -621
+  - description: Heavy shower snow
+    icon: wi-owm-night-622
+    id: -622
+  - description: Mist
+    icon: wi-owm-night-701
+    id: -701
+  - description: Smoke
+    icon: wi-owm-night-711
+    id: -711
+  - description: Haze
+    icon: wi-owm-night-721
+    id: -721
+  - description: Sand, dust whirls
+    icon: wi-owm-night-731
+    id: -731
+  - description: Fog
+    icon: wi-owm-night-741
+    id: -741
+  - description: Sand
+    icon: wi-owm-night-751
+    id: -751
+  - description: Dust
+    icon: wi-owm-night-761
+    id: -761
+  - description: Volcanic ash
+    icon: wi-owm-night-762
+    id: -762
+  - description: Squalls
+    icon: wi-owm-night-771
+    id: -771
+  - description: Tornado
+    icon: wi-owm-night-781
+    id: -781
+  - description: Clear sky
+    icon: wi-owm-night-800
+    id: -800
+  - description: Few clouds
+    icon: wi-owm-night-801
+    id: -801
+  - description: Scattered clouds
+    icon: wi-owm-night-802
+    id: -802
+  - description: Broken clouds
+    icon: wi-owm-night-803
+    id: -803
+  - description: Overcast clouds
+    icon: wi-owm-night-804
+    id: -804
+  - description: Tornado
+    icon: wi-owm-day-900
+    id: 900
+  - description: Tropical storm
+    icon: wi-owm-day-901
+    id: 901
+  - description: Hurricane
+    icon: wi-owm-day-902
+    id: 902
+  - description: Cold
+    icon: wi-owm-day-903
+    id: 903
+  - description: Hot
+    icon: wi-owm-day-904
+    id: 904
+  - description: Windy
+    icon: wi-owm-day-905
+    id: 905
+  - description: Hail
+    icon: wi-owm-day-906
+    id: 906
+  - description: Calm
+    icon: wi-owm-day-951
+    id: 951
+  - description: Light breeze
+    icon: wi-owm-day-952
+    id: 952
+  - description: Gentle breeze
+    icon: wi-owm-day-953
+    id: 953
+  - description: Moderate breeze
+    icon: wi-owm-day-954
+    id: 954
+  - description: Fresh breeze
+    icon: wi-owm-day-955
+    id: 955
+  - description: Strong breeze
+    icon: wi-owm-day-956
+    id: 956
+  - description: High wind, near gale
+    icon: wi-owm-day-957
+    id: 957
+  - description: Gale
+    icon: wi-owm-day-958
+    id: 958
+  - description: Severe gale
+    icon: wi-owm-day-959
+    id: 959
+  - description: Storm
+    icon: wi-owm-day-960
+    id: 960
+  - description: Violent storm
+    icon: wi-owm-day-961
+    id: 961
+  - description: Hurricane
+    icon: wi-owm-day-962
+    id: 962
