@@ -45,6 +45,8 @@ class _WeatherForecastDataConverter(DataConverter):
                 for obs in value['list']:
                     items += 1
                     timestamp = datetime.datetime.utcfromtimestamp(parse_int(obs.get('dt'), nullable=False))
+                    date = timestamp.date()
+                    time = timestamp.time()
                     temperature = parse_int(obs['main'].get('temp'))
                     pressure = parse_float(obs['main'].get('pressure'))
                     humidity = parse_int(obs['main'].get('humidity'))
@@ -55,7 +57,7 @@ class _WeatherForecastDataConverter(DataConverter):
                     if weather.get('icon') and weather.get('id'):
                         weather = - parse_int(weather.get('id'), nullable=False) if 'n' in weather['icon'] else \
                                 parse_int(weather.get('id'), nullable=False)
-                    self.data.append(WeatherForecastObservation(location_id=location, timestamp=timestamp,
+                    self.data.append(WeatherForecastObservation(location_id=location, date=date, time=time,
                             temperature=temperature, pressure=pressure, humidity=humidity, wind_speed=wind_speed,
                             wind_degrees=wind_degrees, wind_direction=wind_direction, weather_id=weather))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):

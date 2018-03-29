@@ -219,15 +219,15 @@ class WeatherType(models.Model):
 class CurrentConditionsObservation(models.Model):
     location = models.OneToOneField(Location, on_delete=models.CASCADE, primary_key=True)
     timestamp = models.DateTimeField(db_index=True)
-    temperature = models.FloatField(null=True)
+    temperature = models.SmallIntegerField(null=True)
     temperature_units = models.CharField(max_length=7, choices=MEASURE_UNITS, default='CELSIUS', null=True)
     pressure = models.SmallIntegerField(null=True)
     pressure_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='HPA', null=True)
-    humidity = models.FloatField(null=True)
+    humidity = models.PositiveSmallIntegerField(null=True)
     humidity_units = models.CharField(max_length=7, choices=MEASURE_UNITS, default='PERCENT', null=True)
-    wind_speed = models.FloatField(null=True)
+    wind_speed = models.PositiveSmallIntegerField(null=True)
     wind_speed_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='M_S', null=True)
-    wind_degrees = models.SmallIntegerField(null=True)
+    wind_degrees = models.PositiveSmallIntegerField(null=True)
     wind_degrees_units = models.CharField(max_length=7, choices=MEASURE_UNITS, default='DEGREES', null=True)
     wind_direction = models.CharField(max_length=3, choices=WIND_DIRECTIONS, null=True)
     sunrise = models.DateTimeField(null=True)
@@ -246,16 +246,17 @@ class CurrentConditionsObservation(models.Model):
 
 class WeatherForecastObservation(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(db_index=True)
-    temperature = models.FloatField(null=True)
+    date = models.DateField(db_index=True)
+    time = models.TimeField(db_index=True)
+    temperature = models.SmallIntegerField(null=True)
     temperature_units = models.CharField(max_length=7, choices=MEASURE_UNITS, default='CELSIUS', null=True)
     pressure = models.SmallIntegerField(null=True)
     pressure_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='HPA', null=True)
-    humidity = models.FloatField(null=True)
+    humidity = models.PositiveSmallIntegerField(null=True)
     humidity_units = models.CharField(max_length=7, choices=MEASURE_UNITS, default='PERCENT', null=True)
-    wind_speed = models.FloatField(null=True)
+    wind_speed = models.PositiveSmallIntegerField(null=True)
     wind_speed_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='M_S', null=True)
-    wind_degrees = models.SmallIntegerField(null=True)
+    wind_degrees = models.PositiveSmallIntegerField(null=True)
     wind_degrees_units = models.CharField(max_length=7, choices=MEASURE_UNITS, default='DEGREES', null=True)
     wind_direction = models.CharField(max_length=3, choices=WIND_DIRECTIONS, null=True)
     sunrise = models.DateTimeField(null=True)
@@ -266,10 +267,10 @@ class WeatherForecastObservation(models.Model):
         unique_together = ('location', 'timestamp')
 
     def __str__(self):
-        return 'WeatherForecastObservation [location (FK): %s, timestamp: %s, temperature: %s, temperature_units:' \
+        return 'WeatherForecastObservation [location (FK): %s, date: %s, time: %s, temperature: %s, temperature_units:'\
                ' %s, pressure: %s, pressure_units: %s, humidity: %s, pressure_units: %s, wind_speed: %s, ' \
                'wind_speed_units: %s, wind_degrees: %s, wind_degrees_units: %s, wind_direction: %s, sunrise: %s, ' \
-               'sunset: %s, weather (FK): %s]' % (self.location, self.timestamp, self.temperature,
+               'sunset: %s, weather (FK): %s]' % (self.location, self.date, self.time, self.temperature,
                 self.temperature_units, self.pressure, self.pressure_units, self.humidity, self.humidity_units,
                 self.wind_speed, self.wind_speed_units, self.wind_degrees, self.wind_degrees_units, self.wind_direction,
                 self.sunrise, self.sunset, self.weather)
