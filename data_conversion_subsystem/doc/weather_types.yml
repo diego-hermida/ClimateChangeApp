@@ -135,7 +135,7 @@ WEATHER_TYPES:
     icon: wi-owm-day-741
     id: 741
   - description: Sand
-    icon: wi-owm-day-751
+    icon: wi-sandstorm
     id: 751
   - description: Dust
     icon: wi-owm-day-761
@@ -144,7 +144,7 @@ WEATHER_TYPES:
     icon: wi-owm-day-762
     id: 762
   - description: Squalls
-    icon: wi-owm-day-771
+    icon: wi-owm-day-500
     id: 771
   - description: Tornado
     icon: wi-owm-day-781
@@ -297,7 +297,7 @@ WEATHER_TYPES:
     icon: wi-owm-night-741
     id: -741
   - description: Sand
-    icon: wi-owm-night-751
+    icon: wi-sandstorm
     id: -751
   - description: Dust
     icon: wi-owm-night-761
@@ -306,7 +306,7 @@ WEATHER_TYPES:
     icon: wi-owm-night-762
     id: -762
   - description: Squalls
-    icon: wi-owm-night-771
+    icon: wi-owm-night-500
     id: -771
   - description: Tornado
     icon: wi-owm-night-781
@@ -330,7 +330,7 @@ WEATHER_TYPES:
     icon: wi-owm-day-900
     id: 900
   - description: Tropical storm
-    icon: wi-owm-day-901
+    icon: wi-hurricane
     id: 901
   - description: Hurricane
     icon: wi-owm-day-902
@@ -342,44 +342,44 @@ WEATHER_TYPES:
     icon: wi-owm-day-904
     id: 904
   - description: Windy
-    icon: wi-owm-day-905
+    icon: wi-windy
     id: 905
   - description: Hail
-    icon: wi-owm-day-906
+    icon: wi-hail
     id: 906
   - description: Calm
-    icon: wi-owm-day-951
+    icon: wi-stars
     id: 951
   - description: Light breeze
-    icon: wi-owm-day-952
+    icon: wi-windy
     id: 952
   - description: Gentle breeze
-    icon: wi-owm-day-953
+    icon: wi-windy
     id: 953
   - description: Moderate breeze
-    icon: wi-owm-day-954
+    icon: wi-windy
     id: 954
   - description: Fresh breeze
-    icon: wi-owm-day-955
+    icon: wi-windy
     id: 955
   - description: Strong breeze
-    icon: wi-owm-day-956
+    icon: wi-windy
     id: 956
   - description: High wind, near gale
     icon: wi-owm-day-957
     id: 957
   - description: Gale
-    icon: wi-owm-day-958
+    icon: wi-strong-wind
     id: 958
   - description: Severe gale
-    icon: wi-owm-day-959
+    icon: wi-strong-wind
     id: 959
   - description: Storm
-    icon: wi-owm-day-960
+    icon: wi-lightning
     id: 960
   - description: Violent storm
-    icon: wi-owm-day-961
+    icon: wi-thunderstorm
     id: 961
   - description: Hurricane
-    icon: wi-owm-day-962
+    icon: wi-hurricane
     id: 962
