@@ -264,7 +264,7 @@ class WeatherForecastObservation(models.Model):
     weather = models.ForeignKey(WeatherType, on_delete=models.SET_NULL, null=True)
 
     class Meta:
-        unique_together = ('location', 'timestamp')
+        unique_together = ('location', 'date', 'time')
 
     def __str__(self):
         return 'WeatherForecastObservation [location (FK): %s, date: %s, time: %s, temperature: %s, temperature_units:'\
