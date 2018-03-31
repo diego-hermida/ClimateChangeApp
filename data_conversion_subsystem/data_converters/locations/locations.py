@@ -51,8 +51,9 @@ class _LocationsDataConverter(DataConverter):
                 population = parse_int(value.get('population'))
                 timezone = value.get('timezone')
                 owm_data = value.get('owm_station_id') is not None
-                wunderground_data = value.get('waqi_station_id') is not None
-                air_pollution_data = value.get('wunderground_loc_id') is not None
+                # Changing permuted values FIXES [BUG-038].
+                wunderground_data = value.get('wunderground_loc_id') is not None
+                air_pollution_data = value.get('waqi_station_id') is not None
                 self.data.append(Location(id=id, name=name, country_id=country_id, climate_zone=climate_zone,
                         elevation=elevation, elevation_units=elevation_units, last_modified=last_modified,
                         longitude=longitude, latitude=latitude, population=population, timezone=timezone,
