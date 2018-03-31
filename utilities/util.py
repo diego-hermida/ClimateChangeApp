@@ -95,7 +95,7 @@ def get_config(path: str) -> dict:
     path = path.replace('.py', '.config')
     with open(path, 'r', encoding='utf-8') as f:
         config = yaml.load(f)
-    return config
+    return config if config else {}
 
 
 def map_data_collector_path_to_state_file_path(path: str, root_dir: str) -> str:

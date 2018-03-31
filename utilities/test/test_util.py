@@ -92,6 +92,12 @@ class TestUtil(TestCase):
             utilities.util.get_config(__file__)
         remove(config_file)
 
+        # Empty content
+        with open(config_file, 'w+') as f:
+            f.truncate()
+        config = utilities.util.get_config(__file__)
+        self.assertDictEqual({}, config)
+
     def test_map_data_collector_path_to_state_file_path(self):
         file = '/temp/ClimateChangeApp/data_gathering_subsystem/data_modules/module/module.py'
         self.assertEqual('/temp/state/module.state', utilities.util.map_data_collector_path_to_state_file_path(file,
