@@ -154,14 +154,18 @@ class Location(models.Model):
     air_pollution_data = models.BooleanField(default=False)
     timezone = models.CharField(max_length=30, null=True)
     air_pollution_attributions = JSONField(null=True, default=None)
+    # Due to a circular reference between Location and AirPollutionMeasure, setting model as <str> instead of <object>
+    air_pollution_last_measure = models.ForeignKey('data.AirPollutionMeasure', on_delete=models.SET_NULL, null=True,
+                                                   related_name='+')
 
     def __str__(self):
         return 'Location [id (PK): %s, name: %s, country (FK): %s, climate_zone: %s, elevation: %s, ' \
                'elevation_units: %s, last_modified: %s, latitude: %s, longitude: %s, population: %s, ' \
                'owm_data: %s, wunderground_data: %s, air_pollution_data: %s, timezone: %s, ' \
-               'air_pollution_attributions: %s]' % (self.id, self.name, self.country, self.climate_zone, self.elevation,
-                self.elevation_units, self.last_modified, self.latitude, self.longitude, self.population, self.owm_data,
-                self.wunderground_data, self.air_pollution_data, self.timezone, self.air_pollution_attributions)
+               'air_pollution_last_measure: %s air_pollution_attributions: %s]' % (self.id, self.name, self.country,
+                self.climate_zone, self.elevation, self.elevation_units, self.last_modified, self.latitude,
+                self.longitude, self.population, self.owm_data,self.wunderground_data, self.air_pollution_data,
+                self.timezone, self.air_pollution_last_measure, self.air_pollution_attributions)
 
 
 class AirPollutionMeasure(models.Model):
@@ -172,37 +176,116 @@ class AirPollutionMeasure(models.Model):
     PM25 = 'PM25'
     SO2 = 'SO2'
     POLLUTANT_TYPE = (
-        ('CO', 'CO'),
-        ('NO2', 'NO₂'),
-        ('O3', 'O₃'),
-        ('PM10', 'PM10'),
-        ('PM25', 'PM2.5'),
-        ('SO2', 'SO₂')
+        (CO, 'CO'),
+        (NO2, 'NO₂'),
+        (O3, 'O₃'),
+        (PM10, 'PM10'),
+        (PM25, 'PM2.5'),
+        (SO2, 'SO₂')
     )
+    GREEN = 1
+    YELLOW = 2
+    ORANGE = 3
+    RED = 4
+    PURPLE = 5
+    BROWN = 6
+    COLOR_TYPE = (
+        (GREEN, '#128a53'),
+        (YELLOW, '#feda28'),
+        (ORANGE, '#fd8627'),
+        (RED, '#b30025'),
+        (PURPLE, '#520086'),
+        (BROWN, '#69001b')
+    )
+    TEXT_WHITE = 1
+    TEXT_BLACK = 2
+    TEXT_COLOR_TYPE = (
+        (TEXT_WHITE, 'text-white'),
+        (TEXT_BLACK, 'text-dark')
+    )
+
+    HEALTH_WARNING_LIMIT = 300.0
+
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     dominant_pollutant = models.CharField(max_length=5, choices=POLLUTANT_TYPE, null=True)
+    dominant_pollutant_value = models.FloatField(null=True)
+    dominant_pollutant_color = models.PositiveSmallIntegerField(choices=COLOR_TYPE, null=True)
+    dominant_pollutant_text_color = models.PositiveSmallIntegerField(choices=TEXT_COLOR_TYPE, null=True)
     timestamp = models.DateTimeField(db_index=True)
+    timestamp_epoch = models.BigIntegerField(db_index=True)
     co_aqi = models.FloatField(null=True)
     co_aqi_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='AQI', null=True)
     no2_aqi = models.FloatField(null=True)
     no2_aqi_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='AQI', null=True)
     o3_aqi = models.FloatField(null=True)
     o3_aqi_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='AQI', null=True)
-    pm25_aqi = models.FloatField(null=True)
+    pm25_aqi = models.PositiveSmallIntegerField(null=True)
     pm25_aqi_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='AQI', null=True)
-    pm10_aqi = models.FloatField(null=True)
+    pm10_aqi = models.PositiveSmallIntegerField(null=True)
     pm10_aqi_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='AQI', null=True)
     so2_aqi = models.FloatField(null=True)
     so2_aqi_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='AQI', null=True)
+
+    def display_health_warning(self) -> bool:
+        return self.dominant_pollutant_value >= AirPollutionMeasure.HEALTH_WARNING_LIMIT if self.dominant_pollutant_value else False
+
+    def get_measures(self) -> list:
+        co = {'name': AirPollutionMeasure.POLLUTANT_TYPE[0][1], 'value': self.co_aqi}
+        no2 = {'name': AirPollutionMeasure.POLLUTANT_TYPE[1][1], 'value': self.no2_aqi}
+        o3 = {'name': AirPollutionMeasure.POLLUTANT_TYPE[2][1], 'value': self.o3_aqi}
+        pm10 = {'name': AirPollutionMeasure.POLLUTANT_TYPE[3][1], 'value': self.pm10_aqi}
+        pm25 = {'name': AirPollutionMeasure.POLLUTANT_TYPE[4][1], 'value': self.pm25_aqi}
+        so2 = {'name': AirPollutionMeasure.POLLUTANT_TYPE[5][1], 'value': self.so2_aqi}
+        return [co, no2, o3, pm25, pm10, so2]
+
+    def get_dominant_pollutant_value_display(self) -> float:
+        if self.dominant_pollutant == AirPollutionMeasure.PM10 or self.dominant_pollutant == AirPollutionMeasure.PM25:
+            return int(self.dominant_pollutant_value)
+        else:
+            return self.dominant_pollutant_value
+
+    @staticmethod
+    def get_pollutants_display() -> list:
+        return [x[1] for x in AirPollutionMeasure.POLLUTANT_TYPE]
+
+    @staticmethod
+    def get_dominant_pollutant_values(dominant_pollutant: str, values: dict) -> (float, str, str):
+        if dominant_pollutant is None:
+            return None, None, None
+        value = values.get(dominant_pollutant)
+        if value is None:
+            return None, None, None
+        if 0.0 <= value <= 50.0:
+            color = AirPollutionMeasure.GREEN
+            text_color = AirPollutionMeasure.TEXT_WHITE
+        elif 50.0 < value <= 100.0:
+            color = AirPollutionMeasure.YELLOW
+            text_color = AirPollutionMeasure.TEXT_BLACK
+        elif 100.0 < value <= 150.0:
+            color = AirPollutionMeasure.ORANGE
+            text_color = AirPollutionMeasure.TEXT_BLACK
+        elif 150.0 < value <= 200.0:
+            color = AirPollutionMeasure.RED
+            text_color = AirPollutionMeasure.TEXT_WHITE
+        elif 200.0 < value <= 300.0:
+            color = AirPollutionMeasure.PURPLE
+            text_color = AirPollutionMeasure.TEXT_WHITE
+        elif value > 300.0:
+            color = AirPollutionMeasure.BROWN
+            text_color = AirPollutionMeasure.TEXT_WHITE
+        else:
+            color = None
+            text_color = None
+        return value, color, text_color
 
     class Meta:
         unique_together = ('location', 'timestamp')
 
     def __str__(self):
-        return 'AirPollutionMeasure [location (FK): %s, dominant_pollutant: %s, timestamp: %s, co_aqi: %s, ' \
+        return 'AirPollutionMeasure [location (FK): %d, dominant_pollutant: %s, timestamp: %s, co_aqi: %s, ' \
                'co_aqi_units: %s, no2_aqi: %s, no2_aqi_units: %s, o3_aqi: %s, o3_aqi_units: %s, pm25_aqi: %s,'\
                'pm25_aqi_units: %s, pm10_aqi: %s, pm10_aqi_units: %s, so2_aqi: %s, so2_aqi_units: %s]' % (
-                self.location, self.dominant_pollutant, self.timestamp, self.co_aqi, self.co_aqi_units, self.no2_aqi,
+                self.location_id, self.dominant_pollutant, self.timestamp, self.co_aqi, self.co_aqi_units, self.no2_aqi,
                 self.no2_aqi_units, self.o3_aqi, self.o3_aqi_units, self.pm25_aqi, self.pm25_aqi_units, self.pm10_aqi,
                 self.pm10_aqi_units, self.so2_aqi, self.so2_aqi_units)
 
