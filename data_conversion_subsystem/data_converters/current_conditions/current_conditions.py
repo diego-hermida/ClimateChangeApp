@@ -1,4 +1,3 @@
-import datetime
 import yaml
 
 from data_conversion_subsystem.settings import register_settings
@@ -9,7 +8,7 @@ register_settings()
 from data_conversion_subsystem.config.config import DCS_CONFIG
 from data_conversion_subsystem.data.models import CurrentConditionsObservation, Location, WeatherType
 from data_conversion_subsystem.data_converter.data_converter import DataConverter
-from utilities.util import parse_float, parse_int, compute_wind_direction
+from utilities.util import parse_float, parse_int, parse_date_utc, compute_wind_direction
 from django.db import transaction
 
 _singleton = None
@@ -62,7 +61,8 @@ class _CurrentConditionsDataConverter(DataConverter):
         for value in self.elements_to_convert:
             try:
                 location = parse_int(value['location_id'], nullable=False)
-                timestamp = datetime.datetime.utcfromtimestamp(parse_int(value['time_utc'], nullable=False) / 1000)
+                # Setting timezone to pytz.UTC FIXES [BUG-039].
+                timestamp = parse_date_utc(value['time_utc'])
                 temperature = parse_int(value['main'].get('temp'))
                 pressure = parse_float(value['main'].get('pressure'))
                 humidity = parse_int(value['main'].get('humidity'))
@@ -71,8 +71,8 @@ class _CurrentConditionsDataConverter(DataConverter):
                 wind_direction = compute_wind_direction(wind_degrees)
                 int_sunrise = parse_int(value.get('sys', {}).get('sunrise'))
                 int_sunset = parse_int(value.get('sys', {}).get('sunset'))
-                sunrise = None if int_sunrise is None else datetime.datetime.utcfromtimestamp(int_sunrise)
-                sunset = None if int_sunset is None else datetime.datetime.utcfromtimestamp(int_sunset)
+                sunrise = None if int_sunrise is None else parse_date_utc(int_sunrise)
+                sunset = None if int_sunset is None else parse_date_utc(int_sunset)
                 weather = value.get('weather', [{}])[0]
                 if weather.get('icon') and weather.get('id'):
                     weather = - parse_int(weather.get('id'), nullable=False) if 'n' in weather['icon'] else parse_int(

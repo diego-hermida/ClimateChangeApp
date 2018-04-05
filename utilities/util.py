@@ -398,6 +398,20 @@ def parse_bool(value: str, nullable=True) -> bool:
                 raise
 
 
+def parse_date_utc(value: str):
+    """
+        Parses an "int" or "str" serialized integer into a "datetime.datetime" object.
+        Date timezone will be set to 'pytz.UTC'.
+        :param value: String to be parsed.
+        :return: The parsed value.
+        :raises ValueError: If the value cannot be parsed.
+    """
+    try:
+        return datetime.datetime.fromtimestamp(parse_int(value, nullable=False) / 1000, tz=pytz.UTC)
+    except Exception as e:
+        raise ValueError from e
+
+
 def compute_wind_direction(wind_degrees: float) -> str:
     """
         Given wind degrees, calculates its wind direction.

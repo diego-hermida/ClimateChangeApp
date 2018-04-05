@@ -1,5 +1,5 @@
 import copy
-import datetime
+import operator
 
 from data_conversion_subsystem.settings import register_settings
 
@@ -8,7 +8,7 @@ register_settings()
 
 from data_conversion_subsystem.data.models import AirPollutionMeasure, Location
 from data_conversion_subsystem.data_converter.data_converter import DataConverter
-from utilities.util import parse_float, parse_int
+from utilities.util import parse_float, parse_int, parse_date_utc
 from django.db import transaction
 
 _singleton = None
@@ -41,8 +41,11 @@ class _AirPollutionDataConverter(DataConverter):
         for value in self.elements_to_convert:
             try:
                 location = parse_int(value['location_id'], nullable=False)
-                dom_pollutant = None if value['data'].get('dominentpol') is None else value['data']['dominentpol'].upper()
-                timestamp = datetime.datetime.utcfromtimestamp(parse_int(value['time_utc'], nullable=False) / 1000)
+                dominant_pollutant = None if value['data'].get('dominentpol') is None else value['data'][
+                        'dominentpol'].upper()
+                # Setting timezone to pytz.UTC FIXES [BUG-039].
+                timestamp = parse_date_utc(value['time_utc'])
+                timestamp_epoch = parse_int(value['time_utc'], nullable=False)
                 co_aqi = parse_float(value['data']['iaqi'].get('co', {}).get('v'))
                 no2_aqi = parse_float(value['data']['iaqi'].get('no2', {}).get('v'))
                 o3_aqi = parse_float(value['data']['iaqi'].get('o3', {}).get('v'))
@@ -51,13 +54,20 @@ class _AirPollutionDataConverter(DataConverter):
                 so2_aqi = parse_float(value['data']['iaqi'].get('so2', {}).get('v'))
                 attributions = value['data'].get('attributions')
                 cache = self.state['cache'].get(location, [])
+                dominant_pollutant_value, dominant_pollutant_color, dominant_pollutant_text_color = \
+                    AirPollutionMeasure.get_dominant_pollutant_values(dominant_pollutant,
+                            {AirPollutionMeasure.CO: co_aqi, AirPollutionMeasure.NO2: no2_aqi,
+                             AirPollutionMeasure.O3: o3_aqi, AirPollutionMeasure.PM25: pm25_aqi,
+                             AirPollutionMeasure.PM10: pm10_aqi, AirPollutionMeasure.SO2: so2_aqi})
                 if attributions and next((a for a in cache if a['url'] in [x['url'] for x in attributions] and
                         a['name'] in [x['name'] for x in attributions]), default=None) is None:
                     cache.extend(attributions)
                     self.state['cache'][location] = cache
-                self.data.append(AirPollutionMeasure(location_id=location, dominant_pollutant=dom_pollutant,
+                self.data.append(AirPollutionMeasure(location_id=location, dominant_pollutant=dominant_pollutant,
                         timestamp=timestamp, co_aqi=co_aqi, no2_aqi=no2_aqi, o3_aqi=o3_aqi, pm25_aqi=pm25_aqi,
-                        pm10_aqi=pm10_aqi, so2_aqi=so2_aqi))
+                        pm10_aqi=pm10_aqi, so2_aqi=so2_aqi, dominant_pollutant_value=dominant_pollutant_value,
+                        dominant_pollutant_color=dominant_pollutant_color, timestamp_epoch=timestamp_epoch,
+                        dominant_pollutant_text_color=dominant_pollutant_text_color))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. AirPollutionMeasure with ID "%s" will not '
@@ -79,8 +89,23 @@ class _AirPollutionDataConverter(DataConverter):
         """
         super()._save_data()
         if self.data:
-            self.state['inserted_elements'] = len(AirPollutionMeasure.objects.bulk_create(self.data))
+            self.data = AirPollutionMeasure.objects.bulk_create(self.data)
+            self.state['inserted_elements'] = len(self.data)
             self.logger.info('Successfully saved %d elements.' % self.state['inserted_elements'])
+            self.logger.info('Updating references to AirPollutionMeasure from Location objects.')
+            # Using operator.attrgeter as sort function instead of implementing comparison operators due to:
+            # https://stackoverflow.com/questions/403421/how-to-sort-a-list-of-objects-based-on-an-attribute-of-the-objects
+            self.data.sort(key=operator.attrgetter('timestamp'), reverse=True)
+            updated_locations = []
+            for value in self.data:
+                if value.location_id in updated_locations:
+                    continue
+                else:
+                    loc = Location.objects.get(pk=value.location_id)
+                    loc.air_pollution_last_measure = value
+                    self.logger.debug('Updating air pollution\'s last measure for the location: %s.' % loc.name)
+                    loc.save()
+                    updated_locations.append(value.location_id)
         else:
             self.logger.info('No elements were saved because no elements were available.')
         self.data = None

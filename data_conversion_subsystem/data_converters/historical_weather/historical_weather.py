@@ -1,5 +1,3 @@
-import datetime
-
 from data_conversion_subsystem.settings import register_settings
 
 # Necessary to work with Django and PyPy3.
@@ -7,7 +5,7 @@ register_settings()
 
 from data_conversion_subsystem.data.models import HistoricalWeatherObservation, Location
 from data_conversion_subsystem.data_converter.data_converter import DataConverter
-from utilities.util import parse_float, parse_int, parse_bool
+from utilities.util import parse_float, parse_int, parse_bool, parse_date_utc
 from django.db import transaction
 
 _singleton = None
@@ -39,7 +37,7 @@ class _HistoricalWeatherDataConverter(DataConverter):
         for value in self.elements_to_convert:
             try:
                 location = parse_int(value['location_id'], nullable=False)
-                date = datetime.datetime.fromtimestamp(parse_int(value['date_utc'], nullable=False) / 1000).date()
+                date = parse_date_utc(value['date_utc']).date()
                 fog = parse_bool(value['history']['dailysummary'][0].get('fog'))
                 rain = parse_bool(value['history']['dailysummary'][0].get('rain'))
                 snow = parse_bool(value['history']['dailysummary'][0].get('snow'))

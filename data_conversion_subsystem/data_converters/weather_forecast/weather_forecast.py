@@ -1,5 +1,3 @@
-import datetime
-
 from data_conversion_subsystem.settings import register_settings
 
 # Necessary to work with Django and PyPy3.
@@ -7,7 +5,7 @@ register_settings()
 
 from data_conversion_subsystem.data.models import WeatherForecastObservation, Location, WeatherType
 from data_conversion_subsystem.data_converter.data_converter import DataConverter
-from utilities.util import parse_float, parse_int, compute_wind_direction
+from utilities.util import parse_float, parse_int, compute_wind_direction, parse_date_utc
 from django.db import transaction
 
 _singleton = None
@@ -44,7 +42,8 @@ class _WeatherForecastDataConverter(DataConverter):
                     continue
                 for obs in value['list']:
                     items += 1
-                    timestamp = datetime.datetime.utcfromtimestamp(parse_int(obs.get('dt'), nullable=False))
+                    # Setting timezone to pytz.UTC FIXES [BUG-039].
+                    timestamp = parse_date_utc(obs.get('dt') * 1000)
                     date = timestamp.date()
                     time = timestamp.time()
                     temperature = parse_int(obs['main'].get('temp'))

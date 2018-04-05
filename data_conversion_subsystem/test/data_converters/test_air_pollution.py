@@ -33,6 +33,14 @@ DATA_3 = {"_id": "5a92ad36dd571bdf0ff3f1ab", "station_id": 8179, "time_utc": "15
                             "so2": {"v": 4.7}}, "time": {"s": "2018-02-25 17:00:00", "tz": "+05:30", "v": 1519578000}},
           "location_id": 2, "status": "ok"}
 
+DATA_4 = {"_id": "5a92ad36dd571bdf0ff3f1ab", "station_id": 8179, "time_utc": "1519578000000", "_execution_id": 2,
+          "data": {"aqi": 170, "idx": 8179, "attributions": [],
+                   "city": {"geo": [28.6522734, 77.1564994], "name": "Shadipur, Delhi",
+                            "url": "http://aqicn.org/city/delhi/shadipur/"}, "dominentpol": "pm25",
+                   "iaqi": {"co": {"v": 1.3}, "no2": {"v": 9.3}, "o3": {"v": 22.8}, "pm25": {"v": 170},
+                            "so2": {"v": 4.7}}, "time": {"s": "2018-02-25 17:00:00", "tz": "+05:30", "v": 1519578000}},
+          "location_id": 1, "status": "ok"}
+
 DATA_UNEXPECTED = {"_id": "5a92ad36dd571bdf0ff3f1ab", "station_id": 8179, "time_utc": None, "_execution_id": 2,
                    "data": {"aqi": 170, "idx": 8179, "attributions": [
                        {"url": "http://cpcb.nic.in/", "name": "CPCB - India Central Pollution Control Board"}],
@@ -48,7 +56,7 @@ class TestAirPollution(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        air_pollution.instance(log_to_stdout=False, log_to_telegram=False).remove_files()
+        air_pollution.instance(log_to_stdout=False, log_to_file=False, log_to_telegram=False).remove_files()
 
     def setUp(self):
         self.data_converter = air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
@@ -107,12 +115,16 @@ class TestAirPollution(TestCase):
         self.assertListEqual([], self.data_converter.data)
 
     @mock.patch('data_conversion_subsystem.data_converters.air_pollution.air_pollution.AirPollutionMeasure.objects.'
-                'bulk_create', Mock(return_value=[1, 2, 3]))
-    def test_save_data(self):
-        self.data_converter.data = [1, 2, 3]
+                'bulk_create')
+    @mock.patch('data_conversion_subsystem.data_converters.air_pollution.air_pollution.Location.objects.get')
+    def test_save_data(self, mock_locations, mock_bulk_create):
+        self.data_converter.elements_to_convert = [DATA, DATA_2, DATA_3, DATA_4]
+        self.data_converter._perform_data_conversion()
+        mock_bulk_create.return_value = self.data_converter.data
         self.data_converter._save_data()
-        self.assertEqual(3, self.data_converter.state['inserted_elements'])
+        self.assertEqual(4, self.data_converter.state['inserted_elements'])
         self.assertIsNone(self.data_converter.data)
+        self.assertEqual(3, mock_locations.call_count)
 
     def test_save_data_with_no_data(self):
         self.data_converter.data = None

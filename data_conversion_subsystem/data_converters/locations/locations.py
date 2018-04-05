@@ -1,5 +1,3 @@
-import datetime
-
 from data_conversion_subsystem.settings import register_settings
 
 # Necessary to work with Django and PyPy3.
@@ -8,7 +6,7 @@ register_settings()
 from data_conversion_subsystem.data.models import Location, Country
 from data_conversion_subsystem.data_converter.data_converter import DataConverter
 from django.db import transaction
-from utilities.util import parse_float, parse_int
+from utilities.util import parse_float, parse_int, parse_date_utc
 
 _singleton = None
 
@@ -45,7 +43,8 @@ class _LocationsDataConverter(DataConverter):
                 climate_zone = value['climate_zone']
                 elevation = parse_int(value['elevation'].get('value'))
                 elevation_units = 'M' if elevation is not None else None
-                last_modified = datetime.datetime.utcfromtimestamp(parse_int(value['last_modified'], nullable=False) / 1000)
+                # Setting timezone to pytz.UTC FIXES [BUG-039].
+                last_modified = parse_date_utc(value['last_modified'])
                 latitude = parse_float(value.get('latitude'))
                 longitude = parse_float(value.get('longitude'))
                 population = parse_int(value.get('population'))

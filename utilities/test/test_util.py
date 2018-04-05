@@ -16,7 +16,7 @@ class TestUtil(TestCase):
         from pytz import UTC, timezone
 
         # Positive cases
-        epoch = datetime(1970, 1, 1, 0, 0, 0, 0, UTC)  # epoch is UNIX time, 01/01/1970 00:00:00 GTM
+        epoch = datetime(1970, 1, 1, 0, 0, 0, 0, UTC)  # epoch is UNIX time, 01/01/1970 00:00:00 UTC
         epoch_expected = 0
         future_date = datetime(2000, 1, 1, 0, 0, 0, 0, UTC)
         future_expected = 946684800000
@@ -34,7 +34,7 @@ class TestUtil(TestCase):
 
     def test_decimal_date_to_millis_since_epoch(self):
 
-        epoch = 1970.0000  # epoch is UNIX time, 01/01/1970 00:00:00 GTM
+        epoch = 1970.0000  # epoch is UNIX time, 01/01/1970 00:00:00 UTC
         epoch_expected = 0
         future_date = 2000.0000
         future_expected = 946684800000
@@ -97,6 +97,7 @@ class TestUtil(TestCase):
             f.truncate()
         config = utilities.util.get_config(__file__)
         self.assertDictEqual({}, config)
+        remove(config_file)
 
     def test_map_data_collector_path_to_state_file_path(self):
         file = '/temp/ClimateChangeApp/data_gathering_subsystem/data_modules/module/module.py'
@@ -163,7 +164,7 @@ class TestUtil(TestCase):
         from pytz import UTC, timezone
 
         # Positive cases
-        epoch = datetime(1970, 1, 1, 0, 0, 0, 0, UTC)  # epoch is UNIX time, 01/01/1970 00:00:00 GTM
+        epoch = datetime(1970, 1, 1, 0, 0, 0, 0, UTC)  # epoch is UNIX time, 01/01/1970 00:00:00 UTC
         expected = '1970-01-01T00:00:00Z'
         self.assertEqual(expected, utilities.util.serialize_date(epoch))
         self.assertIsNone(utilities.util.serialize_date(None))
@@ -179,7 +180,7 @@ class TestUtil(TestCase):
         from pytz import UTC
 
         date = '1970-01-01T0:0:0.0Z'
-        expected = datetime(1970, 1, 1, 0, 0, 0, 0, UTC)  # epoch is UNIX time, 01/01/1970 00:00:00 GTM
+        expected = datetime(1970, 1, 1, 0, 0, 0, 0, UTC)  # epoch is UNIX time, 01/01/1970 00:00:00 UTC
         self.assertEqual(expected, utilities.util.deserialize_date(date))
         self.assertIsNone(utilities.util.deserialize_date(None))
 
@@ -316,6 +317,18 @@ class TestUtil(TestCase):
             utilities.util.parse_bool('', nullable=False)
         with self.assertRaises(ValueError):
             utilities.util.parse_bool(None, nullable=False)
+
+    def test_parse_date_utc(self):
+        from datetime import datetime
+        from pytz import UTC
+
+        epoch = datetime(1970, 1, 1, 0, 0, 0, 0, UTC)  # epoch is UNIX time, 01/01/1970 00:00:00 UTC
+        self.assertEqual(epoch, utilities.util.parse_date_utc(0))
+        self.assertEqual(epoch, utilities.util.parse_date_utc('0'))
+        with self.assertRaises(ValueError):
+            utilities.util.parse_date_utc('')
+        with self.assertRaises(ValueError):
+            utilities.util.parse_date_utc(None)
 
     def test_compute_wind_direction(self):
         self.assertEqual('N', utilities.util.compute_wind_direction(349))

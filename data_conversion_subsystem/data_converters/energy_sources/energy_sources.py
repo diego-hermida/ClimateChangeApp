@@ -1,5 +1,3 @@
-import datetime
-
 from data_conversion_subsystem.settings import register_settings
 
 # Necessary to work with Django and PyPy3.
@@ -7,7 +5,7 @@ register_settings()
 
 from data_conversion_subsystem.data.models import EnergySourcesMeasure, Country
 from data_conversion_subsystem.data_converter.data_converter import DataConverter
-from utilities.util import parse_int, parse_float
+from utilities.util import parse_float, parse_date_utc
 from django.db import transaction
 
 _singleton = None
@@ -39,7 +37,8 @@ class _EnergySourcesDataConverter(DataConverter):
         for value in self.elements_to_convert:
             try:
                 country = value['country_id']
-                timestamp = datetime.datetime.utcfromtimestamp(parse_int(value['time_utc'], nullable=False) / 1000)
+                # Setting timezone to pytz.UTC FIXES [BUG-039].
+                timestamp = parse_date_utc(value['time_utc'])
                 carbon_intensity = parse_float(value['data'].get('carbonIntensity'))
                 fossil_fuel = parse_float(value['data'].get('fossilFuelPercentage'))
                 self.data.append(EnergySourcesMeasure(country_id=country, timestamp=timestamp,

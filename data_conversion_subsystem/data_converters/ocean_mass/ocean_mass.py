@@ -1,5 +1,3 @@
-import datetime
-
 from data_conversion_subsystem.settings import register_settings
 
 # Necessary to work with Django and PyPy3.
@@ -7,7 +5,7 @@ register_settings()
 
 from data_conversion_subsystem.data.models import OceanMassMeasure
 from data_conversion_subsystem.data_converter.data_converter import DataConverter
-from utilities.util import parse_int, parse_float
+from utilities.util import parse_float, parse_date_utc
 from django.db import transaction
 
 _singleton = None
@@ -35,7 +33,8 @@ class _OceanMassDataConverter(DataConverter):
         self.data = []
         for value in self.elements_to_convert:
             try:
-                timestamp = datetime.datetime.utcfromtimestamp(parse_int(value['time_utc'], nullable=False) / 1000)
+                # Setting timezone to pytz.UTC FIXES [BUG-039].
+                timestamp = parse_date_utc(value['time_utc'])
                 if value['type'] == 'antarctica':
                     type = OceanMassMeasure.ANTARCTICA
                 elif value['type'] == 'greenland':
