@@ -134,12 +134,8 @@ if [ "$EXPOSE_CONTAINERS" == "true" ]; then
     message -1 "[INFO] Docker containers will be reachable from the Internet.";
     export BIND_IP_ADDRESS='0.0.0.0';
 else
-    if [ "$MACOS" == "true" ]; then
-        export BIND_IP_ADDRESS='127.0.0.1'
-    else
-        export BIND_IP_ADDRESS=${HOST_IP}
-    fi
-    message 3 "[WARNING] Docker containers will not be reachable from the Internet. Binding connections to IP address: $HOST_IP";
+    export BIND_IP_ADDRESS='127.0.0.1'
+    message 3 "[WARNING] Docker containers will not be reachable from the Internet. Binding connections to IP address: $BIND_IP_ADDRESS";
 fi
 
 

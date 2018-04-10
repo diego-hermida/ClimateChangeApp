@@ -105,12 +105,8 @@ message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by in
 
 
 # Hiding SonarQube PostgreSQL database
-if [ "$MACOS" == "true" ]; then
-    export BIND_IP_ADDRESS='127.0.0.1'
-else
-    export BIND_IP_ADDRESS=${HOST_IP}
-fi
-message -1 "[INFO] SonarQube PostgreSQL database will not be reachable from the Internet. Binding connections to IP address: $HOST_IP";
+export BIND_IP_ADDRESS='127.0.0.1'
+message -1 "[INFO] SonarQube PostgreSQL database will not be reachable from the Internet. Binding connections to IP address: $BIND_IP_ADDRESS";
 
 
 # Overriding default ROOT_DIR?

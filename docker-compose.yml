@@ -1,4 +1,4 @@
-version: "3.4"
+version: "3.5"
 
 services:
     auto_heal:
@@ -150,4 +150,5 @@ services:
 
 networks:
     app_network:
+        name: climatechangeapp_network
         driver: bridge

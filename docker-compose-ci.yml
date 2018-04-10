@@ -1,4 +1,4 @@
-version: "3.4"
+version: "3.5"
 
 services:
     data_gathering_subsystem_ci:
@@ -99,4 +99,5 @@ services:
 
 networks:
     ci_network:
+        name: climatechangeapp_ci_network
         driver: bridge
