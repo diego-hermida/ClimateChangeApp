@@ -123,7 +123,7 @@ services:
         environment:
             - SONARQUBE_JDBC_USERNAME=sonar
             - SONARQUBE_JDBC_PASSWORD=sonar
-            - SONARQUBE_JDBC_URL=jdbc:postgresql://${HOST_IP:-127.0.0.1}:${POSTGRES_SONAR_PORT:-5434}/sonar
+            - SONARQUBE_JDBC_URL=jdbc:postgresql://${POSTGRES_SONAR_IP:-127.0.0.1}:${POSTGRES_SONAR_PORT:-5434}/sonar
         volumes:
             - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/extensions:/opt/sonarqube/extensions
             - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/data:/opt/sonarqube/data
@@ -131,8 +131,6 @@ services:
             - "0.0.0.0:${SONAR_PORT:-9000}:9000"
         networks:
           - app_network
-        depends_on:
-          - sonar_db
     sonar_db:
         image: healthcheck/postgres:latest
         container_name: sonar_db

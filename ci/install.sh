@@ -153,6 +153,33 @@ if [ $? != 0 ]; then
 fi
 
 
+# PostgreSQL component
+message 4 "[COMPONENT] PostgeSQL SonarQube database";
+
+# Deleting the PostgreSQL service if it was already been created: Brand-new container.
+if [ "$(docker ps -aq -f name=sonar_db)" ]; then
+    message -1 "[INFO] Removing previous PostgeSQL SonarQube database container.";
+    docker stop sonar_db;
+    docker rm sonar_db;
+fi
+
+# Launching the PostgreSQL service
+message -1 "[INFO] Launching the PostgeSQL SonarQube database service.";
+docker-compose up -d sonar_db;
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] The PostgeSQL SonarQube database service could not be initialized." 1;
+fi
+
+# Getting internal IP address.
+POSTGRES_SONAR_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sonar_db)"
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] Could not retrieve the local PostgeSQL SonarQube database IP address." 1;
+else
+    message -1 "[INFO] Using \"$POSTGRES_SONAR_IP\" as the PostgeSQL SonarQube database IP address.";
+    export POSTGRES_SONAR_IP=${POSTGRES_SONAR_IP};
+fi
+
+
 # Sonar component
 message 4 "[COMPONENT] SonarQube";
 
@@ -160,13 +187,13 @@ message 4 "[COMPONENT] SonarQube";
 if [ "$(docker ps -aq -f name="sonar")" ]; then
     message -1 "[INFO] Removing previous Sonar containers.";
     docker rm --force sonar;
-    docker rm --force sonar_db;
 fi
 # Launching the Sonar service
 message -1 "[INFO] Launching the Sonar service.";
 if [ "$FORCE_BUILD" == "true" ]; then
     message -1 "[INFO] Recreating Sonar image.";
-    docker-compose build --build-arg HOST_IP=${HOST_IP} --build-arg SONAR_PORT=${SONAR_PORT} sonar;
+    docker-compose build --build-arg HOST_IP=${HOST_IP} --build-arg POSTGRES_SONAR_IP=${POSTGRES_SONAR_IP} \
+                         --build-arg SONAR_PORT=${SONAR_PORT} sonar;
     if [ $? != 0 ]; then
         exit_with_message 1 "[ERROR] The Sonar image could not be built." 1;
     fi

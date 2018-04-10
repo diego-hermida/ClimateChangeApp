@@ -106,6 +106,14 @@ if [ $? != 0 ]; then
     exit_with_message 1 "[ERROR] The MongoDB CI service could not be initialized." 1;
 fi
 
+# Getting internal IP address
+MONGODB_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb_ci)"
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] Could not retrieve the local MongoDB IP address." 1;
+else
+    message -1 "[INFO] Using \"$MONGODB_IP\" as the MongoDB IP address.";
+fi
+
 
 # PostgreSQL component
 message 4 "[COMPONENT] PostgreSQL";
@@ -124,6 +132,14 @@ if [ $? != 0 ]; then
     exit_with_message 1 "[ERROR] The PostgreSQL CI service could not be initialized." 1;
 fi
 
+# Getting internal IP address
+POSTGRES_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres_ci)"
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] Could not retrieve the local PostgreSQL IP address." 1;
+else
+    message -1 "[INFO] Using \"$POSTGRES_IP\" as the PostgeSQL IP address.";
+fi
+
 
 # Telegram Configurator component
 message 4 "[COMPONENT] Telegram Configurator";
@@ -139,8 +155,8 @@ fi
 # Utilities component
 message 4 "[COMPONENT] Utilities";
 docker-compose -f docker-compose-ci.yml build \
-                     --build-arg MONGODB_IP=${HOST_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
-                     --build-arg POSTGRES_IP=${HOST_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
+                     --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
+                     --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
                      --build-arg DEPLOY_ARGS="${UTILITIES_DEPLOY_ARGS}" utilities_ci;
 
 if [ $? != 0 ]; then
@@ -153,7 +169,7 @@ message 4 "[COMPONENT] Data Gathering Subsystem";
 
 # Building the Data Gathering Subsystem component
 docker-compose -f docker-compose-ci.yml build \
-                     --build-arg MONGODB_IP=${HOST_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
+                     --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
                      --build-arg DEPLOY_ARGS="${DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS}" data_gathering_subsystem_ci;
 if [ $? != 0 ]; then
     exit_with_message 1 "> The Data Gathering Subsystem CI image could not be built." 1;
@@ -173,7 +189,7 @@ fi
 # Building the API service
 message -1 "[INFO] Building the API CI image."
 docker-compose -f docker-compose-ci.yml build \
-                     --build-arg MONGODB_IP=${HOST_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
+                     --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
                      --build-arg DEPLOY_ARGS="${API_DEPLOY_ARGS}" api_ci;
 if [ $? != 0 ]; then
     exit_with_message 1 "[INFO] The API CI image could not be built." 1;
@@ -186,7 +202,7 @@ message 4 "[COMPONENT] Data Conversion Subsystem";
 
 # Building the Data Conversion Subsystem component
 docker-compose -f docker-compose-ci.yml build \
-                     --build-arg POSTGRES_IP=${HOST_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
+                     --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
                      --build-arg API_IP=${HOST_IP} --build-arg API_PORT=${API_PORT} \
                      --build-arg DEPLOY_ARGS="${DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS}" data_conversion_subsystem_ci;
 if [ $? != 0 ]; then
