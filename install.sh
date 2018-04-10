@@ -176,7 +176,7 @@ if [ $? != 0 ]; then
 fi
 
 # Getting internal IP address, if --hide-containers.
-if [$EXPOSE_CONTAINERS == "true" ]; then
+if [ "$EXPOSE_CONTAINERS" == "true" ]; then
     MONGODB_IP=${HOST_IP};
 else
     MONGODB_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)"
@@ -206,7 +206,7 @@ if [ $? != 0 ]; then
 fi
 
 # Getting internal IP address, if --hide-containers.
-if [$EXPOSE_CONTAINERS == "true" ]; then
+if [ "$EXPOSE_CONTAINERS" == "true" ]; then
     POSTGRES_IP=${HOST_IP};
 else
     POSTGRES_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres)"
@@ -292,7 +292,7 @@ if [ $? != 0 ]; then
 fi
 
 # Getting internal IP address, if --hide-containers.
-if [$EXPOSE_CONTAINERS == "true" ]; then
+if [ "$EXPOSE_CONTAINERS" == "true" ]; then
     API_IP=${HOST_IP};
 else
     API_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' api)"
