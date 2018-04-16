@@ -194,24 +194,25 @@ class AirPollutionMeasure(models.Model):
         (YELLOW, '#feda28'),
         (ORANGE, '#fd8627'),
         (RED, '#b30025'),
-        (PURPLE, '#520086'),
+        (PURPLE, '#800080'),
         (BROWN, '#69001b')
     )
     TEXT_WHITE = 1
     TEXT_BLACK = 2
     TEXT_COLOR_TYPE = (
-        (TEXT_WHITE, 'text-white'),
-        (TEXT_BLACK, 'text-dark')
+        (TEXT_WHITE, '#ffffff'),
+        (TEXT_BLACK, '#000000')
     )
-
-    HEALTH_WARNING_LIMIT = 300.0
+    TEXT_WHITE_COLORS = [GREEN, RED, PURPLE, BROWN]
+    TEXT_BLACK_COLORS = [YELLOW, ORANGE]
+    HEALTH_WARNING_LIMIT = 400.0
 
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     dominant_pollutant = models.CharField(max_length=5, choices=POLLUTANT_TYPE, null=True)
     dominant_pollutant_value = models.FloatField(null=True)
     dominant_pollutant_color = models.PositiveSmallIntegerField(choices=COLOR_TYPE, null=True)
     dominant_pollutant_text_color = models.PositiveSmallIntegerField(choices=TEXT_COLOR_TYPE, null=True)
-    timestamp = models.DateTimeField(db_index=True)
+    timestamp = models.DateTimeField()
     timestamp_epoch = models.BigIntegerField(db_index=True)
     co_aqi = models.FloatField(null=True)
     co_aqi_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='AQI', null=True)
@@ -227,7 +228,8 @@ class AirPollutionMeasure(models.Model):
     so2_aqi_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='AQI', null=True)
 
     def display_health_warning(self) -> bool:
-        return self.dominant_pollutant_value >= AirPollutionMeasure.HEALTH_WARNING_LIMIT if self.dominant_pollutant_value else False
+        return self.dominant_pollutant_value >= AirPollutionMeasure.HEALTH_WARNING_LIMIT \
+            if self.dominant_pollutant_value else False
 
     def get_measures(self) -> list:
         co = {'name': AirPollutionMeasure.POLLUTANT_TYPE[0][1], 'value': self.co_aqi}
@@ -249,34 +251,48 @@ class AirPollutionMeasure(models.Model):
         return [x[1] for x in AirPollutionMeasure.POLLUTANT_TYPE]
 
     @staticmethod
-    def get_dominant_pollutant_values(dominant_pollutant: str, values: dict) -> (float, str, str):
+    def get_text_color(color: COLOR_TYPE, display=False):
+        return (AirPollutionMeasure.TEXT_COLOR_TYPE[1][1] if display else AirPollutionMeasure.TEXT_BLACK) \
+            if color in AirPollutionMeasure.TEXT_BLACK_COLORS else (AirPollutionMeasure.TEXT_COLOR_TYPE[0][1]
+                if display else AirPollutionMeasure.TEXT_WHITE) if color is not None else None
+
+    @staticmethod
+    def get_color_list() -> list:
+        return [{'color': x[1], 'text_color': AirPollutionMeasure.get_text_color(x[0], display=True)}
+                for x in AirPollutionMeasure.COLOR_TYPE]
+
+    @staticmethod
+    def get_colors_display(value):
+        color = AirPollutionMeasure.get_backgroud_color(value)
+        return AirPollutionMeasure.get_backgroud_color(value, display=True), AirPollutionMeasure.get_text_color(
+                color, display=True)
+
+    @staticmethod
+    def get_backgroud_color(value: float, display=False):
+        if value is None:
+            return None
+        if 0.0 <= value <= 50.0:
+            return AirPollutionMeasure.COLOR_TYPE[0][1] if display else AirPollutionMeasure.GREEN
+        elif 50.0 < value <= 100.0:
+            return AirPollutionMeasure.COLOR_TYPE[1][1] if display else AirPollutionMeasure.YELLOW
+        elif 100.0 < value <= 150.0:
+            return AirPollutionMeasure.COLOR_TYPE[2][1] if display else AirPollutionMeasure.ORANGE
+        elif 150.0 < value <= 200.0:
+            return AirPollutionMeasure.COLOR_TYPE[3][1] if display else AirPollutionMeasure.RED
+        elif 200.0 < value <= 300.0:
+            return AirPollutionMeasure.COLOR_TYPE[4][1] if display else AirPollutionMeasure.PURPLE
+        elif value > 300.0:
+            return AirPollutionMeasure.COLOR_TYPE[5][1] if display else AirPollutionMeasure.BROWN
+        else:
+            return None
+
+    @staticmethod
+    def get_dominant_pollutant_values(dominant_pollutant: str, values: dict) -> (float, int, int):
         if dominant_pollutant is None:
             return None, None, None
         value = values.get(dominant_pollutant)
-        if value is None:
-            return None, None, None
-        if 0.0 <= value <= 50.0:
-            color = AirPollutionMeasure.GREEN
-            text_color = AirPollutionMeasure.TEXT_WHITE
-        elif 50.0 < value <= 100.0:
-            color = AirPollutionMeasure.YELLOW
-            text_color = AirPollutionMeasure.TEXT_BLACK
-        elif 100.0 < value <= 150.0:
-            color = AirPollutionMeasure.ORANGE
-            text_color = AirPollutionMeasure.TEXT_BLACK
-        elif 150.0 < value <= 200.0:
-            color = AirPollutionMeasure.RED
-            text_color = AirPollutionMeasure.TEXT_WHITE
-        elif 200.0 < value <= 300.0:
-            color = AirPollutionMeasure.PURPLE
-            text_color = AirPollutionMeasure.TEXT_WHITE
-        elif value > 300.0:
-            color = AirPollutionMeasure.BROWN
-            text_color = AirPollutionMeasure.TEXT_WHITE
-        else:
-            color = None
-            text_color = None
-        return value, color, text_color
+        color = AirPollutionMeasure.get_backgroud_color(value)
+        return value, color, AirPollutionMeasure.get_text_color(color)
 
     class Meta:
         unique_together = ('location', 'timestamp')
@@ -361,7 +377,9 @@ class WeatherForecastObservation(models.Model):
 
 class HistoricalWeatherObservation(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    date = models.DateField(db_index=True)
+    date = models.DateField()
+    date_epoch = models.BigIntegerField(db_index=True)
+    year = models.PositiveSmallIntegerField(db_index=True)
     fog = models.NullBooleanField()
     rain = models.NullBooleanField()
     snow = models.NullBooleanField()
@@ -413,7 +431,8 @@ class SeaLevelRiseMeasure(models.Model):
         ('SF', 'Single Frequency'),
         ('DF', 'Dual Frequency')
     )
-    timestamp = models.DateTimeField(primary_key=True, auto_created=False)
+    timestamp_epoch = models.BigIntegerField(primary_key=True, auto_created=False)
+    year = models.PositiveSmallIntegerField()
     altimeter = models.CharField(max_length=2, choices=ALTIMETER_TYPE)
     units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='MM')
     variation = models.FloatField()
@@ -441,7 +460,8 @@ class OceanMassMeasure(models.Model):
         ('GRE', 'Greenland'),
         ('OCE', 'Ocean')
     )
-    timestamp = models.DateTimeField()
+    timestamp_epoch = models.BigIntegerField(db_index=True)
+    year = models.PositiveSmallIntegerField()
     type = models.CharField(max_length=3, choices=OCEAN_MASS_MEASURE_TYPE)
     mass = models.FloatField(null=True)
     mass_units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='GT', null=True)
@@ -453,7 +473,7 @@ class OceanMassMeasure(models.Model):
     height_deseasoned_units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='MM', null=True)
 
     class Meta:
-        unique_together = ('timestamp', 'type')
+        unique_together = ('timestamp_epoch', 'type')
 
     def __str__(self):
         return 'OceanMassMeasure [timestamp: %s, type: %s, mass: %s, mass_units: %s, uncertainty: %s, ' \

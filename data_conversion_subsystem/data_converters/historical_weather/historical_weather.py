@@ -38,6 +38,8 @@ class _HistoricalWeatherDataConverter(DataConverter):
             try:
                 location = parse_int(value['location_id'], nullable=False)
                 date = parse_date_utc(value['date_utc']).date()
+                date_epoch = value['date_utc']
+                year = date.year
                 fog = parse_bool(value['history']['dailysummary'][0].get('fog'))
                 rain = parse_bool(value['history']['dailysummary'][0].get('rain'))
                 snow = parse_bool(value['history']['dailysummary'][0].get('snow'))
@@ -65,7 +67,7 @@ class _HistoricalWeatherDataConverter(DataConverter):
                         mean_wind_direction=mean_wind_direction, mean_wind_direction_degrees=mean_wind_direction_degrees,
                         humidity=humidity, max_temp=max_temp, max_pressure=max_pressure, max_wind_speed=max_wind_speed,
                         min_temp=min_temp, min_pressure=min_pressure, min_wind_speed=min_wind_speed,
-                        precipitation=precipitation))
+                        precipitation=precipitation, date_epoch=date_epoch, year=year))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. HistoricalWeatherObservation with ID "%s" '

@@ -33,8 +33,8 @@ class _SeaLevelRiseDataConverter(DataConverter):
         self.data = []
         for value in self.elements_to_convert:
             try:
-                # Setting timezone to pytz.UTC FIXES [BUG-039].
-                timestamp = parse_date_utc(value['time_utc'])
+                timestamp_epoch = value['time_utc']
+                year = parse_date_utc(timestamp_epoch).year
                 altimeter = SeaLevelRiseMeasure.DUAL_FREQUENCY if value['altimeter'] == 'dual_frequency' else \
                         SeaLevelRiseMeasure.SINGLE_FREQUENCY
                 variation = parse_float(value['measures']['variation'], nullable=False)
@@ -45,14 +45,20 @@ class _SeaLevelRiseDataConverter(DataConverter):
                 smoothed_variation_gia = parse_float(value['measures']['smoothed_variation_GIA'], nullable=False)
                 smoothed_variation_gia_annual_semi_annual_removed = parse_float(value['measures'][
                         'smoothed_variation_GIA_annual_&_semi_annual_removed'], nullable=False)
-                self.data.append(SeaLevelRiseMeasure(timestamp=timestamp, altimeter=altimeter, variation=variation,
-                        deviation=deviation, smoothed_variation=smoothed_variation, variation_GIA=variation_gia,
-                        deviation_GIA=deviation_gia, smoothed_variation_GIA=smoothed_variation_gia,
+                self.data.append(SeaLevelRiseMeasure(timestamp_epoch=timestamp_epoch, year=year, altimeter=altimeter,
+                        variation=variation, deviation=deviation, smoothed_variation=smoothed_variation,
+                        variation_GIA=variation_gia, deviation_GIA=deviation_gia,
+                        smoothed_variation_GIA=smoothed_variation_gia,
                         smoothed_variation_GIA_annual_semi_annual_removed=smoothed_variation_gia_annual_semi_annual_removed))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. SeaLevelRiseMeasure with ID "%s" will not '
                                     'be converted.' % _id)
+        if self.data:
+            # Ensuring that all values are greater than or equal to 0
+            min_value = abs(self.data[0].smoothed_variation_GIA_annual_semi_annual_removed)
+            for value in self.data:
+                value.smoothed_variation_GIA_annual_semi_annual_removed += min_value
 
     @transaction.atomic
     def _save_data(self):

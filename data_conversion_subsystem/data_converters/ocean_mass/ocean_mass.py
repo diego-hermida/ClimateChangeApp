@@ -33,8 +33,8 @@ class _OceanMassDataConverter(DataConverter):
         self.data = []
         for value in self.elements_to_convert:
             try:
-                # Setting timezone to pytz.UTC FIXES [BUG-039].
-                timestamp = parse_date_utc(value['time_utc'])
+                timestamp_epoch = value['time_utc']
+                year = parse_date_utc(timestamp_epoch).year
                 if value['type'] == 'antarctica':
                     type = OceanMassMeasure.ANTARCTICA
                 elif value['type'] == 'greenland':
@@ -52,16 +52,17 @@ class _OceanMassDataConverter(DataConverter):
                     uncertainty_units = 'MM'
                     height_deseasoned = parse_float(value['measures'][2]['height_deseasoned'], nullable=False)
                     height_deseasoned_units = 'MM'
-                    self.data.append(OceanMassMeasure(timestamp=timestamp, type=type, height=height,
-                            height_units=height_units, uncertainty=uncertainty, uncertainty_units=uncertainty_units,
-                            height_deseasoned=height_deseasoned, height_deseasoned_units=height_deseasoned_units))
+                    self.data.append(OceanMassMeasure(timestamp_epoch=timestamp_epoch, year=year, type=type,
+                            height=height, height_units=height_units, uncertainty=uncertainty,
+                            uncertainty_units=uncertainty_units, height_deseasoned=height_deseasoned,
+                            height_deseasoned_units=height_deseasoned_units))
                 else:
                     mass = parse_float(value['measures'][0]['mass'], nullable=False)
                     mass_units = 'GT'
                     uncertainty = parse_float(value['measures'][1]['uncertainty'], nullable=False)
                     uncertainty_units = 'GT'
-                    self.data.append(OceanMassMeasure(timestamp=timestamp, type=type, mass=mass, mass_units=mass_units,
-                            uncertainty=uncertainty, uncertainty_units=uncertainty_units))
+                    self.data.append(OceanMassMeasure(timestamp_epoch=timestamp_epoch, year=year, type=type, mass=mass,
+                            mass_units=mass_units, uncertainty=uncertainty, uncertainty_units=uncertainty_units))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. OceanMassMeasure with ID "%s" will not be '
