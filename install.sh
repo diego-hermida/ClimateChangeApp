@@ -219,7 +219,7 @@ fi
 
 
 # Telegram Configurator component
-message 4 "[COMPONENT] Building the Telegram Configurator component.";
+message 4 "[COMPONENT] Telegram Configurator";
 
 # Building the Telegram Configurator component
 docker-compose build --build-arg DEPLOY_ARGS="${TELEGRAM_CONFIGURATOR_DEPLOY_ARGS}" telegram_bot;
@@ -244,7 +244,7 @@ fi
 
 
 # Utilities component
-message 4 "[COMPONENT] Building and testing the Utilities component.";
+message 4 "[COMPONENT] Utilities";
 docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
                      --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
                      --build-arg DEPLOY_ARGS="${UTILITIES_DEPLOY_ARGS}" utilities;
@@ -255,7 +255,7 @@ fi
 
 
 # Data Gathering Subsystem component
-message 4 "[COMPONENT] Building the Data Gathering Subsystem.";
+message 4 "[COMPONENT] Data Gathering Subsystem";
 
 # Building the Data Gathering Subsystem component
 docker-compose build --build-arg MONGODB_IP=${MONGODB_IP} --build-arg MONGODB_PORT=${MONGODB_PORT} \
@@ -267,7 +267,7 @@ fi
 
 
 # API component
-message 4 "[COMPONENT] Building and launching the API service.";
+message 4 "[COMPONENT] API";
 
 # Deleting the API service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=api_ci)" ]; then
@@ -305,7 +305,7 @@ fi
 
 
 # Data Conversion Subsystem component
-message 4 "[COMPONENT] Building the Data Conversion Subsystem.";
+message 4 "[COMPONENT] Data Conversion Subsystem";
 
 # Building the Data Conversion Subsystem component
 docker-compose build --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg API_IP=${API_IP} \
