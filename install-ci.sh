@@ -13,22 +13,10 @@ function usage () {
             \n\t• Docker container's names will end with \"_ci\". Example: foo_ci.
             \n\t• Production containers won't be stopped. This installation won't affect any of them.
             \n\t• Coverage and test result reports will be generated inside the Docker images.
-            \n\n> usage: install-ci.sh [-h] [--help] [--version] [--host-ip xxx.xxx.xxx.xxx] [--macos] [--show-ip]
+            \n\n> usage: install-ci.sh [-h] [--help] [--version]
             \n• -h, --help: shows this message
-            \n• --version: displays app's version
-            \n• --host-ip xxx.xxx.xxx.xxx: specifies the IP address of the machine. By default, this installer attempts
-            \n\t  to resolve the machine's IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
-            \n• --macos: sets \"docker.for.mac.host.internal\" as the local IP address (Docker issue).
-            \n• --show-ip: displays the IP address of the machine. If multiple IP's, displays them all." $1;
+            \n• --version: displays app's version" $1;
 }
-
-
-# ---------- Definitions ---------- #
-
-# Setting default values
-HOST_IP=$(get_ip_address);
-MACOS=false;
-
 
 # ---------- Argument manipulation ---------- #
 
@@ -40,13 +28,6 @@ while getopts "$EXPECTED_INPUT" ARG; do
         -) case ${OPTARG} in
                 help) usage 0 ;;
                 version) show_app_version ;;
-                host-ip)
-                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
-                    ensure_not_empty  "--host-ip" ${VAL};
-                    HOST_IP=${VAL};
-                ;;
-                macos) MACOS=true ;;
-                show-ip) show_ip_addresses ;;
                 :) exit_with_message 1 "Illegal option: \"--$OPTARG\" requires an argument" >&2 ;;
                 *) exit_with_message 1 "Unrecognized option: --$OPTARG" >&2 ;;
             esac
@@ -55,11 +36,6 @@ while getopts "$EXPECTED_INPUT" ARG; do
         *) exit_with_message 1 "Unrecognized option: -$OPTARG" >&2 ;;
     esac
 done
-
-
-export HOST_IP=${HOST_IP};
-message -1 "[INFO] Deploying all components to the local machine. HOST_IP has been set to \"$HOST_IP\".";
-message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install-ci.sh --host-ip <IP>\".";
 
 
 # Setting CI deploy arguments
@@ -74,10 +50,6 @@ UTILITIES_DEPLOY_ARGS="--with-test-reports";
 export MONGODB_PORT=27017;
 export API_PORT=5000;
 export POSTGRES_PORT=5432;
-
-# Setting CI bind IP address
-export BIND_IP_ADDRESS='127.0.0.1'
-message 3 "[WARNING] Docker containers will not be reachable from the Internet. Binding connections to IP address: $BIND_IP_ADDRESS";
 
 
 # ---------- Installation ---------- #
@@ -195,10 +167,18 @@ docker-compose -f docker-compose-ci.yml up -d api_ci;
 # Data Conversion Subsystem component
 message 4 "[COMPONENT] Data Conversion Subsystem";
 
+# Getting internal IP address
+API_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' api_ci)"
+    if [ $? != 0 ]; then
+        exit_with_message 1 "[ERROR] Could not retrieve the local API IP address." 1;
+    else
+        message -1 "[INFO] Using \"$API_IP\" as the API IP address.";
+    fi
+
 # Building the Data Conversion Subsystem component
 docker-compose -f docker-compose-ci.yml build \
                      --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
-                     --build-arg API_IP=${HOST_IP} --build-arg API_PORT=${API_PORT} \
+                     --build-arg API_IP=${API_IP} --build-arg API_PORT=${API_PORT} \
                      --build-arg DEPLOY_ARGS="${DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS}" data_conversion_subsystem_ci;
 if [ $? != 0 ]; then
     exit_with_message 1 "> The Data Conversion Subsystem CI image could not be built." 1;
