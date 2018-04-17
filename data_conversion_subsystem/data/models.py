@@ -458,7 +458,6 @@ class OceanMassMeasure(models.Model):
     OCEAN_MASS_MEASURE_TYPE = (
         ('ANT', 'Antarctica'),
         ('GRE', 'Greenland'),
-        ('OCE', 'Ocean')
     )
     timestamp_epoch = models.BigIntegerField(db_index=True)
     year = models.PositiveSmallIntegerField()
@@ -467,20 +466,16 @@ class OceanMassMeasure(models.Model):
     mass_units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='GT', null=True)
     uncertainty = models.FloatField(null=True)
     uncertainty_units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='GT', null=True)
-    height = models.FloatField(null=True)
-    height_units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='MM', null=True)
-    height_deseasoned = models.FloatField(null=True)
-    height_deseasoned_units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='MM', null=True)
+    trend = models.FloatField(null=True)
+    trend_units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='GT', null=True)
 
     class Meta:
         unique_together = ('timestamp_epoch', 'type')
 
     def __str__(self):
         return 'OceanMassMeasure [timestamp: %s, type: %s, mass: %s, mass_units: %s, uncertainty: %s, ' \
-               'uncertainty_units: %s, height: %s, height_units: %s, height_deseasoned: %s, ' \
-               'height_deseasoned_units: %s]' % (self.timestamp, self.type, self.mass, self.mass_units,
-                self.uncertainty, self.uncertainty_units, self.height, self.height_units, self.height_deseasoned,
-                self.height_deseasoned_units)
+               'uncertainty_units: %s, trend: %s]' % (self.timestamp_epoch, self.type, self.mass, self.mass_units,
+                self.uncertainty, self.uncertainty_units, self.trend)
 
 
 class RpcDatabaseEmission(models.Model):

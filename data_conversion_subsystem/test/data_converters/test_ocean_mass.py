@@ -7,15 +7,13 @@ mock.patch('django.db.transaction.atomic', lambda x: x).start()
 
 import data_conversion_subsystem.data_converters.ocean_mass.ocean_mass as ocean_mass
 
-
 DATA_ANTARCTICA = {"_id": "5a92aba8dd571bdf0ff2108a", "time_utc": 1018988639999, "type": "antarctica",
                    "_execution_id": 1,
-                   "measures": [{"mass": "0.00", "units": "Gt"}, {"uncertainty": "164.18", "units": "Gt"}]}
+                   "measures": [{"mass": "0.00", "units": "Gt"}, {"uncertainty": "164.18", "units": "Gt"},
+                                {"trend": "134.424", "units": "Gt"}]}
 DATA_GREENLAND = {"_id": "5a92aba8dd571bdf0ff2118a", "time_utc": 1018988639999, "type": "greenland", "_execution_id": 1,
-                  "measures": [{"mass": "0.00", "units": "Gt"}, {"uncertainty": "164.18", "units": "Gt"}]}
-DATA_OCEAN = {"_id": "5a92aba8dd571bdf0ff211c8", "time_utc": 1018988639999, "type": "ocean", "_execution_id": 1,
-              "measures": [{"height": "0.00", "units": "mm"}, {"uncertainty": "0.94", "units": "mm"},
-                           {"height_deseasoned": "0.00", "units": "mm"}]}
+                  "measures": [{"mass": "0.00", "units": "Gt"}, {"uncertainty": "164.18", "units": "Gt"},
+                               {"trend": None, "units": "Gt"}]}
 
 DATA_ANTARCTICA_UNEXPECTED = {"_id": "5a92aba8dd571bdf0ff2108a", "time_utc": 1018988639999, "type": "antarctica",
                               "_execution_id": 1,
@@ -44,9 +42,9 @@ class TestOceanMass(TestCase):
         self.assertIsNot(i1, ocean_mass.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     def test_perform_data_conversion_with_all_values_set(self):
-        self.data_converter.elements_to_convert = [DATA_ANTARCTICA, DATA_GREENLAND, DATA_OCEAN]
+        self.data_converter.elements_to_convert = [DATA_ANTARCTICA, DATA_GREENLAND]
         self.data_converter._perform_data_conversion()
-        self.assertEqual(3, len(self.data_converter.data))
+        self.assertEqual(2, len(self.data_converter.data))
         self.assertTrue(all([x for x in self.data_converter.data if isinstance(x, ocean_mass.OceanMassMeasure)]))
 
     def test_perform_data_conversion_with_unexpected_data(self):
@@ -56,9 +54,9 @@ class TestOceanMass(TestCase):
 
     def test_perform_data_conversion_with_unexpected_data_incorrect_type(self):
         self.data_converter.elements_to_convert = [DATA_ANTARCTICA,
-                                                   {'_id': 'foo', "time_utc": 1018988639999, 'type': 'baz'}, DATA_OCEAN]
+                                                   {'_id': 'foo', "time_utc": 1018988639999, 'type': 'baz'}]
         self.data_converter._perform_data_conversion()
-        self.assertEqual(2, len(self.data_converter.data))
+        self.assertEqual(1, len(self.data_converter.data))
         self.assertTrue(all([x for x in self.data_converter.data if isinstance(x, ocean_mass.OceanMassMeasure)]))
 
     @mock.patch('data_conversion_subsystem.data_converters.ocean_mass.ocean_mass.OceanMassMeasure.objects.bulk_create',

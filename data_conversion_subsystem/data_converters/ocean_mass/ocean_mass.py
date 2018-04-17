@@ -39,30 +39,15 @@ class _OceanMassDataConverter(DataConverter):
                     type = OceanMassMeasure.ANTARCTICA
                 elif value['type'] == 'greenland':
                     type = OceanMassMeasure.GREENLAND
-                elif value['type'] == 'ocean':
-                    type = OceanMassMeasure.OCEAN
                 else:
                     self.logger.warning('OceanMassMeasureType "%s" is unrecognized. Measure with ID: "%s" will not be '
                             'converted.' % (value['type'], value['_id']))
                     continue
-                if type == OceanMassMeasure.OCEAN:
-                    height = parse_float(value['measures'][0]['height'], nullable=False)
-                    height_units = 'MM'
-                    uncertainty = parse_float(value['measures'][1]['uncertainty'], nullable=False)
-                    uncertainty_units = 'MM'
-                    height_deseasoned = parse_float(value['measures'][2]['height_deseasoned'], nullable=False)
-                    height_deseasoned_units = 'MM'
-                    self.data.append(OceanMassMeasure(timestamp_epoch=timestamp_epoch, year=year, type=type,
-                            height=height, height_units=height_units, uncertainty=uncertainty,
-                            uncertainty_units=uncertainty_units, height_deseasoned=height_deseasoned,
-                            height_deseasoned_units=height_deseasoned_units))
-                else:
-                    mass = parse_float(value['measures'][0]['mass'], nullable=False)
-                    mass_units = 'GT'
-                    uncertainty = parse_float(value['measures'][1]['uncertainty'], nullable=False)
-                    uncertainty_units = 'GT'
-                    self.data.append(OceanMassMeasure(timestamp_epoch=timestamp_epoch, year=year, type=type, mass=mass,
-                            mass_units=mass_units, uncertainty=uncertainty, uncertainty_units=uncertainty_units))
+                mass = parse_float(value['measures'][0]['mass'], nullable=False)
+                uncertainty = parse_float(value['measures'][1]['uncertainty'], nullable=False)
+                trend = parse_float(value['measures'][2]['trend'], nullable=True)
+                self.data.append(OceanMassMeasure(timestamp_epoch=timestamp_epoch, year=year, type=type, mass=mass,
+                        uncertainty=uncertainty, trend=trend))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. OceanMassMeasure with ID "%s" will not be '
