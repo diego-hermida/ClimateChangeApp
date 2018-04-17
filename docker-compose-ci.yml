@@ -42,8 +42,8 @@ services:
         image: diegohermida/api:latest_ci
         environment:
             - PYTHONUNBUFFERED=1
-        ports:
-            - "${BIND_IP_ADDRESS:-127.0.0.1}:${API_PORT:-5001}:5000"
+        expose:
+          - "5000"
         networks:
           - ci_network
         depends_on:
@@ -55,8 +55,8 @@ services:
             - MONGO_DATA_DIR=/data/db
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=root
-        ports:
-            - "${BIND_IP_ADDRESS:-127.0.0.1}:${MONGODB_PORT:-27018}:27017"
+        expose:
+          - "27017"
         networks:
           - ci_network
         command: mongod --smallfiles
@@ -67,8 +67,8 @@ services:
             - PGDATA=/postgresql/data
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=root
-        ports:
-            - "${BIND_IP_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5433}:5432"
+        expose:
+            - "5432"
         networks:
           - ci_network
     telegram_bot_ci:

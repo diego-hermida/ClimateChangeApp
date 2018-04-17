@@ -71,9 +71,9 @@ UTILITIES_DEPLOY_ARGS="--with-test-reports";
 
 
 # Setting CI values for ports
-export MONGODB_PORT=27018;
-export API_PORT=5001;
-export POSTGRES_PORT=5433;
+export MONGODB_PORT=27017;
+export API_PORT=5000;
+export POSTGRES_PORT=5432;
 
 # Setting CI bind IP address
 export BIND_IP_ADDRESS='127.0.0.1'
