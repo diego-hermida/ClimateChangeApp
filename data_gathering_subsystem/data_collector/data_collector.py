@@ -29,11 +29,12 @@ class Reader:
     """
         This class is used by DataCollectors which access to NASA files, allowing to retrieve all its useful data.
     """
-    def __init__(self):
+    def __init__(self, fetch_mass_trend=False):
         self._data = []
+        self.fetch_mass_trend = fetch_mass_trend
 
     def __call__(self, s):
-        if not s.startswith('HDR'):
+        if not s.startswith('HDR') or (self.fetch_mass_trend and 'Mass Trend' in s):
             self._data.append(s)
 
     def get_data(self) -> list:

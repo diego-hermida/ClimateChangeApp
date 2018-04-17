@@ -388,4 +388,11 @@ class TestDataCollector(TestCase):
         data = ['HDR Foo Baz Bar\n', 'HDR\n', 'Actual data']
         for line in data:
             r(line)
-        self.assertEqual(['Actual data'], r.get_data())
+        self.assertListEqual([data[-1]], r.get_data())
+
+    def test_reader_with_fetch_mass_trend(self):
+        r = data_collector.Reader(fetch_mass_trend=True)
+        data = ['HDR Foo Baz Bar\n', 'HDR Foo Mass Trend (04/2002 - 06/2017): -285.85 +/-21.01 Gt/yr', 'Actual data']
+        for line in data:
+            r(line)
+        self.assertListEqual([data[1], data[2]], r.get_data())

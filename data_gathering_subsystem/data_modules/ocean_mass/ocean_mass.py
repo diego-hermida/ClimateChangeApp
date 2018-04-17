@@ -30,7 +30,6 @@ class _OceanMassDataCollector(DataCollector):
         super()._restore_state()
         self.state['antarctica']['last_modified'] = deserialize_date(self.state['antarctica']['last_modified'])
         self.state['greenland']['last_modified'] = deserialize_date(self.state['greenland']['last_modified'])
-        self.state['ocean']['last_modified'] = deserialize_date(self.state['ocean']['last_modified'])
 
     def _collect_data(self):
         """
@@ -39,7 +38,6 @@ class _OceanMassDataCollector(DataCollector):
             This data collector gathers data from:
                 - Antarctica ice mass.
                 - Greenland ice mass.
-                - Ocean sea mass.
         """
         super()._collect_data()
         ftp = FTP(self.config['URL'])
@@ -60,14 +58,14 @@ class _OceanMassDataCollector(DataCollector):
             try:
                 type_name = self._get_type(name)
             except ValueError:
-                self.logger.debug('Omitting unnecessary file: %s'%(name))
+                self.logger.info('Omitting unnecessary file: %s' % name)
                 file_names.remove(name)
                 continue
             # Collecting data only if file has been modified
             if True if not self.state[type_name]['last_modified'] or not last_modified else \
                     last_modified > self.state[type_name]['last_modified']:
                 self._data_modified = True
-                r = Reader()
+                r = Reader(fetch_mass_trend=True)
                 ftp.retrlines('RETR ' + name, r)
                 temp_data = self._to_json(r.get_data(), type_name)
                 self.data.append(temp_data)
@@ -132,7 +130,6 @@ class _OceanMassDataCollector(DataCollector):
         """
         self.state['antarctica']['last_modified'] = serialize_date(self.state['antarctica']['last_modified'])
         self.state['greenland']['last_modified'] = serialize_date(self.state['greenland']['last_modified'])
-        self.state['ocean']['last_modified'] = serialize_date(self.state['ocean']['last_modified'])
         super()._save_state()
 
     @staticmethod
@@ -145,18 +142,11 @@ class _OceanMassDataCollector(DataCollector):
             :return: A list, containing all data formatted as a JSON document.
         """
         json_data = []
-        if data_type is MassType.ocean:
-            for line in data:
-                fields = line.split()
-                date = decimal_date_to_millis_since_epoch(float(fields[0]))
-                # Removing the "_id" field FIXES [BUG-032].
-                measure = {'type': data_type, 'time_utc': date, 'measures': []}
-                measure['measures'].append({'height': fields[1], 'units': MeasureUnits.mm})
-                measure['measures'].append({'uncertainty': fields[2], 'units': MeasureUnits.mm})
-                measure['measures'].append({'height_deseasoned': fields[3], 'units': MeasureUnits.mm})
-                json_data.append(measure)
-        else:
-            for line in data:
+        trend = None
+        for line in data:
+            if line.startswith('HDR'):
+                trend = float(line.split(': ')[1].split()[0])
+            else:
                 fields = line.split()
                 date = decimal_date_to_millis_since_epoch(float(fields[0]))
                 # Removing the "_id" field FIXES [BUG-032].
@@ -164,6 +154,8 @@ class _OceanMassDataCollector(DataCollector):
                 measure['measures'].append({'mass': fields[1], 'units': MeasureUnits.Gt})
                 measure['measures'].append({'uncertainty': fields[2], 'units': MeasureUnits.Gt})
                 json_data.append(measure)
+        for v in json_data:
+            v['measures'].append({'trend': trend, 'units': MeasureUnits.Gt})
         return json_data
 
     @staticmethod
@@ -175,7 +167,5 @@ class _OceanMassDataCollector(DataCollector):
             return MassType.antarctica
         elif MassType.greenland in file_name:
             return MassType.greenland
-        elif MassType.ocean in file_name:
-            return MassType.ocean
         else:
             raise ValueError('No MassType matched with file name: %s'%(file_name))
