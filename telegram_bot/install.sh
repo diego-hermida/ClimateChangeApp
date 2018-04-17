@@ -77,9 +77,6 @@ fi
 
 # ---------- Installation ---------- #
 
-# Enables compatibility with docker-compose.yml
-export BIND_IP_ADDRESS='0.0.0.0';
-
 # Telegram Configurator component
 message 4 "[COMPONENT] Telegram Configurator";
 

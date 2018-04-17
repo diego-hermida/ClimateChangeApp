@@ -17,7 +17,7 @@ function usage () {
             \n • --hide-containers: makes Docker containers not reachable from the Internet.
             \n • --host-ip xxx.xxx.xxx.xxx: specifies the IP address of the machine. By default, this installer attempts
             \n\t  to resolve the machine's IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
-            \n • --macos: sets \"docker.for.mac.localhost\" as the local IP address (Docker issue).
+            \n • --macos: sets \"docker.for.mac.host.internal\" as the local IP address (Docker issue).
             \n • --mongodb-port xxxxx: sets the exposed MongoDB port. Defaults to 27017.
             \n • --perform-deploy-actions: installs the application performing all deploy steps. By default, deploy
             \n\t   steps are skipped.
@@ -111,12 +111,12 @@ fi
 
 # Overriding IP values if HOST_IP is present
 if [ "$MACOS" == "true" ]; then
-    message -1 "[INFO] Setting HOST_IP to \"docker.for.mac.localhost\".";
-    HOST_IP="docker.for.mac.localhost";
+    message -1 "[INFO] Setting HOST_IP to \"docker.for.mac.host.internal\".";
+    HOST_IP="docker.for.mac.host.internal";
 fi
 export HOST_IP=${HOST_IP};
 message -1 "[INFO] Deploying all components to the local machine. HOST_IP has been set to \"$HOST_IP\".";
-message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install.sh HOST_IP=<IP>\".";
+message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install.sh --host-ip <IP>\".";
 
 
 # Binding containers to local?
@@ -145,6 +145,9 @@ else
     TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--with-tests";
     UTILITIES_DEPLOY_ARGS="--with-tests";
 fi
+if [ "$MACOS" == "true" ] && [ "$EXPOSE_CONTAINERS" == "false" ]; then
+    message 3 "[NOTE] --macos is no necessary when --hide-containers is passed as an argument. The installer is able to resolve the IP addresses via Docker."
+fi
 
 
 # Overriding default ROOT_DIR?
@@ -159,7 +162,7 @@ export ROOT_DIR="$ROOT_DIR";
 # ---------- Installation ---------- #
 
 # MongoDB component
-message 4 "[COMPONENT] Building and launching the MongoDB service.";
+message 4 "[COMPONENT] MongoDB";
 
 # Deleting the MongoDB service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=mongodb)" ]; then
@@ -189,7 +192,7 @@ fi
 
 
 # PostgreSQL component
-message 4 "[COMPONENT] Building and launching the PostgreSQL service.";
+message 4 "[COMPONENT] PostgreSQL";
 
 # Deleting the PostgreSQL service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=postgres)" ]; then
@@ -270,7 +273,7 @@ fi
 message 4 "[COMPONENT] API";
 
 # Deleting the API service if it was already been created: Brand-new container.
-if [ "$(docker ps -aq -f name=api_ci)" ]; then
+if [ "$(docker ps -aq -f name=api)" ]; then
     message -1 "[INFO] Removing previous API container.";
     docker stop api_ci;
     docker rm api_ci;

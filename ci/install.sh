@@ -10,21 +10,17 @@ function usage () {
     exit_with_message 1 "Installs the Jenkins and SonarQube services for Continuous Integration and Continuous Inspection.
             \nA PostgreSQL instance will also be installed, in order to persist Sonar analysis and configuration data.
             \n\n> Security note: Jenkins and SonarQube containers will be reachable from the Internet. However, the
-            \nSonarQube database will only accept local connections.
+            \nSonarQube database will be bounded to a local network (unreachable from the Internet).
             \n\n> usage: install.sh [-h] [--help] [--version] [--force-build] [--host-ip xxx.xxx.xxx.xxx] [--jenkins-port xxxxx]
-            \n\t[--jenkins-agents-port xxxxx] [--macos] [--postgres-sonar-port xxxxx] [--root-dir <path>] [--show-ip]
-            \n\t[--sonar-port xxxxx]
+            \n\t[--jenkins-agents-port xxxxx] [--root-dir <path>] [--sonar-port xxxxx]
             \n • -h, --help: shows this message.
             \n • --version: displays app's version.
             \n • --force-build: builds the CI images even if they already exist.
             \n • --host-ip xxx.xxx.xxx.xxx: specifies the IP address of the machine. By default, this installer attempts
+            \n\t  to resolve the machine's IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
             \n • --jenkins-port xxxxx: sets the exposed Jenkins port. Defaults to 8090.
             \n • --jenkins-agents-port xxxxx: sets the exposed Jenkins agents' port. Defaults to 50000.
-            \n\t  to resolve the machine's IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
-            \n • --macos: sets \"docker.for.mac.localhost\" as the local IP address (Docker issue).
-            \n • --postgres-sonar-port xxxxx: sets the exposed SonarQube PostgreSQL database port. Defaults to 5434.
             \n • --root-dir <path>: installs the CI components under a custom directory. Defaults to \"~/ClimateChangeApp\".
-            \n • --show-ip: displays the IP address of the machine. If multiple IP's, displays them all.
             \n • --sonar-port xxxxx: sets the exposed SonarQube port. Defaults to 9000." $1;
 }
 
@@ -32,11 +28,9 @@ function usage () {
 # ---------- Definitions ---------- #
 
 FORCE_BUILD=false;
-HOST_IP=$(get_ip_address)
+HOST_IP=$(get_ip_address);
 JENKINS_PORT=8090;
 JENKINS_AGENTS_PORT=50000;
-MACOS=false;
-POSTGRES_SONAR_PORT=5434;
 ROOT_DIR=~/ClimateChangeApp;
 SONAR_PORT=9000;
 
@@ -67,18 +61,11 @@ while getopts "$EXPECTED_INPUT" ARG; do
                     ensure_not_empty  "--jenkins-agents-port" ${VAL};
                     JENKINS_AGENTS_PORT=${VAL};
                 ;;
-                macos) MACOS=true ;;
-                postgres-sonar-port)
-                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
-                    ensure_not_empty  "--postgres-sonar-port" ${VAL};
-                    POSTGRES_SONAR_PORT=${VAL};
-                ;;
                 root-dir)
                     VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
                     ensure_not_empty  "--root-dir" ${VAL};
                     ROOT_DIR=${VAL};
                 ;;
-                show-ip) show_ip_addresses ;;
                 sonar-port)
                     VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
                     ensure_not_empty  "--sonar-port" ${VAL};
@@ -94,21 +81,6 @@ while getopts "$EXPECTED_INPUT" ARG; do
 done
 
 
-# Overriding IP values if HOST_IP is present
-if [ "$MACOS" == "true" ]; then
-    message -1 "[INFO] Setting HOST_IP to \"docker.for.mac.localhost\".";
-    HOST_IP="docker.for.mac.localhost";
-fi
-export HOST_IP=${HOST_IP};
-message -1 "[INFO] Deploying all components to the local machine. HOST_IP has been set to \"$HOST_IP\".";
-message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install.sh HOST_IP=<IP>\".";
-
-
-# Hiding SonarQube PostgreSQL database
-export BIND_IP_ADDRESS='127.0.0.1'
-message -1 "[INFO] SonarQube PostgreSQL database will not be reachable from the Internet. Binding connections to IP address: $BIND_IP_ADDRESS";
-
-
 # Overriding default ROOT_DIR?
 if [ "$ROOT_DIR" != ~/ClimateChangeApp ]; then
     message -1 "[INFO] Deploying Jenkins and Sonar servers under custom directory: $ROOT_DIR.";
@@ -121,7 +93,6 @@ export ROOT_DIR="$ROOT_DIR";
 # Setting ports
 export JENKINS_PORT=${JENKINS_PORT}
 export JENKINS_AGENTS_PORT=${JENKINS_AGENTS_PORT}
-export POSTGRES_SONAR_PORT=${POSTGRES_SONAR_PORT}
 export SONAR_PORT=${SONAR_PORT}
 
 
@@ -154,7 +125,7 @@ fi
 
 
 # PostgreSQL component
-message 4 "[COMPONENT] PostgeSQL SonarQube database";
+message 4 "[COMPONENT] SonarQube PostgeSQL database";
 
 # Deleting the PostgreSQL service if it was already been created: Brand-new container.
 if [ "$(docker ps -aq -f name=sonar_db)" ]; then
@@ -164,18 +135,18 @@ if [ "$(docker ps -aq -f name=sonar_db)" ]; then
 fi
 
 # Launching the PostgreSQL service
-message -1 "[INFO] Launching the PostgeSQL SonarQube database service.";
+message -1 "[INFO] Launching the SonarQube PostgeSQL database service.";
 docker-compose up -d sonar_db;
 if [ $? != 0 ]; then
-    exit_with_message 1 "[ERROR] The PostgeSQL SonarQube database service could not be initialized." 1;
+    exit_with_message 1 "[ERROR] The SonarQube PostgeSQL database service could not be initialized." 1;
 fi
 
 # Getting internal IP address.
 POSTGRES_SONAR_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sonar_db)"
 if [ $? != 0 ]; then
-    exit_with_message 1 "[ERROR] Could not retrieve the local PostgeSQL SonarQube database IP address." 1;
+    exit_with_message 1 "[ERROR] Could not retrieve the local SonarQube PostgeSQL database IP address." 1;
 else
-    message -1 "[INFO] Using \"$POSTGRES_SONAR_IP\" as the PostgeSQL SonarQube database IP address.";
+    message -1 "[INFO] Using \"$POSTGRES_SONAR_IP\" as the SonarQube PostgeSQL database IP address.";
     export POSTGRES_SONAR_IP=${POSTGRES_SONAR_IP};
 fi
 
@@ -184,15 +155,15 @@ fi
 message 4 "[COMPONENT] SonarQube";
 
 # Deleting the Sonar service if it was already been created: Brand-new container.
-if [ "$(docker ps -aq -f name="sonar")" ]; then
-    message -1 "[INFO] Removing previous Sonar containers.";
+if [ "$(docker ps -aq -f name="sonar") | grep sonar" ]; then
+    message -1 "[INFO] Removing previous SonarQube container.";
     docker rm --force sonar;
 fi
 # Launching the Sonar service
 message -1 "[INFO] Launching the Sonar service.";
 if [ "$FORCE_BUILD" == "true" ]; then
     message -1 "[INFO] Recreating Sonar image.";
-    docker-compose build --build-arg HOST_IP=${HOST_IP} --build-arg POSTGRES_SONAR_IP=${POSTGRES_SONAR_IP} \
+    docker-compose build --build-arg POSTGRES_SONAR_IP=${POSTGRES_SONAR_IP} \
                          --build-arg SONAR_PORT=${SONAR_PORT} sonar;
     if [ $? != 0 ]; then
         exit_with_message 1 "[ERROR] The Sonar image could not be built." 1;

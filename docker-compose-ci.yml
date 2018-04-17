@@ -1,10 +1,16 @@
 version: "3.5"
 
+networks:
+    ci_network:
+        name: climatechangeapp_ci_network # If this name changes, service > build > network names must also change.
+        driver: bridge
+
 services:
     data_gathering_subsystem_ci:
         build:
             context: .
             dockerfile: ./data_gathering_subsystem/Dockerfile
+            network: climatechangeapp_ci_network
         container_name: data_gathering_subsystem_ci
         image: diegohermida/data_gathering_subsystem:latest_ci
         environment:
@@ -17,6 +23,7 @@ services:
         build:
             context: .
             dockerfile: ./data_conversion_subsystem/Dockerfile
+            network: climatechangeapp_ci_network
         container_name: data_conversion_subsystem_ci
         image: diegohermida/data_conversion_subsystem:latest_ci
         environment:
@@ -30,6 +37,7 @@ services:
         build:
             context: .
             dockerfile: ./api/Dockerfile
+            network: climatechangeapp_ci_network
         container_name: api_ci
         image: diegohermida/api:latest_ci
         environment:
@@ -77,6 +85,7 @@ services:
         build:
             context: .
             dockerfile: ./utilities/Dockerfile
+            network: climatechangeapp_ci_network
         container_name: utilities_ci
         image: diegohermida/utilities:latest_ci
         environment:
@@ -96,8 +105,3 @@ services:
             - PYTHONUNBUFFERED=1
         networks:
           - ci_network
-
-networks:
-    ci_network:
-        name: climatechangeapp_ci_network
-        driver: bridge

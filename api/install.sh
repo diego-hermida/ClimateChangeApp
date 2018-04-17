@@ -19,7 +19,7 @@ function usage () {
             \n • --external-mongodb-server: indicates that the MongoDB server is externally provided, and does not
             \n\t   create a Docker container.
             \n • --hide-containers: makes Docker containers not reachable from the Internet.
-            \n • --macos: sets \"docker.for.mac.localhost\" as the local IP address (Docker issue).
+            \n • --macos: sets \"docker.for.mac.host.internal\" as the local IP address (Docker issue).
             \n • --mongodb-ip xxx.xxx.xxx.xxx: sets the IP address of the MongoDB server. Defaults to the machine's
             \n\t   IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
             \n • --mongodb-port xxxxx: sets the exposed MongoDB port. Defaults to 27017.
@@ -117,6 +117,9 @@ elif [ "$DEPLOY_ARGS" == "null" ]; then
     message -1 "[INFO] Using default values for DEPLOY_ARGS.";
     DEPLOY_ARGS="--all --with-tests";
 fi
+if [ "$MACOS" == "true" ] && [ "$EXPOSE_CONTAINERS" == "false" ]; then
+    message 3 "[NOTE] --macos is no necessary when --hide-containers is passed as an argument. The installer is able to resolve the IP addresses via Docker."
+fi
 
 
 # Displaying GID and UID info
@@ -125,16 +128,6 @@ if [ "$USER" == "0" ]; then
 else
     message -1 "[INFO] Setting Subsystem's UID: $USER."
 fi
-
-
-# Overriding IP values if HOST_IP is present
-if ([ "$MACOS" == "true" ] && [ "$EXTERNAL_MONGODB_SERVER" == "false" ] ); then
-    message -1 "[INFO] Since host OS is macOS/OS X, setting MONGODB_IP to \"docker.for.mac.localhost\".";
-    MONGODB_IP="docker.for.mac.localhost";
-fi
-export HOST_IP=${MONGODB_IP}
-message -1 "[INFO] Deploying the API component to the local machine. MONGODB_IP has been set to \"$MONGODB_IP\".";
-message 3 "Hint: If the value of MONGODB_IP is incorrect, you can override it by invoking: \"./install.sh MONGODB_IP=<IP>\".";
 
 
 # Binding containers to local?
@@ -174,6 +167,19 @@ if [ "$EXTERNAL_MONGODB_SERVER" == "false" ]; then
     docker-compose up -d mongodb;
     if [ $? != 0 ]; then
         exit_with_message 1 "[ERROR] The MongoDB service could not be initialized." 1;
+    fi
+
+    # Getting internal IP address, if --hide-containers.
+    if [ "$EXPOSE_CONTAINERS" == "false" ]; then
+        MONGODB_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mongodb)"
+        if [ $? != 0 ]; then
+            exit_with_message 1 "[ERROR] Could not retrieve the local MongoDB IP address." 1;
+        else
+            message -1 "[INFO] Using \"$MONGODB_IP\" as the MongoDB IP address.";
+        fi
+    elif [ "$MACOS" == "true" ]; then
+        message -1 "[INFO] Since host OS is macOS/OS X, setting MONGODB_IP to \"docker.for.mac.host.internal\".";
+        MONGODB_IP="docker.for.mac.host.internal";
     fi
 else
     message -1 "[INFO] MongoDB server has been tagged as \"external\". Thus, the MongoDB Docker service won't be launched.";

@@ -18,7 +18,7 @@ function usage () {
             \n• --version: displays app's version
             \n• --host-ip xxx.xxx.xxx.xxx: specifies the IP address of the machine. By default, this installer attempts
             \n\t  to resolve the machine's IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
-            \n• --macos: sets \"docker.for.mac.localhost\" as the local IP address (Docker issue).
+            \n• --macos: sets \"docker.for.mac.host.internal\" as the local IP address (Docker issue).
             \n• --show-ip: displays the IP address of the machine. If multiple IP's, displays them all." $1;
 }
 
@@ -57,14 +57,9 @@ while getopts "$EXPECTED_INPUT" ARG; do
 done
 
 
-# Overriding IP values if HOST_IP is present
-if [ "$MACOS" == "true" ]; then
-    message -1 "[INFO] Setting HOST_IP to \"docker.for.mac.localhost\".";
-    HOST_IP="docker.for.mac.localhost";
-fi
 export HOST_IP=${HOST_IP};
 message -1 "[INFO] Deploying all components to the local machine. HOST_IP has been set to \"$HOST_IP\".";
-message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install.sh HOST_IP=<IP>\".";
+message 3 "Hint: If the value of HOST_IP is incorrect, you can override it by invoking: \"./install-ci.sh --host-ip <IP>\".";
 
 
 # Setting CI deploy arguments
