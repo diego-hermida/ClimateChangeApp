@@ -11,13 +11,11 @@ function usage () {
             \nA PostgreSQL instance will also be installed, in order to persist Sonar analysis and configuration data.
             \n\n> Security note: Jenkins and SonarQube containers will be reachable from the Internet. However, the
             \nSonarQube database will be bounded to a local network (unreachable from the Internet).
-            \n\n> usage: install.sh [-h] [--help] [--version] [--force-build] [--host-ip xxx.xxx.xxx.xxx] [--jenkins-port xxxxx]
+            \n\n> usage: install.sh [-h] [--help] [--version] [--force-build] [--jenkins-port xxxxx]
             \n\t[--jenkins-agents-port xxxxx] [--root-dir <path>] [--sonar-port xxxxx]
             \n • -h, --help: shows this message.
             \n • --version: displays app's version.
             \n • --force-build: builds the CI images even if they already exist.
-            \n • --host-ip xxx.xxx.xxx.xxx: specifies the IP address of the machine. By default, this installer attempts
-            \n\t  to resolve the machine's IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
             \n • --jenkins-port xxxxx: sets the exposed Jenkins port. Defaults to 8090.
             \n • --jenkins-agents-port xxxxx: sets the exposed Jenkins agents' port. Defaults to 50000.
             \n • --root-dir <path>: installs the CI components under a custom directory. Defaults to \"~/ClimateChangeApp\".
@@ -28,7 +26,6 @@ function usage () {
 # ---------- Definitions ---------- #
 
 FORCE_BUILD=false;
-HOST_IP=$(get_ip_address);
 JENKINS_PORT=8090;
 JENKINS_AGENTS_PORT=50000;
 ROOT_DIR=~/ClimateChangeApp;
@@ -46,11 +43,6 @@ while getopts "$EXPECTED_INPUT" ARG; do
                 help) usage 0 ;;
                 version) show_app_version ;;
                 force-build) FORCE_BUILD=true ;;
-                host-ip)
-                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
-                    ensure_not_empty  "--host-ip" ${VAL};
-                    HOST_IP=${VAL};
-                ;;
                 jenkins-port)
                     VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
                     ensure_not_empty  "--jenkins-port" ${VAL};
@@ -112,7 +104,7 @@ fi
 message -1 "[INFO] Launching the Jenkins service.";
 if [ "$FORCE_BUILD" == "true" ]; then
     message -1 "[INFO] Recreating Jenkins image.";
-    docker-compose build --build-arg HOST_IP=${HOST_IP} --build-arg JENKINS_PORT=${JENKINS_PORT} \
+    docker-compose build --build-arg JENKINS_PORT=${JENKINS_PORT} \
                          --build-arg JENKINS_AGENTS_PORT=${JENKINS_AGENTS_PORT} jenkins;
     if [ $? != 0 ]; then
         exit_with_message 1 "[ERROR] The Jenkins image could not be built." 1;

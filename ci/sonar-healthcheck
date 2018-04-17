@@ -1,6 +1,6 @@
 #!/bin/bash
 
-STATUS_CODE=$(curl -sL -w "%{http_code}" "http://${HOST_IP:-127.0.0.1}:${SONAR_PORT:-9000}" -o /dev/null --max-time 15)
+STATUS_CODE=$(curl -sL -w "%{http_code}" "http://127.0.0.1:9000" -o /dev/null --max-time 15)
 
 if [ "$STATUS_CODE" == "200" ]; then
     exit 0

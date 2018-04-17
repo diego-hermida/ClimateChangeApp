@@ -32,6 +32,6 @@ RUN pip install --upgrade pip setuptools
 RUN pip install --upgrade pip setuptools docker-compose
 
 # Adding HEALTHCHECK
-COPY ./ci/sonar-healthcheck /usr/local/bin/jenkins-healthcheck
+COPY ./ci/jenkins-healthcheck /usr/local/bin/jenkins-healthcheck
 RUN chmod +x /usr/local/bin/jenkins-healthcheck
 HEALTHCHECK --start-period=120s CMD ["/usr/local/bin/jenkins-healthcheck"]

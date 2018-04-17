@@ -1,6 +1,6 @@
 #!/bin/bash
 
-STATUS_CODE=$(curl -sL -w "%{http_code}" "http://${HOST_IP:-127.0.0.1}:${JENKINS_PORT:-8090}" -o /dev/null --max-time 15)
+STATUS_CODE=$(curl -sL -w "%{http_code}" "http://127.0.0.1:8080" -o /dev/null --max-time 15)
 
 if [ "$STATUS_CODE" == "200" ]; then
     exit 0
