@@ -1,0 +1,22 @@
+.calendar.right thead > tr:nth-child(2) {
+    display: none;
+}
+
+.calendar.right tbody {
+    display: none;
+}
+
+.daterangepicker.ltr .ranges, .daterangepicker.ltr .calendar {
+    float: none !important;
+}
+
+.daterangepicker .calendar.right .daterangepicker_input {
+    position: absolute;
+    top: 45px;
+    left: 8px;
+    width: 230px;
+}
+
+.daterangepicker_input {
+    display: none !important;
+}
