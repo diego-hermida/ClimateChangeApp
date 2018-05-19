@@ -1,0 +1,438 @@
+{% extends "climate/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block page_title %}
+    {% if current_country %}
+        {{ current_country.country.name }} - {% trans "Countries" %}
+    {% else %}
+        {% trans "Countries" %}
+    {% endif %}
+{% endblock page_title %}
+
+{% block initialization_block %}
+    <style>
+        .scrollable-dropdown {
+            height: auto;
+            max-height: 300px;
+            overflow-x: hidden;
+        }
+
+        @media (min-height: 800px) {
+            .scrollable-dropdown {
+                max-height: none;
+                overflow-x: auto;
+            }
+        }
+
+        @media only screen and (max-width: 576px) {
+            #worldMap {
+                min-height: 200px;
+                max-height: 200px;
+            }
+        }
+
+        @media only screen and (min-width: 576px) {
+            #worldMap {
+                min-height: 300px;
+                max-height: 300px;
+            }
+        }
+
+        @media only screen and (min-width: 768px) {
+            #worldMap {
+                min-height: 400px;
+                max-height: 400px;
+            }
+        }
+
+        @media only screen and (min-width: 992px) {
+            #worldMap {
+                min-height: 500px;
+                max-height: 500px;
+            }
+        }
+
+        #worldMap > a {
+            display: none !important;
+            visibility: hidden !important;
+        }
+    </style>
+{% endblock initialization_block %}
+
+{% block body_content %}
+    <div class="text-dark">
+        <div class="d-flex mx-auto m-2 justify-content-center align-items-center">
+            {% if from_geo %}
+                <div class="d-flex mx-auto mt-3 mb-4 alert alert-success alert-sized">
+                    <span class="mb-0">{% trans "Geolocation has been successfully enabled." %}</span>
+                    <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                            aria-label="Close">
+                        <span aria-hidden="true"> &times;</span>
+                    </button>
+                </div>
+            {% endif %}
+            {% if from_search %}
+                {% if results > 1 %}
+                    <div class="alert alert-primary alert-sized mx-3 mb-4" role="alert">
+                        <p class="text-justify">{% trans "Your search returned multiple results." %}</p>
+                        <ul>
+                            {% for country in countries %}
+                                <li><a class="alert-link" href="/countries/{{ country.id }}/">
+                                    {{ country.name }}</a>
+                                </li>
+                            {% endfor %}
+                            {% if more_results %}
+                                <li>...</li>
+                            {% endif %}
+                        </ul>
+                        {% if more_results %}
+                            <p>
+                                {% blocktrans trimmed with size=countries|length %}
+                                    (showing only the first {{ size }} results)
+                                {% endblocktrans %}
+                            </p>
+                        {% endif %}
+                    </div>
+                {% elif not results %}
+                    <div class="alert alert-warning alert-sized mx-3 mb-4" role="alert">
+                        <span class="text-justify">{% trans "Your search returned 0 results." %}</span>
+                    </div>
+                {% endif %}
+            {% elif no_matching_country %}
+                <div class="alert alert-warning alert-sized mx-3 mb-4" role="alert">
+                    <span class="text-justify">
+                        {% trans "Such country does not exist, or there is no data available for it." %}
+                    </span>
+                </div>
+            {% elif not geolocation and not current_country.country %}
+                <div class="alert alert-warning alert-sized" role="alert">
+                    <span>
+                        {% blocktrans trimmed %}
+                            Geolocation is disabled. <br/>
+                            <strong>Tip:</strong> Search for countries using the <strong>Search bar</strong>,
+                            or enable <strong>Geolocation</strong> by clicking on the
+                            <kbd><i class="fa fa-location-arrow"></i></kbd> button.
+                        {% endblocktrans %}
+                    </span>
+                </div>
+            {% endif %}
+            <div id="geoLocationError" class="alert alert-danger alert-sized mx-3 mb-4 d-none" role="alert">
+                {% trans "An error occurred while retrieving your current position." %}
+            </div>
+        </div>
+        <div class="row justify-content-end align-items-end">
+            <div class="col-sm-auto col {% if from_search %}mb-2 mb-sm-4{% else %}mb-2 mb-sm-0{% endif %}">
+                {% if from_all %}
+                    <a tabindex="1" class="mr-1 btn btn-outline-primary" href="/countries" role="button"
+                       data-toggle="tooltip" data-placement="top" data-trigger="hover"
+                       title="{% trans 'View nearest country' %}">
+                        <i class="fa fa-map-marker"></i>
+                    </a>
+                {% else %}
+                    <a tabindex="1"
+                       class="mr-1 btn btn-outline-primary" href="/countries/all" role="button"
+                       data-toggle="tooltip" data-trigger="hover" data-placement="top"
+                       title="{% trans 'View all countries' %}">
+                        <i class="fa fa-globe"></i>
+                    </a>
+                {% endif %}
+            </div>
+            <div class="col-auto offset-lg-4 offset-md-3 {% if from_search %}mb-2 mb-sm-4{% else %}mb-2 mb-sm-0{% endif %}">
+                <button id="hideMapButton" class="btn btn-primary mr-1" type="button"
+                        data-toggle="tooltip" data-trigger="hover" data-placement="top"
+                        title="{% trans 'Show or hide the map' %}" onclick="toggleMapButton()">
+                    <i class="fa fa-map-o"></i>
+                </button>
+                {% if geolocation %}
+                    <span class="d-inline-block" data-toggle="tooltip" data-placement="top" data-trigger="hover"
+                          title="{% trans 'Geolocation is enabled' %}">
+                        <button class="btn btn-primary" type="button" style="pointer-events: none" disabled>
+                            <i class="fa fa-location-arrow"></i>
+                        </button>
+                    </span>
+                {% else %}
+                    <button class="btn btn-outline-primary" type="button" data-toggle="tooltip"
+                            data-placement="top" data-trigger="hover" title="{% trans 'Enable geolocation' %}"
+                            onclick="findGeoLocation()">
+                        <i class="fa fa-location-arrow"></i>
+                        <i id="geoLocationSpinner" class="ml-2 fa fa-spinner fa-spin fa-lg d-none"></i>
+                    </button>
+                {% endif %}
+            </div>
+            <div class="col-sm">
+                <form class="search d-inline" action="/countries/search" method='post'>
+                    <div class="input-group">
+                        <input type="text" name="country"
+                               class="form-control {% if validation_error %}is-invalid{% elif from_search %}is-valid {% else %}border-primary{% endif %}"
+                               required placeholder="{% trans 'Country' %}">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary" style="border-radius: 0 0.25rem 0.25rem 0;">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            {% blocktrans trimmed with keywords=invalid_data %}
+                                Keywords are invalid: "{{ keywords }}"
+                            {% endblocktrans %}
+                        </div>
+                        <div class="valid-feedback">{% trans "Good!" %}</div>
+                    </div>
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+        <div class="mt-2 d-flex align-items-center justify-content-end">
+            <button class="btn btn-link undecorated fa fa-info-circle fa-lg"
+                    data-toggle="tooltip" data-placement="bottom" data-trigger="focus" data-html="true"
+                    title="{% trans "Click on the dropdown button to show pre-selected <strong>regions</strong> and <strong>income levels</strong>. You can click on any of them to see its data. <br>Note: Some regions might not have data." %}">
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-flip="false">
+                    {% trans "Regions and income levels" %}
+                </button>
+                <div class="dropdown-menu dropdown-menu-right scrollable-dropdown" aria-labelledby="dropdownMenuButton">
+                    {% for region in country_regions %}
+                        <a class="dropdown-item" href="{{ region.url }}">{{ region.name }}</a>
+                    {% endfor %}
+                    <div class="dropdown-divider"></div>
+                    {% for income_level in country_income_levels %}
+                        <a class="dropdown-item" href="{{ income_level.url }}">{{ income_level.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% if not current_country %}
+            <div class="d-flex mx-auto mt-4 mb-3 pb-1 alert alert-info alert-sized">
+                {% blocktrans trimmed %}
+                    <div>
+                        <strong>Tips:</strong>
+                        <ul>
+                            <li>
+                                <strong>Click</strong> on the map surface and <strong>drag</strong> to move it.
+                            </li>
+                            <li>
+                                Use the &nbsp;<kbd>+</kbd>&nbsp; and &nbsp;<kbd>-</kbd>&nbsp; buttons, or <strong>
+                                tap
+                                twice</strong> on the map's surface to zoom in and out.
+                            </li>
+                            <li>
+                                <strong>Select</strong> a country by <strong>clicking</strong> on it.
+                            </li>
+                            <li>You can also use the <strong>Search bar</strong> to select countries.</li>
+                        </ul>
+                    </div>
+                {% endblocktrans %}
+                <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                        aria-label="Close">
+                    <span aria-hidden="true"> &times;</span>
+                </button>
+            </div>
+        {% endif %}
+        <div class="mb-4">
+            <div id="mapWrapper">
+                <div class="border rounded mt-3 mb-1 w-100 pt-xl-3" id="worldMap"></div>
+                <div class="my-3">
+                <span class="text-muted">
+                    {% blocktrans trimmed %}
+                        To represent this map, <a href="https://www.amcharts.com/" target="_blank">amCharts</a>
+                        libraries have been used.
+                    {% endblocktrans %}
+                </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        {% if current_country.country %}
+            <div class="card border-primary mb-4">
+                <div class="card-header bg-white border-0">
+                    <h1 class="card-title text-center">
+                        {{ current_country.country.name }}
+                    </h1>
+                </div>
+                <div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            {% include 'includes/country_info.html' %}
+                        </li>
+                        <li class="list-group-item">
+                            {% include 'includes/country_energy.html' %}
+                        </li>
+                        <li class="list-group-item">
+                            {% include 'includes/country_environment.html' %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        {% else %}
+            <div class="d-flex mx-auto align-items-center justify-content-center">
+                <div class="mx-auto alert alert-primary alert-sized mx-3 mb-4 mt-2" role="alert">
+                    <span class="text-justify">
+                        {% trans 'Once you have selected a country, more info will appear here.' %}
+                    </span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock body_content %}
+
+{% block final_initialization_block %}
+    {% if not geolocation %}
+        <script>
+            function findGeoLocation() {
+                var geoLocationErrorMessage = $("#geoLocationError");
+                var geoLocationSpinner = $('#geoLocationSpinner');
+
+                if (geoLocationErrorMessage.is(":visible")) {
+                    return;
+                }
+                geoLocationSpinner.removeClass('d-none');
+                //geolocation API options
+                var options = {
+                    maximumAge: 5 * 60 * 1000,
+                    enableHighAccuracy: true,
+                    timeout: 10000
+                };
+
+                //success getting the geolocation
+                function success(ppos) {
+                    var lat = ppos.coords.latitude;
+                    var lng = ppos.coords.longitude;
+                    sendGeolocation(lat, lng);
+                    geoLocationSpinner.addClass('d-none');
+                }
+
+                //error when getting the geolocation
+                function error(err) {
+                    geoLocationErrorMessage.removeClass('d-none');
+                    geoLocationSpinner.addClass('d-none');
+                }
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(success, error, options);
+                } else {
+                    geoLocationErrorMessage.removeClass('d-none');
+                }
+            }
+
+            function sendGeolocation(lat, lng) {
+                var form = document.createElement("form");
+                form.innerHTML = "{% csrf_token %}";
+                form.setAttribute("method", "post");
+                form.setAttribute("action", "/countries/enable-geo");
+                var latField = document.createElement("input");
+                latField.setAttribute("type", "hidden");
+                latField.setAttribute("name", "latitude");
+                latField.setAttribute("value", lat);
+                form.appendChild(latField);
+                var longField = document.createElement("input");
+                longField.setAttribute("type", "hidden");
+                longField.setAttribute("name", "longitude");
+                longField.setAttribute("value", lng);
+                form.appendChild(longField);
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            }
+        </script>
+    {% endif %}
+    <script src="https://www.amcharts.com/lib/3/ammap.js"></script>
+    <script src="https://www.amcharts.com/lib/3/maps/js/worldLow.js"></script>
+    <script src="https://www.amcharts.com/lib/3/lang-maps/{{ LANGUAGE_CODE }}.js"></script>
+    <script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+    <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all"/>
+    <script>
+        $(document).ready(function () {
+            var map = AmCharts.makeChart("worldMap", {
+                type: "map",
+                hideCredits: true,
+                language: "{{ LANGUAGE_CODE }}",
+                projection: "miller",
+                dataProvider: {
+                    map: "worldLow",
+                    getAreasFromMap: true
+                },
+                balloon: {
+                    borderAlpha: 1,
+                    borderThickness: 0,
+                    borderColor: "#000000",
+                    color: "#ffffff",
+                    fillAlpha: 1,
+                    fillColor: '#000000',
+                    fontSize: 13
+                },
+                zoomControl: {
+                    buttonFillAlpha: 1,
+                    buttonFillColor: "#ffffff",
+                    buttonIconColor: "#007bff",
+                    buttonColorHover: "#ffffff",
+                    buttonBorderColor: "#007bff",
+                    buttonBorderAlpha: 1,
+                    buttonBorderThickness: 1.2,
+                    buttonCornerRadius: 5,
+                    bottom: 30,
+                    homeButtonEnabled: false,
+                    roundButtons: false
+                },
+                areasSettings: {
+                    alpha: 1,
+                    color: "#74B9DC",
+                    outlineAlpha: 1,
+                    selectedColor: "#007bff",
+                    outlineColor: "#ffffff",
+                    rollOverColor: "#007bff",
+                    rollOverOutlineColor: "#ffffff",
+                    selectable: true
+                },
+                listeners: [{
+                    event: "init",
+                    method: function (e) {
+                        preSelectCountry("{{ current_country.country.iso2_code }}")
+                    }
+                }]
+            });
+            map.addListener("clickMapObject", function (event) {
+                window.location.href = '/countries/' + event.mapObject.id
+            });
+
+            function preSelectCountry(country) {
+                var area = map.getObjectById(country);
+                if (area !== undefined) {
+                    area.showAsSelected = true;
+                    map.returnInitialColor(area);
+                }
+            }
+        });
+
+        function toggleMapButton() {
+            $("#mapWrapper").toggle('d-none');
+            $("#hideMapButton").toggleClass('btn-outline-primary').toggleClass('btn-primary');
+        }
+
+        {% if current_country.country.region.iso3_code == 'NA' or current_country.country.income_level.iso3_code == 'NA' %}
+            toggleMapButton();
+        {% endif %}
+    </script>
+    {% if current_country.country %}
+        {% load static %}
+        <script async type="text/javascript" src="{% static 'js/country-energy-area-chart.js' %}"></script>
+        <script async type="text/javascript" src="{% static 'js/country-energy-line-chart.js' %}"></script>
+        <script async type="text/javascript" src="{% static 'js/pie-chart.js' %}"></script>
+        <script async type="text/javascript" src="{% static 'js/number-util.js' %}"></script>
+        <script async type="text/javascript" src="{% static 'js/country-environment-bar-chart.js' %}"></script>
+        <script type="text/javascript"
+                src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.min.js"></script>
+        <link rel="stylesheet" type="text/css"
+              href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker3.min.css">
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+        <script async type="text/javascript" src="http://nvd3.org/assets/lib/fisheye.js"></script>
+        <script async type="text/javascript" src="http://nvd3.org/assets/js/nv.d3.js"></script>
+        <script async type="text/javascript" src="http://nvd3.org/assets/lib/d3.v2.js"></script>
+        <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
+        <link rel="stylesheet" href="http://nvd3.org/assets/css/nv.d3.css">
+    {% endif %}
+{% endblock final_initialization_block %}
+
