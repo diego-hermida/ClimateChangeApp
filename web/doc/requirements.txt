@@ -1,0 +1,4 @@
+django-bootstrap4
+django==2.0.2
+django-widget-tweaks
+python-memcached
