@@ -1,0 +1,53 @@
+{% extends "climate/base.html" %}
+{% load i18n %}
+
+{% block page_title %}
+    {% trans "Locations (list)" %}
+{% endblock page_title %}
+
+{% block initialization_block %}
+    <style>
+        .div-columns {
+            column-gap: 40px;
+            column-count: 1;
+        }
+
+        @media (min-width: 576px) {
+            .div-columns {
+                column-gap: 40px;
+                column-count: 2;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .div-columns {
+                column-gap: 40px;
+                column-count: 3;
+            }
+        }
+    </style>
+{% endblock initialization_block %}
+
+{% block body_content %}
+    <div class="mt-4 mb-4 mb-md-5 px-3 row align-items-center justify-content-center text-center">
+        <h1 class="text-dark">{% trans "Monitored locations" %}</h1>
+        {% if total %}
+            <h4  class="mb-1"><span class="ml-3 badge badge-pill badge-success">{{ total }}</span></h4>
+        {% endif %}
+    </div>
+    {% if locations %}
+        <div class="div-columns offset-2 offset-sm-0 offset-lg-1 mb-4">
+            <ul>
+                {% for loc in locations %}
+                    <li><a href="/locations/{{ loc.id }}/">{{ loc.name }} ({{ loc.country_id }})</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="d-flex mx-auto my-5 align-items-center justify-content-center">
+            <div class="d-flex alert alert-sized alert-info">
+                <span>{% trans "No locations are available." %}</span>
+            </div>
+        </div>
+    {% endif %}
+{% endblock body_content %}

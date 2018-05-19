@@ -1,0 +1,395 @@
+{% extends "climate/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% load static %}
+
+{% block page_title %}
+    {% if current_location %}
+        {{ current_location.location.name }} - {% trans "Locations" %}
+    {% else %}
+        {% trans "Locations" %}
+    {% endif %}
+{% endblock page_title %}
+
+{% block initialization_block %}
+    <style>
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 70%; /* Ratio 16:9 ( 100%/16*9 = 56.25% ) */
+        }
+
+        @media (min-width: 768px) {
+            .iframe-container {
+                position: relative;
+                width: 100%;
+                padding-bottom: 60%; /* Ratio 16:9 ( 100%/16*9 = 56.25% ) */
+            }
+        }
+
+        @media (min-width: 992px) {
+            .iframe-container {
+                position: relative;
+                width: 100%;
+                padding-bottom: 50%; /* Ratio 16:9 ( 100%/16*9 = 56.25% ) */
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .iframe-container {
+                position: relative;
+                width: 100%;
+                padding-bottom: 40%; /* Ratio 16:9 ( 100%/16*9 = 56.25% ) */
+            }
+        }
+    </style>
+{% endblock initialization_block %}
+
+{% block body_content %}
+    <div class="text-dark">
+        <div class="row m-2 justify-content-center align-items-center">
+            {% if from_geo %}
+                <div class="d-flex mx-auto mt-3 mb-4 alert alert-success alert-sized">
+                    <span class="mb-0">{% trans "Geolocation has been successfully enabled." %}</span>
+                    <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                            aria-label="Close">
+                        <span aria-hidden="true"> &times;</span>
+                    </button>
+                </div>
+            {% endif %}
+            {% if from_search %}
+                {% if results > 1 %}
+                    <div class="alert alert-primary alert-sized mx-3 mb-4" role="alert">
+                        <p class="text-justify">{% trans "Your search returned multiple results." %}</p>
+                        <ul>
+                            {% for loc in locations %}
+                                <li><a class="alert-link" href="/locations/{{ loc.id }}/">{{ loc.name }}
+                                    ({{ loc.country_id }})</a>
+                                </li>
+                            {% endfor %}
+                            {% if more_results %}
+                                <li>...</li>
+                            {% endif %}
+                        </ul>
+                        {% if more_results %}
+                            <p>
+                                {% blocktrans trimmed with size=locations|length %}
+                                    (showing only the first {{ size }} results)
+                                {% endblocktrans %}
+                            </p>
+                        {% endif %}
+                    </div>
+                {% elif not results %}
+                    <div class="alert alert-warning alert-sized mx-3 mb-4" role="alert">
+                        <span class="text-justify">{% trans "Your search returned 0 results." %}</span>
+                    </div>
+                {% endif %}
+            {% elif no_matching_location %}
+                <div class="alert alert-warning alert-sized mx-3 mb-4" role="alert">
+                    <span class="text-justify">
+                        {% trans "Such location does not exist, or there is no data available for it." %}
+                    </span>
+                </div>
+            {% elif not geolocation and not current_location.location %}
+                <div class="alert alert-warning alert-sized" role="alert">
+                    <span>
+                        {% blocktrans trimmed %}
+                            Geolocation is disabled. <br/>
+                            <strong>Tip:</strong> Search for locations using the <strong>Search bar</strong>,
+                            or enable <strong>Geolocation</strong> by clicking on the
+                            <kbd><i class="fa fa-location-arrow"></i></kbd> button.
+                        {% endblocktrans %}
+                    </span>
+                </div>
+            {% endif %}
+            <div id="geoLocationError" class="alert alert-danger alert-sized mx-3 mb-4 d-none" role="alert">
+                {% trans "An error occurred while retrieving your current position." %}
+            </div>
+        </div>
+        <div class="row justify-content-end align-items-end">
+            <div class="col-sm-auto col {% if from_search %}mb-2 mb-sm-4{% else %}mb-2 mb-sm-0{% endif %}">
+                {% if from_all %}
+                    <a tabindex="1" class="mr-1 btn btn-outline-primary" href="/locations" role="button"
+                       data-toggle="tooltip" data-placement="top" data-trigger="hover"
+                       title="{% trans 'View nearest location' %}">
+                        <i class="fa fa-map-marker"></i>
+                    </a>
+                {% else %}
+                    <a tabindex="1"
+                       class="mr-1 btn btn-outline-primary" href="/locations/all" role="button"
+                       data-toggle="tooltip" data-trigger="hover" data-placement="top"
+                       title="{% trans 'View all locations' %}">
+                        <i class="fa fa-globe"></i>
+                    </a>
+                {% endif %}
+            </div>
+            <div class="col-auto offset-lg-4 offset-md-3 {% if from_search %}mb-2 mb-sm-4{% else %}mb-2 mb-sm-0{% endif %}">
+                <button id="hideMapButton" class="btn btn-primary mr-1" type="button"
+                        data-toggle="tooltip" data-trigger="hover" data-placement="top"
+                        title="{% trans 'Show or hide the map' %}" onclick="toggleMapButton()">
+                    <i class="fa fa-map-o"></i>
+                </button>
+                {% if geolocation %}
+                    <span class="d-inline-block" data-toggle="tooltip" data-placement="top"data-trigger="hover"
+                          title="{% trans 'Geolocation is enabled' %}">
+                        <button class="btn btn-primary" type="button" style="pointer-events: none" disabled>
+                            <i class="fa fa-location-arrow"></i>
+                        </button>
+                    </span>
+                {% else %}
+                    <button class="btn btn-outline-primary" type="button" data-toggle="tooltip"
+                            data-placement="top" data-trigger="hover" title="{% trans 'Enable geolocation' %}"
+                            onclick="findGeoLocation()">
+                        <i class="fa fa-location-arrow"></i>
+                        <i id="geoLocationSpinner" class="ml-2 fa fa-spinner fa-spin fa-lg d-none"></i>
+                    </button>
+                {% endif %}
+            </div>
+            <div class="col-sm">
+                <form class="search d-inline" action="/locations/search"
+                      method='post'>
+                    <div class="input-group">
+                        <input type="text" name="loc"
+                               class="form-control {% if validation_error %}is-invalid{% elif from_search %}is-valid {% else %}border-primary{% endif %}"
+                               required placeholder="{% trans 'Anytown' %}">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary" style="border-radius: 0 0.25rem 0.25rem 0;">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            {% blocktrans trimmed with keywords=invalid_data %}
+                                Keywords are invalid: "{{ keywords }}"
+                            {% endblocktrans %}
+                        </div>
+                        <div class="valid-feedback">{% trans "Good!" %}</div>
+                    </div>
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+        <div class="mb-4">
+            <div id="mapWrapper">
+                <div class="rounded border border-muted bg-muted mt-3 mb-1 iframe-container" id="googleMapsMap"></div>
+            </div>
+            <div class="row mx-0 justify-content-center align-items-center">
+                <div id="googleMapsError" class="alert alert-danger alert-sized d-none mt-5 mx-auto align-items-center">
+                    {% blocktrans trimmed %}
+                        <span><strong>Google Maps</strong> is unavailable.</span>
+                    {% endblocktrans %}
+                    <button type="button" class="close ml-3 align-self-center" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true"> &times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        {% if current_location.location %}
+            <div class="card border-primary mb-4">
+                <div class="card-header bg-white border-0">
+                    <h1 class="card-title text-center">
+                        {{ current_location.location.name }}
+                        {% if current_location.has_all_data %}
+                            <sup>
+                                <button class="btn btn-link undecorated fa fa-check-circle" style="margin-left: -15px"
+                                        data-toggle="tooltip" data-placement="top" data-trigger="focus"
+                                        title="{% trans 'This location has both information about air pollution and weather conditions (real time and historical data).' %}">
+                                </button>
+                            </sup>
+                        {% endif %}
+                    </h1>
+                    <h3 class="card-subtitle text-muted text-center font-weight-light">
+                        <a class="undecorated"
+                           href="/countries/{{ current_location.location.country.iso2_code }}">
+                            {{ current_location.location.country.name }}
+                        </a>
+                        {% if current_location.is_capital_city %}
+                            <sup>
+                                <button class="btn btn-link undecorated fa fa-globe" style="margin-left: -15px"
+                                        data-toggle="tooltip" data-placement="bottom" data-html="true"
+                                        data-trigger="focus"
+                                        title="
+                                    {% blocktrans trimmed with loc_name=current_location.location.name country_name=current_location.location.country.name %}
+                                        <strong>{{ loc_name }}</strong> is the capital city of <strong>{{ country_name }}</strong>
+                                    {% endblocktrans %}">
+                                </button>
+                            </sup>
+                        {% endif %}
+                    </h3>
+                </div>
+                <div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            {% include 'includes/location_info.html' %}
+                        </li>
+                        <li class="list-group-item">
+                            {% include 'includes/air_pollution.html' %}
+                        </li>
+                        <li class="list-group-item">
+                            {% include 'includes/historical_weather.html' %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        {% else %}
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="mx-auto alert alert-primary alert-sized mx-3 mb-4 mt-2" role="alert">
+                    <span class="text-justify">
+                        {% trans 'Once you have selected a location, more info will appear here.' %}
+                    </span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock body_content %}
+
+{% block final_initialization_block %}
+    {% if not geolocation %}
+        <script>
+            function findGeoLocation() {
+                var geoLocationErrorMessage = $("#geoLocationError");
+                var geoLocationSpinner = $('#geoLocationSpinner');
+
+                if (geoLocationErrorMessage.is(":visible")) {
+                    return;
+                }
+                geoLocationSpinner.removeClass('d-none');
+                //geolocation API options
+                var options = {
+                    maximumAge: 5 * 60 * 1000,
+                    enableHighAccuracy: true,
+                    timeout: 10000
+                };
+
+                //success getting the geolocation
+                function success(ppos) {
+                    var lat = ppos.coords.latitude;
+                    var lng = ppos.coords.longitude;
+                    sendGeolocation(lat, lng);
+                    geoLocationSpinner.addClass('d-none');
+                }
+
+                //error when getting the geolocation
+                function error(err) {
+                    geoLocationErrorMessage.removeClass('d-none');
+                    geoLocationSpinner.addClass('d-none');
+                }
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(success, error, options);
+                } else {
+                    geoLocationErrorMessage.removeClass('d-none');
+                }
+            }
+
+            function sendGeolocation(lat, lng) {
+                var form = document.createElement("form");
+                form.innerHTML = "{% csrf_token %}";
+                form.setAttribute("method", "post");
+                form.setAttribute("action", "/locations/enable-geo");
+                var latField = document.createElement("input");
+                latField.setAttribute("type", "hidden");
+                latField.setAttribute("name", "latitude");
+                latField.setAttribute("value", lat);
+                form.appendChild(latField);
+                var longField = document.createElement("input");
+                longField.setAttribute("type", "hidden");
+                longField.setAttribute("name", "longitude");
+                longField.setAttribute("value", lng);
+                form.appendChild(longField);
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            }
+        </script>
+    {% endif %}
+    <script>
+        // Callback for the Google Maps API.
+        function initMap() {
+            try {
+                {% if current_location.location %}
+                    var map = new google.maps.Map(document.getElementById('googleMapsMap'), {
+                        zoom: 10,
+                        center: {
+                            'lat': {{ current_location.location.latitude|safe }},
+                            'lng': {{ current_location.location.longitude|safe }}
+                        }
+                    });
+
+                    new google.maps.Marker({
+                        position: new google.maps.LatLng({{ current_location.location.latitude|safe }}, {{ current_location.location.longitude|safe }}),
+                        map: map,
+                        title: '{{ current_location.location.name }}',
+                        icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+                    });
+                {% else %}
+                    var map = new google.maps.Map(document.getElementById('googleMapsMap'), {
+                        zoom: 2,
+                        center: {lat: 20, lng: 0}
+                    });
+                    var locations = [];
+                    {% for loc in map_locations %}
+                        locations.push({
+                            'name': '{{ loc.name }}',
+                            'latitude': {{ loc.latitude|safe }},
+                            'longitude': {{ loc.longitude|safe }},
+                            'url': '/locations/{{ loc.id }}'
+                        });
+                    {% endfor %}
+                    var marker, i;
+                    for (i = 0; i < locations.length; i++) {
+                        marker = new google.maps.Marker({
+                            position: new google.maps.LatLng(locations[i]['latitude'], locations[i]['longitude']),
+                            map: map,
+                            title: locations[i]['name'],
+                            url: locations[i]['url'],
+                            icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                        });
+                        google.maps.event.addListener(marker, 'click', function () {
+                            window.location.href = this.url;
+                        });
+                    }
+                {% endif %}
+                {% if geolocation %}
+                    new google.maps.Marker({
+                        position: new google.maps.LatLng({{ geolocation.latitude|safe }}, {{ geolocation.longitude|safe }}),
+                        map: map,
+                        title: "{% trans "Your current position" %}",
+                        icon: '{% static 'images/geo.png' %}'
+                    });
+                {% endif %}
+            } catch (err) {
+                toggleMapError();
+            }
+        }
+
+        function toggleMapButton() {
+            $("#mapWrapper").toggle('d-none');
+            $("#hideMapButton").toggleClass('btn-outline-primary').toggleClass('btn-primary');
+        }
+
+        function toggleMapError() {
+            $("#googleMapsMap").addClass('d-none');
+            $("#googleMapsError").removeClass('d-none').addClass('d-flex');
+            $("#hideMapButton").prop('disabled', true);
+        }
+    </script>
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBNo6yTF0nscZFnVXknj_SjRjn-pV7suag&language={{ LANGUAGE_CODE }}&callback=initMap"></script>
+    {% if current_location.wunderground_data or current_location.location.air_pollution_data %}
+        <script async type="text/javascript" src="{% static 'js/number-util.js' %}"></script>
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+        <script async type="text/javascript" src="http://nvd3.org/assets/lib/fisheye.js"></script>
+        <script async type="text/javascript" src="http://nvd3.org/assets/js/nv.d3.js"></script>
+        <script async type="text/javascript" src="http://nvd3.org/assets/lib/d3.v2.js"></script>
+        <link rel="stylesheet" href="http://nvd3.org/assets/css/nv.d3.css">
+    {% endif %}
+    {% if current_location.current_conditions or current_location.weather_forecast %}
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'css/weather-icons.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/weather-icons-wind.min.css' %}">
+    {% endif %}
+{% endblock final_initialization_block %}
+
