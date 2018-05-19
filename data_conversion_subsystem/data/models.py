@@ -141,7 +141,7 @@ class EnergySourcesMeasure(models.Model):
 class Location(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True)
     name = models.CharField(max_length=100, db_index=True)
-    country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
+    country = models.ForeignKey(Country, db_index=True, on_delete=models.SET_NULL, null=True)
     climate_zone = models.CharField(max_length=3, db_index=True)
     elevation = models.SmallIntegerField(null=True)
     elevation_units = models.CharField(max_length=1, choices=MEASURE_UNITS, default=None, null=True)
@@ -157,7 +157,6 @@ class Location(models.Model):
     # Due to a circular reference between Location and AirPollutionMeasure, setting model as <str> instead of <object>
     air_pollution_last_measure = models.ForeignKey('data.AirPollutionMeasure', on_delete=models.SET_NULL, null=True,
                                                    related_name='+')
-
     def __str__(self):
         return 'Location [id (PK): %s, name: %s, country (FK): %s, climate_zone: %s, elevation: %s, ' \
                'elevation_units: %s, last_modified: %s, latitude: %s, longitude: %s, population: %s, ' \
@@ -567,6 +566,10 @@ class RpcDatabaseEmission(models.Model):
     class Meta:
         indexes = [models.Index(fields=['year', 'scenario'])]
         unique_together = ('year', 'scenario')
+
+    @staticmethod
+    def get_scenarios_display():
+        return [x[1] for x in RpcDatabaseEmission.SCENARIO_TYPE]
 
     def __str__(self):
         return 'RpcDatabaseEmission [year: %s, scenario: %s]' % (self.year, self.scenario)
