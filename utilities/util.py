@@ -1,14 +1,14 @@
 import datetime
-import errno
 import json
-import pytz
 import signal
-import yaml
-
 from contextlib import contextmanager
 from os import makedirs, sep as os_file_separator
 from os.path import exists
 from random import randint
+
+import errno
+import pytz
+import yaml
 
 
 def enum(*args) -> type:
@@ -34,8 +34,8 @@ def date_to_millis_since_epoch(date: datetime.datetime) -> int:
     """
     if date.tzinfo != pytz.UTC:
         raise ValueError('Date timezone must be UTC')
-    return int((date.replace(tzinfo=pytz.UTC) - datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).
-            total_seconds() * 1000.0)
+    return int((date.replace(tzinfo=pytz.UTC) - datetime.datetime.utcfromtimestamp(0).replace(
+        tzinfo=pytz.UTC)).total_seconds() * 1000.0)
 
 
 def decimal_date_to_millis_since_epoch(decimal_date: float) -> int:
@@ -53,18 +53,23 @@ def decimal_date_to_millis_since_epoch(decimal_date: float) -> int:
     return date_to_millis_since_epoch(result)
 
 
+def current_timestamp(utc=True) -> datetime.datetime:
+    """
+        Retrieves current timestamp as a datetime.datetime object.
+        :param utc: If True, uses UTC as the timezone. Otherwise, uses the default one (is set to None)
+        :return: datetime.datetime.now()
+    """
+    if utc:
+        return datetime.datetime.now(tz=pytz.UTC)
+    else:
+        return datetime.datetime.now()
+
+
 def current_date_in_millis() -> int:
     """
         Retrieves the current UTC date in milliseconds.
     """
     return date_to_millis_since_epoch(datetime.datetime.now(tz=pytz.UTC))
-
-
-def current_timestamp_utc() -> datetime.datetime:
-    """
-        Retrieves the current UTC date as a datetime.datetime object, avoiding importing 'datetime' and 'pytz' modules.
-    """
-    return datetime.datetime.now(tz=pytz.UTC)
 
 
 def recursive_makedir(path: str, is_file=False):
@@ -192,7 +197,7 @@ def deserialize_date(date: str, date_format='%Y-%m-%dT%H:%M:%S.%fZ') -> datetime
         :rtype: datetime.datetime
     """
     return None if date is None else datetime.datetime.fromtimestamp(
-        datetime.datetime.strptime(date, date_format).timestamp()).replace(tzinfo=pytz.UTC)
+            datetime.datetime.strptime(date, date_format).timestamp()).replace(tzinfo=pytz.UTC)
 
 
 def get_module_name(path: str) -> str:
@@ -213,8 +218,7 @@ def get_exception_info(exception: BaseException) -> dict:
                     - class: The name of the exception's class.
                     - message: The message attached to the exception, if exists.
     """
-    return {'class': exception.__class__.__name__,
-            'message': exception.__str__()}
+    return {'class': exception.__class__.__name__, 'message': exception.__str__()}
 
 
 def next_exponential_backoff(previous_backoff: dict, max_backoff: int) -> (int, str):
@@ -226,7 +230,6 @@ def next_exponential_backoff(previous_backoff: dict, max_backoff: int) -> (int, 
         :param max_backoff: If the operation yields a value higher than 'max_backoff', then the result is 'max_backoff'.
         :return: A tuple with the new value and time units
     """
-    from copy import deepcopy
     if previous_backoff['units'] == TimeUnits.NEVER:
         return max_backoff, TimeUnits.s
     else:
@@ -309,14 +312,47 @@ def time_limit(seconds):
     :param seconds:
     :raise TimeoutError: If the execution time is greater than the time limit.
     """
+
     def signal_handler(signum, frame):
         raise TimeoutError('Execution has been timed out.')
+
     signal.signal(signal.SIGALRM, signal_handler)
     signal.alarm(seconds)
     try:
         yield
     finally:
         signal.alarm(0)
+
+
+def nonempty_str(value: str, nullable=True, min_length=None, max_length=None) -> str:
+    """
+        Validates a "str" object (must be non-empty). If the value is already a "str" object, this is a no-op.
+        :param value: String to be parsed.
+        :param nullable: Allows returning None. Defaults to True.
+        :param min_length: Minimum allowed length.
+        :param max_length: Maximum allowed length.
+        :return: The parsed value; or None, if "nullable" is True and the value cannot be parsed.
+        :raises ValueError: If nullable=False, and value cannot be parsed.
+    """
+    try:
+        if nullable and value is None:
+            return None
+        elif value is None:
+            raise ValueError('Input must be a "str" object, not None.')
+        value = str(value)
+        if value == '':
+            raise ValueError('Input cannot be an empty "str" object.')
+        elif min_length is not None and max_length is not None and not min_length <= len(value) <= max_length:
+            raise AttributeError('Input must be between %d-%d characters long' % (min_length, max_length))
+        else:
+            return value
+    except ValueError:
+        if nullable:
+            return None
+        else:
+            raise
+    except AttributeError as e:
+        raise ValueError('Validation failed.') from e
 
 
 def parse_float(value: str, nullable=True) -> float:
@@ -420,4 +456,4 @@ def compute_wind_direction(wind_degrees: float) -> str:
         :return: None, if the input is None,
     """
     return ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"][
-            int((wind_degrees / 22.5) + .5) % 16] if wind_degrees is not None else None
+        int((wind_degrees / 22.5) + .5) % 16] if wind_degrees is not None else None
