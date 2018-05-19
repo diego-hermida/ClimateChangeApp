@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        {% block page_title %}
+        {% endblock page_title %}
+    </title>
+</head>
+
+{# Load the tag library #}
+{% load bootstrap4 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% load i18n %}
+{% load static %}
+
+{% block initialization_block %}
+{% endblock initialization_block %}
+
+<style>
+    /** Removes underline from links */
+    a, .undecorated {
+        text-decoration: none !important;
+    }
+
+    .alert-sized {
+        max-width: 700px !important;
+    }
+
+    html {
+        position: relative;
+        min-height: 100%;
+    }
+
+    .footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
+
+    .header-margin {
+        margin-top: {% if user and user.is_authenticated %}140px{% else %}100px{% endif %} !important;
+    }
+
+</style>
+<link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}"/>
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+<body id="topOfPage">
+<header class="container-fluid px-0 fixed-top">
+    <nav id="menuNav" class="py-0 px-2 px-sm-3 navbar navbar-dark navbar-expand-md bg-primary"
+         style="max-width: 100% !important;">
+        <a class="navbar-brand pr-md-4 mr-0" href="/">
+            <img style="width: 55px; height: 55px;" src="{% static 'images/favicon.ico' %}" alt="Home page">
+            <span class="pl-2">{% trans "Climate Change" %}</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav text-center mt-3 mt-md-0">
+                {% for section in sections %}
+                    <li class="nav-item">
+                        <a class="nav-link px-md-2 px-lg-3" href="{{ section.url }}">{{ section.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+            <hr class="nav-item d-md-none">
+            <ul class="navbar-nav ml-auto mt-3 mt-md-0">
+                <li class="nav-item px-md-1">
+                    <a class="btn btn-default nav-link" href="/about">
+                        <span class="d-md-none">{% trans "About" %}</span>
+                        <i class="d-none d-md-inline fa fa-user fa-lg text-white" data-toggle="tooltip"
+                           data-trigger="hover" data-placement="top" title="{% trans "About" %}"></i>
+                    </a>
+                </li>
+                <li class="nav-item px-md-1">
+                    <a class="btn btn-default nav-link" href="/contact">
+                        <span class="d-md-none">{% trans "Contact" %}</span>
+                        <i class="d-none d-md-inline fa fa-envelope-o fa-lg text-white" data-toggle="tooltip"
+                           data-trigger="hover" data-placement="top" title="{% trans "Contact" %}"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    {% if user and user.is_authenticated %}
+        <div class="bg-dark text-white d-flex px-3 py-1">
+            <p class="mb-0 text-truncate" style="max-width: 250px;">
+                {% blocktrans trimmed with username=user.username %}
+                    Logged in as <strong>{{ username }}</strong>
+                {% endblocktrans %}
+            </p>
+            <a class="ml-auto btn btn-default nav-link py-0 pl-5 text-light" href="/admin">
+                <span class="d-none d-sm-inline px-2">{% trans "Admin zone" %}</span>
+                <i class="fa fa-black-tie fa-lg"></i>
+            </a>
+            <span class="d-none d-sm-inline px-1">•</span>
+            <a class="btn btn-default nav-link py-0 px-1 px-sm-2 text-light" href="/admin/logout">
+                <span class="d-none d-sm-inline px-2">{% trans "Logout" %}</span>
+                <i class="fa fa-sign-out fa-lg"></i>
+            </a>
+        </div>
+    {% endif %}
+</header>
+<main id="mainComponent" class="container header-margin">
+    {% block body_content %}
+    {% endblock body_content %}
+</main>
+<footer id="footerComponent" class="footer py-3 bg-dark text-white">
+    <div class="container-fluid h-100 m-0 row align-items-center justify-content-center">
+        <span class="col-12 px-3 text-center">
+            {% now "Y" as current_year %}
+            {% blocktrans trimmed %}
+                © University of A Coruña, <strong>{{ current_year }}</strong>.
+            {% endblocktrans %}
+        </span>
+        <p class="col-12 px-3 text-center mb-0 mt-2 mt-sm-0">
+            {% blocktrans trimmed %}
+                This is the <strong>end-of-degree</strong> project of
+                <a class="text-info" href="/about"><strong>Diego Hermida Carrera.</strong></a>
+            {% endblocktrans %}
+        </p>
+        <div class="col-12 px-3 py-4 mt-2 mt-sm-0 d-flex align-items-center justify-content-center">
+            <span class="pr-3">
+                {% blocktrans trimmed %}
+                    <cite>Like</cite> this app
+                {% endblocktrans %}
+            </span>
+            <div id="likeButtonWrapper" data-toggle="tooltip" data-placement="bottom" data-trigger="focus"
+                 title="{% trans "You have already liked the app" %}">
+                {% if not like_given %}
+                    <button id="likeButton" class="btn btn-outline-info py-1"
+                            onclick="increaseLikeCount(); return false;">
+                        <i class="pb-1 fa fa-thumbs-up fa-lg"></i>
+                        <span id="likeCounter" class="ml-1 badge">{{ like_count }}</span>
+                    </button>
+                {% else %}
+                    <button id="likeButton" class="btn btn-outline-info py-1 disabled">
+                        <i class="pb-1 fa fa-thumbs-up fa-lg"></i>
+                        <span id="likeCounter" class="ml-1 badge">{{ like_count }}</span>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-12 d-flex align-items-center text-center">
+            <a class="mx-auto" href="https://www.linkedin.com/in/diego-hermida/" target="_blank">
+                <i class="btn btn-outline-info fa fa-linkedin-square fa-lg px-2 mb-2 mb-md-0"></i>
+            </a>
+        </div>
+        <div class="col-12 pt-4 py-md-0 ml-auto d-flex flex-column text-center">
+            <a class="mx-auto mr-md-0 ml-md-auto text-info" href="/admin">{% trans "Admin zone" %}</a>
+            <a class="mx-auto mr-md-0 ml-md-auto text-info mt-2 mt-sm-0"
+               href="/locations/list-all">{% trans "List all monitored locations" %}</a>
+        </div>
+    </div>
+</footer>
+</body>
+
+{% csrf_token %}
+<script type="text/javascript" src="{% static 'js/util.js' %}"></script>
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
+
+    $(function () {
+        $('#menuNav').find('a[href="/' + location.pathname.split('/')[1] + '"]').parents('li').addClass('active');
+    });
+
+    $(document).ready(function () {
+        resizeFooter();
+    });
+</script>
+
+
+{% block final_initialization_block %}
+{% endblock final_initialization_block %}
+
+</html>
