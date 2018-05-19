@@ -1,0 +1,234 @@
+{% extends "climate/base_admin.html" %}
+{% load i18n %}
+
+{% block page_title %}
+    {% trans "Admin zone - Messages" %}
+{% endblock page_title %}
+
+{% block initialization_block %}
+    <style>
+        .message-buttons {
+            margin-bottom: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .message-buttons {
+                margin-bottom: -24px;
+            }
+        }
+
+        .changed-row {
+            background: rgba(195, 230, 203, 0.5);
+        }
+
+        .break-words {
+            -ms-word-break: break-all;
+            word-break: break-all;
+
+            /* Non standard for webkit */
+            word-break: break-word;
+
+            -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            hyphens: auto;
+        }
+    </style>
+{% endblock initialization_block %}
+
+{% block body_content %}
+    <div class="my-4 px-3 row align-items-center justify-content-center text-center">
+        <h1 class="text-dark">{% trans "Manage messages" %}</h1>
+    </div>
+    {% if from_delete %}
+        <div class="d-flex my-4 align-items-center justify-content-center">
+            {% if error %}
+                <div class="mt-3 mx-auto alert alert-danger alert-sized"
+                     role="alert">
+                    <span>{% trans "An error occurred while deleting the message." %}</span>
+                </div>
+            {% elif message_does_not_exist %}
+                <div class="mt-3 mx-auto alert alert-warning alert-sized"
+                     role="alert">
+                    <span>{% trans "Such message does not exist." %}</span>
+                </div>
+            {% else %}
+                <div class="mt-3 mx-auto alert alert-success alert-sized"
+                     role="alert">
+                    <span>{% trans "Message successfully deleted." %}</span>
+                </div>
+            {% endif %}
+        </div>
+    {% elif error %}
+        <div class="d-flex my-4 align-items-center justify-content-center">
+            <div class="mt-3 mx-auto alert alert-danger alert-sized"
+                 role="alert">
+                <span>{% trans "An error occurred while processing the request." %}</span>
+            </div>
+        </div>
+    {% endif %}
+    <div class="py-3 border rounded bg-light">
+        <div class="px-3 row align-items-center">
+            <div class="col-auto">
+                <a class="btn btn-info py-0" href="/admin/messages" target="_self">
+                    <i class="fa fa-inbox fa-2x"></i>
+                    {% if new_msgs %}
+                        <span class="mt-1 badge badge-danger align-top rounded-circle">{{ new_msgs }}</span>
+                    {% endif %}
+                </a>
+            </div>
+            <div class="col">
+                <div class="btn-group btn-group-sm py-2" role="group" aria-label="{% trans "Message filters" %}">
+                    <a class="btn {% if filter == 'replied' %}btn-info{% else %}btn-outline-info{% endif %}"
+                       href="?filter=replied">{% trans "Replied" context "multiple msgs" %}</a>
+                    <a class="btn {% if filter == 'dismissed' %}btn-info{% else %}btn-outline-info{% endif %}"
+                       href="?filter=dismissed">{% trans "Dismissed" context "multiple msgs" %}</a>
+                </div>
+            </div>
+            {% if msgs %}
+                {% if msgs.has_previous or msgs.has_next %}
+                    <div class="col-auto d-none d-sm-inline">
+                        <div class="btn-group btn-group-sm py-2" role="group"
+                             aria-label="{% trans "Message pagination arrows" %}">
+                            {% if msgs.has_previous %}
+                                <a class="btn btn-outline-info"
+                                   href="?filter={{ filter }}&page={{ msgs.previous_page_number }}">
+                                    <i class="fa fa-chevron-left fa-lg"></i>
+                                </a>
+                            {% else %}
+                                <a class="disabled btn btn-outline-info" aria-disabled="true" href="#">
+                                    <i class="fa fa-chevron-left fa-lg"></i>
+                                </a>
+                            {% endif %}
+                            {% if msgs.has_next %}
+                                <a class="btn btn-outline-info"
+                                   href="?filter={{ filter }}&page={{ msgs.next_page_number }}">
+                                    <i class="fa fa-chevron-right fa-lg"></i>
+                                </a>
+                            {% else %}
+                                <a class="disabled btn btn-outline-info" aria-disabled="true" href="#">
+                                    <i class="fa fa-chevron-right fa-lg"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                </div>
+                <table class="table mt-3">
+                    <tbody>
+                    {% for msg in msgs %}
+                        <tr {% if message_id and msg.id == message_id %}class="changed-row"{% endif %}>
+                            <td class="pl-4">
+                                <div class="d-flex flex-column">
+                                    {% if msg.dismissed or msg.replied %}
+                                        <div class="mx-auto message-buttons d-flex justify-content-center">
+                                            <a href="?filter={{ filter }}&page={{ page }}&action=restore&msgid={{ msg.id }}"
+                                               class="btn btn-outline-primary ml-2 p-0" data-toggle="tooltip"
+                                               data-placement="bottom" data-trigger="hover" role="button"
+                                               title="{% trans 'Move message to inbox' %}">
+                                                <span class="col-auto"><i class="fa fa-inbox"></i></span>
+                                            </a>
+                                            <a href="?filter={{ filter }}&page={{ page }}&action=delete&msgid={{ msg.id }}"
+                                               class="btn btn-outline-danger ml-2 p-0" data-toggle="tooltip"
+                                               data-placement="bottom" data-trigger="hover" role="button"
+                                               title="{% trans 'Permanently delete message' %}">
+                                                <span class="col-auto"><i class="fa fa-trash-o"></i></span>
+                                            </a>
+                                        </div>
+                                    {% elif not msg.replied %}
+                                        <div class="mx-auto message-buttons d-flex justify-content-center">
+                                            <a href="?filter={{ filter }}&page={{ page }}&action=reply&msgid={{ msg.id }}"
+                                               class="btn btn-outline-primary ml-2 p-0" data-toggle="tooltip"
+                                               data-placement="bottom" data-trigger="hover" role="button"
+                                               title="{% trans 'Mark message as replied' %}">
+                                                <span class="col-auto"><i class="fa fa-reply"></i></span>
+                                            </a>
+                                            <a href="?filter={{ filter }}&page={{ page }}&action=dismiss&msgid={{ msg.id }}"
+                                               class="btn btn-outline-danger ml-2 p-0" data-toggle="tooltip"
+                                               data-placement="bottom" data-trigger="hover" role="button"
+                                               title="{% trans 'Dismiss message' %}">
+                                                <span class="col-auto"><i class="fa fa-times-circle"></i></span>
+                                            </a>
+                                            <a href="mailto:{{ msg.email }}"
+                                               class="btn btn-outline-primary ml-2 p-0" data-toggle="tooltip"
+                                               data-placement="bottom" data-trigger="hover" role="button"
+                                               title="{% trans 'Reply by email' %}">
+                                                <span class="col-auto"><i class="fa fa-paper-plane"></i></span>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    <div class="row mb-3">
+                                        {% if msg.replied %}
+                                            <span class="pl-2 pr-1" data-toggle="tooltip" data-placement="bottom"
+                                                 data-trigger="hover"
+                                                  title="{% trans 'Replied' context "single msg" %}">
+                                            <i class="fa fa-envelope-open text-success"></i>
+                                        </span>
+                                        {% elif msg.dismissed %}
+                                            <span class="pl-2 pr-1" data-toggle="tooltip" data-placement="bottom"
+                                                 data-trigger="hover"
+                                                  title="{% trans 'Dismissed' context "single msg" %}">
+                                            <i class="fa fa-trash-o text-danger"></i>
+                                        </span>
+                                        {% else %}
+                                            <span class="pl-2 pr-1" data-toggle="tooltip" data-placement="bottom"
+                                                 data-trigger="hover" title="{% trans 'New' %}">
+                                            <i class="fa fa-envelope text-primary"></i>
+                                        </span>
+                                        {% endif %}
+                                        <span class="col pr-0 col-md-auto font-weight-bold">{{ msg.name }}</span>
+                                        <span class="col-5 col-sm-auto ml-auto text-right text-muted font-weight-light">{{ msg.created|date }}</span>
+                                    </div>
+                                    <span>{{ msg.subject }}</span>
+                                    <span class="text-muted break-words">{{ msg.message }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% if msgs.has_previous or msgs.has_next %}
+                    <div class="my-4 d-flex flex-column justify-content-center align-items-center">
+                        <div class="btn-group btn-group-sm py-2" role="group"
+                             aria-label="{% trans "Message pagination arrows" %}">
+                            {% if msgs.has_previous %}
+                                <a class="btn btn-outline-info"
+                                   href="?filter={{ filter }}&page={{ msgs.previous_page_number }}">
+                                    <i class="fa fa-chevron-left fa-lg"></i>
+                                </a>
+                            {% else %}
+                                <a class="disabled btn btn-outline-info" aria-disabled="true" href="#">
+                                    <i class="fa fa-chevron-left fa-lg"></i>
+                                </a>
+                            {% endif %}
+                            {% if msgs.has_next %}
+                                <a class="btn btn-outline-info"
+                                   href="?filter={{ filter }}&page={{ msgs.next_page_number }}">
+                                    <i class="fa fa-chevron-right fa-lg"></i>
+                                </a>
+                            {% else %}
+                                <a class="disabled btn btn-outline-info" aria-disabled="true" href="#">
+                                    <i class="fa fa-chevron-right fa-lg"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-3 text-muted">
+                        <span class="mx-auto px-3">
+                        {% blocktrans trimmed %}
+                            Showing page <strong>{{ page }}</strong> out of <strong>{{ total_pages }}</strong>.
+                        {% endblocktrans %}
+                        </span>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                </div>
+                <div class="d-flex mx-auto my-5 align-items-center justify-content-center">
+                    <div class="d-flex alert alert-sized alert-info">
+                        <span>{% trans "There are no available messages." %}</span>
+                    </div>
+                </div>
+            {% endif %}
+    </div>
+    </div>
+{% endblock body_content %}
