@@ -1,0 +1,204 @@
+{% extends "climate/base.html" %}
+
+{# Load static files #}
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block page_title %}
+    {% trans "Climate Change" %}
+{% endblock page_title %}
+
+{% block initialization_block %}
+    <style>
+        .card-columns {
+            column-count: 1;
+        }
+
+        @media (min-width: 768px) {
+            .card-columns {
+                column-count: 2;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .card-columns {
+                column-count: 3;
+            }
+        }
+    </style>
+{% endblock initialization_block %}
+
+{% block body_content %}
+    {% if from_logout %}
+        <div class="d-flex mx-auto justify-content-center">
+            {% if success %}
+                <div class="d-flex align-items-center alert alert-success alert-sized">
+                    <span>{% trans "You have been successfully logged out." %}</span>
+                    <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                            aria-label="Close">
+                        <span aria-hidden="true"> &times;</span>
+                    </button>
+                </div>
+            {% else %}
+                <div class="d-flex align-items-center alert alert-danger alert-sized">
+                    <span>{% trans "An error occurred while logging you out." %}</span>
+                    <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                            aria-label="Close">
+                        <span aria-hidden="true"> &times;</span>
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+    <div class="text-center pt-2 {% if from_logout %}mt-2 mb-5{% else %}my-5{% endif %}">
+        <h1 class="">{% trans "Facts about Climate Change" %}</h1>
+    </div>
+    <div class="card-columns pb-3">
+        <div class="card bg-light">
+            <img class="card-img-top" src="{% static "/images/popsicles.jpg" %}" alt="{% trans "Polluted popsicles" %}">
+            <div class="card-body">
+                <blockquote class="blockquote">
+                    <p class="text-center">
+                        {% blocktrans trimmed %}
+                            As a consequence of Climate Change, the quantity and quality of
+                            <strong>drinking water</strong> will be reduced.
+                        {% endblocktrans %}
+                    </p>
+                </blockquote>
+                <p class="mb-0">
+                    <small class="text-muted">
+                        {% blocktrans trimmed %}
+                            Credit (image): The
+                            <a href="https://www.facebook.com/PollutedWaterPopsicles/" target="_blank">Polluted Water
+                                Popsicles</a> project.
+                        {% endblocktrans %}
+                    </small>
+                </p>
+            </div>
+        </div>
+        <div class="card p-3 bg-light">
+            <blockquote class="blockquote mb-0 card-body">
+                <p>
+                    {% blocktrans trimmed %}
+                        The climate was <strong>key</strong> to the fall of the Western Roman Empire. From the year 400
+                        A.D., the winters were becoming increasingly cold, displacing the barbarian peoples to southern
+                        Europe. These, more and more numerous, were making a dent in the Empire; causing its fall in the
+                        year 476 A.D.
+                    {% endblocktrans %}
+                </p>
+                <footer class="blockquote-footer">
+                    <small class="text-muted">
+                        {% blocktrans trimmed %}
+                            J. M. Viñas Rubio, <cite>Physicist and scientific communicator</cite>.
+                        {% endblocktrans %}
+                    </small>
+                </footer>
+            </blockquote>
+        </div>
+        <div class="card p-3 bg-light text-right">
+            <blockquote class="blockquote mb-0">
+                <p>
+                    {% blocktrans trimmed %}
+                        Climate Change is not among the <strong>15 biggest concerns</strong> of the population.
+                    {% endblocktrans %}
+                </p>
+                <footer class="blockquote-footer">
+                    <small class="text-muted">
+                        {% blocktrans trimmed %}
+                            Poll data are available
+                            <a href="http://data.myworld2015.org/" target="_blank"><cite>here</cite></a>.
+                        {% endblocktrans %}
+                    </small>
+                </footer>
+            </blockquote>
+        </div>
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title mb-4 text-danger"><i class="pr-2 fa fa-warning fa-xl"></i>{% trans "Warning!" %}
+                </h5>
+                <blockquote class="blockquote mb-0">
+                    <p class="mb-0">
+                        {% blocktrans trimmed %}
+                            To meet the objective of keeping the global temperature <strong>below 2°C</strong>
+                            above <strong>pre-industrial levels</strong>, it is necessary to limit the emissions
+                            to a maximum of 3650 GtCO₂ (giga-tons of CO₂), half of which were <strong>already
+                            emitted</strong> towards 2011.
+                        {% endblocktrans %}
+                    </p>
+                </blockquote>
+            </div>
+        </div>
+        <div class="card bg-danger text-white text-center p-3">
+            <blockquote class="blockquote mb-0">
+                <p>
+                    {% blocktrans trimmed %}
+                        97% of the scientific community affirms that climate change <strong>is real</strong>, and is
+                        caused mainly by humans.
+                    {% endblocktrans %}
+                </p>
+                <footer class="blockquote-footer text-white">
+                    <small>
+                        <a class="text-white"
+                           href="https://www.skepticalscience.com/global-warming-scientific-consensus-advanced.htm"
+                           target="_blank"><cite>Sceptikal Science</cite></a>
+                    </small>
+                </footer>
+            </blockquote>
+        </div>
+        <div class="card p-3 bg-light text-center">
+            <blockquote class="blockquote mb-0">
+                <p>
+                    {% blocktrans trimmed %}
+                        The Arctic is likely to be <strong>entirely disappeared</strong> before 2100.
+                    {% endblocktrans %}
+                </p>
+            </blockquote>
+        </div>
+        <div class="card bg-warning text-dark text-center">
+            <blockquote class="blockquote mb-0 card-body">
+                <p class="mb-0">
+                    {% blocktrans trimmed %}
+                        Experts say that global warming caused by <strong>CO₂</strong> emissions is irreversible for
+                        <strong>several centuries</strong>.
+                    {% endblocktrans %}
+                </p>
+            </blockquote>
+        </div>
+        <div class="card bg-light">
+            <img class="card-img-top" src="{% static "images/polar_bear.jpg" %}" alt="{% trans "Polar bear" %}">
+            <div class="card-body">
+                <blockquote class="blockquote">
+                    <p class="text-center">
+                        {% blocktrans trimmed %}
+                            Numerous marine and terrestrial species will be unable to adapt, and will increase their
+                            <strong>risk of extinction</strong>.
+                        {% endblocktrans %}
+                    </p>
+                </blockquote>
+                <p class="mb-0">
+                    <small class="text-muted">
+                        {% blocktrans trimmed %}
+                            Credit (image): Arturo de Frias Marques, from
+                            <a href="https://commons.wikimedia.org/wiki/File:Polar_Bear_AdF.jpg" target="_blank">Wikimedia
+                                Commons</a>.
+                        {% endblocktrans %}
+                    </small>
+                </p>
+            </div>
+        </div>
+        <div class="card p-3 bg-primary text-white text-center">
+            <blockquote class="blockquote mb-0">
+                <p>
+                    {% blocktrans trimmed %}
+                        The Earth has reached <strong>CO₂ levels</strong> higher than ever on history.
+                    {% endblocktrans %}
+                </p>
+            </blockquote>
+        </div>
+    </div>
+    <div class="w-100 d-flex align-self-bottom text-muted justify-content-end">
+        <a href="#"
+           onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+    </div>
+{% endblock body_content %}
