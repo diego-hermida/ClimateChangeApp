@@ -1,0 +1,897 @@
+{% extends "climate/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% load static %}
+
+{% block page_title %}
+    {% trans "Global" %}
+{% endblock page_title %}
+
+{% block initialization_block %}
+    <style>
+        .carousel-caption {
+            position: relative;
+            left: auto;
+            right: auto;
+        }
+
+        .carousel-control-next {
+            max-height: 65%;
+        }
+
+        .carousel-control-prev {
+            max-height: 65%;
+        }
+    </style>
+{% endblock initialization_block %}
+
+{% block body_content %}
+    <div class="container" style="max-width: 950px">
+        <div id="carouselIndicators" class="carousel slide" data-ride="carousel">
+            <ol class="carousel-indicators h-25" style="top: 20px;">
+                <li data-target="#carouselIndicators" data-slide-to="0" class="active"></li>
+                <li data-target="#carouselIndicators" data-slide-to="1"></li>
+                <li data-target="#carouselIndicators" data-slide-to="2"></li>
+            </ol>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img class="rounded d-block w-100" src="{% static 'images/sea_h.jpg' %}" alt="Sea Level Rise">
+                    <div class="mt-4 carousel-caption text-dark text-left">
+                        <h3 class="mb-4">{% trans "Sea level rise" %}</h3>
+                        <p>{% blocktrans trimmed %}
+                            Climate change is accelerating the rise in sea level. Cities at sea level will be the first
+                            to be affected.
+                        {% endblocktrans %}
+                        </p>
+                        <a id="seaLevelRiseContinueReading" class="btn btn-outline-secondary" href="#"
+                           onclick="getSeaLevelRiseData(); return false;"
+                           role="button">{% trans "Continue reading" %}</a>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img class="rounded d-block w-100" src="{% static 'images/ice_h.jpg' %}" alt="Polar Ice Extent">
+                    <div class="mt-4 carousel-caption text-dark text-left">
+                        <h3 class="mb-4">{% trans "Polar ice extension" %}</h3>
+                        <p>{% blocktrans trimmed %}
+                            If the current situation is not controlled, before
+                            the end of the century the Arctic will be no more than a memory. <br>
+                        {% endblocktrans %}
+                        </p>
+                        <a id="iceExtentContinueReading" class="btn btn-outline-secondary" href="#"
+                           onclick="getIceExtentData(); return false;"
+                           role="button">{% trans "Continue reading" %}</a>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img class="rounded d-block w-100" src="{% static 'images/pollution_h.jpg' %}"
+                         alt="Future Emissions">
+                    <div class="mt-4 carousel-caption text-dark text-left">
+                        <h3 class="mb-4">{% trans "Climate projections" %}</h3>
+                        <p>{% blocktrans trimmed %}
+                            Climatic projections venture a pessimistic future if polluting emissions are not reduced.
+                        {% endblocktrans %}
+                        </p>
+                        <a id="seaLevelRiseContinueReading" class="btn btn-outline-secondary" href="#"
+                           onclick="getRPCData(); return false;"
+                           role="button">{% trans "Continue reading" %}</a>
+                    </div>
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#carouselIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#carouselIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+    </div>
+    <div id="seaLevelRiseCard" class="card mb-4 d-none">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-center mb-4 lead">
+                <h3 class="mb-1">{% trans "Sea level rise" %}</h3>
+            </div>
+            <div id="seaLevelRiseAlertsDiv" class="d-flex mt-1 mt-lg-0 align-items-center"
+                 style="min-height: 100px;">
+                <div id="seaLevelRiseLoadDataWrapper" class="mx-auto">
+                    <button class="btn btn-outline-primary"
+                            onclick="getSeaLevelRiseData()">{% trans "Load data" %}</button>
+                </div>
+                <div id="seaLevelRiseNoData" class="mx-auto alert alert-warning alert-sized d-none"
+                     role="alert">
+                    <span class="text-justify">{% trans "No data has been found." %}</span>
+                </div>
+                <div id="seaLevelRiseDataError" class="mx-auto alert alert-danger alert-sized d-none" role="alert">
+                    {% trans "Data could not be retrieved." %}
+                </div>
+                <div id="seaLevelRiseDataLoader" class="d-none mx-auto">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                </div>
+            </div>
+            <div id="seaLevelRiseChartsDiv" class="row d-none h-100 mx-0">
+                <div id="seaLevelRiseLineChartWrapper" class="col-12 col-lg-7 d-flex flex-column px-0">
+                    <div id="seaLevelRiseLineChart" class="mt-3 mb-4 h-100 w-100 with-3d-shadow with-transitions"
+                         style="min-height: 400px; max-height: 400px">
+                        <svg></svg>
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center text-center">
+                        <p class="mb-0 text-muted">
+                            {% blocktrans trimmed %}
+                                Sea level rise from
+                                <span id="seaLevelRiseFrom" class="font-weight-bold"></span>
+                                to
+                                <span id="seaLevelRiseTo" class="font-weight-bold"></span>
+                            {% endblocktrans %}
+                        </p>
+                        <span id="seaLevelRiseValueCount" class="ml-3 badge badge-pill badge-primary"
+                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              title="{% trans "Number of plotted values" %}"></span>
+                    </div>
+                    <p class="mt-4 text-justify text-muted">
+                        {% blocktrans trimmed %}
+                            Showing Global Mean Sea Level (GMSL) variations computed at the NASA Goddard Space Flight
+                            Center under the auspices of the NASA MEaSUREs program, using the Integrated Multi-Mission
+                            Ocean Altimeter Data for Climate Research.
+                        {% endblocktrans %}
+                    </p>
+                    <p class="text-muted">
+                        {% blocktrans trimmed %}
+                            <strong>Credit: </strong>B. Beckley, supported by NASA's MEaSUREs program.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+                <hr class="d-lg-none col-11 mt-4">
+                <div class="mt-3 mt-lg-0 col-12 col-lg-5 h-100 w-100">
+                    <div class="row align-items-baseline">
+                        <div class="col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column align-items-center
+                                    align-items-lg-start offset-lg-4">
+                            <div class="d-flex align-items-end">
+                                <i id="seaLevelRiseCurrentValueArrow" class="pb-3 pr-2 text-danger fa fa-lg"></i>
+                                <h1 class="mb-0 display-4">
+                                    <span id="seaLevelRiseCurrentValue" class="display-4"></span>
+                                    <small><span class="lead">mm</span></small>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 px-2">
+                                {% blocktrans trimmed %}
+                                    from
+                                    <span id="seaLevelRiseStartYear"></span>
+                                    levels
+                                {% endblocktrans %}
+                            </p>
+                        </div>
+                        <div class="mt-4 mt-sm-0 mt-lg-4 col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column
+                                    align-items-center align-items-lg-start offset-lg-4">
+                            <div class="d-flex align-items-end">
+                                <i id="seaLevelRiseLastYearMeanArrow" class="pb-3 pr-2 fa fa-lg"></i>
+                                <h1 class="mb-0 display-4">
+                                    <span id="seaLevelRiseLastYearMean" class="display-4"></span>
+                                    <small><span class="lead">mm</span></small>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 px-2">
+                                {% blocktrans trimmed %}
+                                    in
+                                    <span id="seaLevelRiseLastYear"></span>
+                                {% endblocktrans %}
+                            </p>
+                        </div>
+                        <div class="col-12 offset-lg-1 pl-0 pr-lg-4 pr-xl-5">
+                            {% blocktrans trimmed %}
+                                <p class="text-justify mt-3 mb-2">
+                                    In the last 20 years, the sea level has increased by <strong>8 cm</strong>. However,
+                                    scientific predictions indicate that sea level could rise up to
+                                    <strong>0.9 meters by the end of the century</strong>.
+                                    <br>
+                                    This increase is mainly due to the <strong>melting</strong> of the Arctic and
+                                    Antarctic.
+                                    <br>
+                                </p>
+                                Among the consequences of <strong>sea level rise</strong>, we can highlight:
+                                <ul class="fa-ul mt-1 pl-3">
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>Loss of biodiversity.</li>
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>Storms, hurricanes and other
+                                        more
+                                        violent and more intense atmospheric
+                                        phenomena.
+                                    </li>
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>Possible forced migration of
+                                        the
+                                        population living in coastal regions.
+                                    </li>
+                                </ul>
+                            {% endblocktrans %}
+                        </div>
+                    </div>
+                    <div class="w-100 d-flex mr-3 mt-lg-2 align-self-bottom text-muted justify-content-end">
+                        <a href="#"
+                           onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="iceExtentCard" class="card mb-4 d-none">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-center mb-4 lead">
+                <h3 class="mb-1">{% trans "Polar ice extension" %}</h3>
+            </div>
+            <div id="iceExtentAlertsDiv" class="d-flex mt-1 mt-lg-0 align-items-center"
+                 style="min-height: 100px;">
+                <div id="iceExtentLoadDataWrapper" class="mx-auto">
+                    <button class="btn btn-outline-primary"
+                            onclick="getIceExtentData()">{% trans "Load data" %}</button>
+                </div>
+                <div id="iceExtentNoData" class="mx-auto alert alert-warning alert-sized d-none"
+                     role="alert">
+                    <span class="text-justify">{% trans "No data has been found." %}</span>
+                </div>
+                <div id="iceExtentDataError" class="mx-auto alert alert-danger alert-sized d-none" role="alert">
+                    {% trans "Data could not be retrieved." %}
+                </div>
+                <div id="iceExtentDataLoader" class="d-none mx-auto">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                </div>
+            </div>
+            <div id="iceExtentChartsDiv" class="row d-none h-100 mx-0">
+                <h4 class="col-12 text-muted">{% trans "Arctic" %}</h4>
+                <div id="arcticIceExtentLineChartWrapper" class="col-12 col-lg-9 d-flex flex-column px-0">
+                    <div id="arcticIceExtentLineChart" class="mb-4 h-100 w-100 with-3d-shadow with-transitions"
+                         style="min-height: 400px; max-height: 400px">
+                        <svg></svg>
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center text-center">
+                        <p class="mb-0 text-muted">
+                            {% blocktrans trimmed %}
+                                Arctic ice extent loss from
+                                <span id="arcticIceExtentFrom" class="font-weight-bold"></span>
+                                to
+                                <span id="arcticIceExtentTo" class="font-weight-bold"></span>
+                            {% endblocktrans %}
+                        </p>
+                        <span id="arcticIceExtentValueCount" class="ml-3 badge badge-pill badge-primary"
+                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              title="{% trans "Number of plotted values" %}"></span>
+                    </div>
+                    <p class="mt-4 text-justify text-muted">
+                        {% blocktrans trimmed %}
+                            Showing anomalies relative to April 2002 computed at the Jet Propulsion Laboratory under the
+                            auspices of the NASA MEaSUREs program. The Greenland mass anomalies are generated using
+                            GRACE data from the JPL RL05M.1 Mascon Solution: Version 2.
+                        {% endblocktrans %}
+                    </p>
+                    <p class="text-muted mb-lg-4">
+                        {% blocktrans trimmed %}
+                            <strong>Credit: </strong><a href="https://www.nasa.gov/" target="_blank">NASA</a>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+                <hr class="d-lg-none col-11 mt-2">
+                <div class="mt-3 mt-lg-5 col-12 col-lg-3 w-100">
+                    <div class="mt-lg-4 h-100 row align-items-baseline">
+                        <div class="col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column align-items-center
+                                    align-items-lg-start offset-lg-1">
+                            <div class="d-flex align-items-end">
+                                <i id="arcticIceExtentCurrentValueArrow" class="pb-3 pr-2 text-danger fa fa-lg"></i>
+                                <h1 class="mb-0 display-4">
+                                    <span id="arcticIceExtentCurrentValue" class="display-4"></span>
+                                    <small><span class="lead">Gt</span></small>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 px-2">
+                                {% blocktrans trimmed %}
+                                    from
+                                    <span id="arcticIceExtentStartYear"></span>
+                                    levels
+                                {% endblocktrans %}
+                            </p>
+                        </div>
+                        <div class="mt-4 mt-sm-0 mt-lg-4 col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column
+                                    align-items-center align-items-lg-start offset-lg-1">
+                            <div class="d-flex align-items-end">
+                                <i id="arcticIceExtentLastYearMeanArrow" class="pb-3 pr-2 fa fa-lg"></i>
+                                <h1 class="mb-0 display-4">
+                                    <span id="arcticIceExtentMassLoss" class="display-4"></span>
+                                    <small><span class="lead">Gt</span></small>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 px-2">
+                                {% trans "per year" %}
+                            </p>
+                        </div>
+                        <div class="w-100 row justify-content-end mx-0">
+                            <span class="col-lg-12 mt-4 text-muted text-right">
+                                {% trans "Gt: giga-ton" %}
+                            </span>
+                            <span class="col text-muted text-right">
+                                {% trans "(10⁹ tons; 1 ton = 1000 kg)" %}
+                            </span>
+                        </div>
+                        <div class="w-100 d-flex mr-3 mt-4 mt-lg-2 align-self-bottom text-muted justify-content-end">
+                            <a href="#"
+                               onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <hr class="col-11 mt-4 mt-lg-0 mb-4">
+                <h4 class="col-12 text-muted">{% trans "Antarctica" %}</h4>
+                <div id="antarcticaIceExtentLineChartWrapper" class="col-12 col-lg-9 d-flex flex-column px-0">
+                    <div id="antarcticaIceExtentLineChart" class="mb-4 h-100 w-100 with-3d-shadow with-transitions"
+                         style="min-height: 400px; max-height: 400px">
+                        <svg></svg>
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center text-center">
+                        <p class="mb-0 text-muted">
+                            {% blocktrans trimmed %}
+                                Antarctica ice extent loss from
+                                <span id="antarcticaIceExtentFrom" class="font-weight-bold"></span>
+                                to
+                                <span id="antarcticaIceExtentTo" class="font-weight-bold"></span>
+                            {% endblocktrans %}
+                        </p>
+                        <span id="antarcticaIceExtentValueCount" class="ml-3 badge badge-pill badge-primary"
+                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              title="{% trans "Number of plotted values" %}"></span>
+                    </div>
+                    <p class="mt-4 text-justify text-muted">
+                        {% blocktrans trimmed %}
+                            Showing anomalies relative to April 2002 computed at the Jet Propulsion Laboratory under the
+                            auspices of the NASA MEaSUREs program. The Antarctic mass anomalies are generated using
+                            GRACE data from the JPL RL05M.1 Mascon Solution: Version 2.
+                        {% endblocktrans %}
+                    </p>
+                    <p class="text-muted mb-0">
+                        {% blocktrans trimmed %}
+                            <strong>Credit: </strong><a href="https://www.nasa.gov/" target="_blank">NASA</a>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+                <hr class="d-lg-none col-11 mt-4">
+                <div class="mt-3 mt-lg-5 col-12 col-lg-3 w-100">
+                    <div class="mt-lg-4 h-100 row align-items-baseline">
+                        <div class="col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column align-items-center
+                                    align-items-lg-start offset-lg-1">
+                            <div class="d-flex align-items-end">
+                                <i id="antarcticaIceExtentCurrentValueArrow" class="pb-3 pr-2 text-danger fa fa-lg"></i>
+                                <h1 class="mb-0 display-4">
+                                    <span id="antarcticaIceExtentCurrentValue" class="display-4"></span>
+                                    <small><span class="lead">Gt</span></small>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 px-2">
+                                {% blocktrans trimmed %}
+                                    from
+                                    <span id="antarcticaIceExtentStartYear"></span>
+                                    levels
+                                {% endblocktrans %}
+                            </p>
+                        </div>
+                        <div class="mt-4 mt-sm-0 mt-lg-4 col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column
+                                    align-items-center align-items-lg-start offset-lg-1">
+                            <div class="d-flex align-items-end">
+                                <i id="antarcticaIceExtentLastYearMeanArrow" class="pb-3 pr-2 fa fa-lg"></i>
+                                <h1 class="mb-0 display-4">
+                                    <span id="antarcticaIceExtentMassLoss" class="display-4"></span>
+                                    <small><span class="lead">Gt</span></small>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 px-2">
+                                {% trans "per year" %}
+                            </p>
+                        </div>
+                        <div class="w-100 row justify-content-end mx-0">
+                            <span class="col-lg-12 mt-4 text-muted text-right">
+                                {% trans "Gt: giga-ton" %}
+                            </span>
+                            <span class="col text-muted text-right">
+                                {% trans "(10⁹ tons; 1 ton = 1000 kg)" %}
+                            </span>
+                        </div>
+                        <div class="w-100 d-flex mr-3 mt-4 mt-lg-0 pt-lg-5 align-self-bottom text-muted justify-content-end">
+                            <a href="#"
+                               onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="RPCCard" class="card mb-4 d-none">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-center mb-4 lead">
+                <h3 class="mb-1">{% trans "Climate projections" %}</h3>
+            </div>
+            <div id="RPCAlertsDiv" class="d-flex mt-1 mt-lg-0 align-items-center"
+                 style="min-height: 100px;">
+                <div id="RPCLoadDataWrapper" class="mx-auto">
+                    <button class="btn btn-outline-primary"
+                            onclick="getRPCData()">{% trans "Load data" %}</button>
+                </div>
+                <div id="RPCNoData" class="mx-auto alert alert-warning alert-sized d-none"
+                     role="alert">
+                    <span class="text-justify">{% trans "No data has been found." %}</span>
+                </div>
+                <div id="RPCDataError" class="mx-auto alert alert-danger alert-sized d-none" role="alert">
+                    {% trans "Data could not be retrieved." %}
+                </div>
+                <div id="RPCDataLoader" class="d-none mx-auto">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                </div>
+            </div>
+            <div id="RPCChartsDiv" class="row d-none h-100 mx-0">
+                <div id="RPCLineChartWrapper" class="col-12 d-flex flex-column px-0">
+                    <div id="RPCLineChart" class="mt-3 mb-4 h-100 w-100 with-3d-shadow with-transitions"
+                         style="min-height: 400px; max-height: 400px">
+                        <svg></svg>
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center text-center">
+                        <p class="mb-0 text-muted">
+                            {% blocktrans trimmed %}
+                                Climate projections (CO₂ emissions) from
+                                <span id="RPCFrom" class="font-weight-bold"></span>
+                                to
+                                <span id="RPCTo" class="font-weight-bold"></span>
+                            {% endblocktrans %}
+                        </p>
+                        <span id="RPCValueCount" class="ml-3 badge badge-pill badge-primary"
+                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              title="{% trans "Number of plotted values" %}"></span>
+                    </div>
+                    <p class="text-muted mt-4 ml-lg-5">
+                        {% blocktrans trimmed %}
+                            <strong>Credit: </strong>RPC Database. Full attributions list is available
+                            <a href="http://www.iiasa.ac.at/web-apps/tnt/RcpDb/dsd?Action=htmlpage&page=about#"
+                               target="_blank">here</a>.
+                        {% endblocktrans %}
+                    </p>
+                </div>
+                <div class="mt-3 mx-auto col-12 row justify-content-around">
+                    <div class="col-12 d-flex flex-column align-items-center justify-content-center mb-4">
+                        <h4 class="mb-3">{% trans "What are RPCs?" %}</h4>
+                        {% blocktrans trimmed %}
+                            <p>
+                                Climate predictions are based on <strong>climate models</strong>, which stimulate
+                                aspects such as the
+                                temperature of the atmosphere and the oceans, rainfall, winds, cloud formations, ocean
+                                currents and ice masses. In addition, factors of human activity such as economic and
+                                demographic growth, lifestyles, energy use, technology and climate policies are taken
+                                into account.
+                            </p>
+                            <p>
+                                To obtain the projections of the parameters to be evaluated (concentration of
+                                greenhouse gases, average temperature of the planet, etc.), climate models are used
+                                using information present in scenarios, known as
+                                <strong>Representative Concentration Pathways</strong> or <strong>RPC</strong>s. These
+                                describe alternative trajectories for the parameters of interest, and cover up to the
+                                year <strong>2100</strong>.
+                            </p>
+                        {% endblocktrans %}
+                    </div>
+                    <div class="card border-primary mx-3 col-12 col-lg-5">
+                        <div class="card-header border-primary bg-white">
+                            <h5 class="card-title mb-0 w-100 text-center">{% trans "RPC 2.6" %}</h5>
+                        </div>
+                        <div class="card-body px-0">
+                            <div class="card-text mt-3 px-3">
+                                <ul class="pl-2">
+                                    <li>
+                                        <span class="text-primary">{% trans "CO₂ emissions: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                They reach a maximum in 2020 (and are reduced to 0 in 2080), with a
+                                                maximum concentration of 440 ppm.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="text-primary">{% trans "Population: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Around 9,000 million in 2050. Economic development is high.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="text-primary">{% trans "Energy: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Abandonment of oil as a fuel, replaced by other fossil fuels and
+                                                renewable energies.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-footer px-0 pb-0 bg-white">
+                                {% blocktrans trimmed %}
+                                    <i class="fa fa-check-circle text-success px-1"></i> This is the only scenario that
+                                    meets the
+                                    objective of maintaining the temperature of the Earth <strong>below 2ºC above
+                                    pre-industrial levels</strong>.
+                                {% endblocktrans %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card border-success mx-3 col-12 col-lg-5 mt-4 mt-lg-0">
+                        <div class="card-header border-success bg-white">
+                            <h5 class="card-title mb-0 w-100 text-center">{% trans "RPC 4.5" %}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-text mt-3">
+                                <ul class="pl-2">
+                                    <li>
+                                        <span class="text-success">{% trans "CO₂ emissions: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Levels 50% higher than the 2000 levels in 2050. Towards 2080
+                                                they stabilize at the levels of 2000. Concentration of 520 ppm in 2070,
+                                                increasing slightly.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="text-success">{% trans "Population: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Economic and demographic growth slightly lower than that of RPC 2.6.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="text-success">{% trans "Energy: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Consumption of oil practically constant until 2100. Nuclear and
+                                                renewable energies as secondary sources.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card border-warning mx-3 col-12 col-lg-5 mt-4">
+                        <div class="card-header border-warning bg-white">
+                            <h5 class="card-title mb-0 w-100 text-center">{% trans "RPC 6.0" %}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-text mt-3">
+                                <ul class="pl-2">
+                                    <li>
+                                        <span class="text-warning">{% trans "CO₂ emissions: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Emissions 100% higher than 2000 levels in 2060, with ever increasing
+                                                concentrations -reducing the pace at the end of the century-, reaching
+                                                620 ppm in 2100.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="text-warning">{% trans "Population: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Growth up to 10,000 million inhabitants, with low GDP.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="text-warning">{% trans "Energy: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Peak energy by 2060, reaching the level of RPC 2.6 in 2100. Consumptions
+                                                similar to RPC 4.5 with minor importance secondary energies.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card border-danger mx-3 col-12 col-lg-5 mt-4">
+                        <div class="card-header border-danger bg-white">
+                            <h5 class="card-title mb-0 w-100 text-center">{% trans "RPC 8.5" %}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-text mt-3">
+                                <ul class="pl-2">
+                                    <li>
+                                        <span class="text-danger">{% trans "CO₂ emissions: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Emissions 375% higher than the current levels in 2100. Concentration of
+                                                950 ppm in 2100 and rising during minimum, 100 more years.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="text-danger">{% trans "Population: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                High population growth, up to 12,000 in 2100. Social inequality.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <span class="text-danger">{% trans "Energy: " %}</span>
+                                        <span>
+                                            {% blocktrans trimmed %}
+                                                Increased energy consumption throughout the century, three times higher
+                                                than the 2000 levels. Use of oil until 2070 and coal until 2100.
+                                            {% endblocktrans %}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex flex-column align-items-center justify-content-center mt-5 mb-2">
+                        <h4 class="mb-3">{% trans "Consequences" %}</h4>
+                        <div class="mt-2 offset-lg-1">
+                            {% blocktrans trimmed %}
+                                <p>
+                                    To meet the objective of keeping the global temperature <strong>below 2°C</strong>
+                                    above <strong>pre-industrial levels</strong>, it is necessary to limit the emissions
+                                    to a maximum of 3650 GtCO₂ (giga-tons of CO₂), half of which were <strong>already
+                                    emitted</strong> towards 2011. The <strong>RPC 2.6</strong> is the only scenario
+                                    that <strong>ensures the fullfillment</strong> of this objective.
+                                </p>
+                                <p>
+                                    Therefore, of the <strong>RPC 2.6</strong> scenario is not met, the consequences
+                                    will be negative at multiple levels:
+                                </p>
+                                <ul class="fa-ul pl-3">
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>
+                                        The Arctic is likely to be <strong>entirely disappeared</strong> before 2100.
+                                    </li>
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>
+                                        The climate will become <strong>more extreme</strong> in all regions.
+                                    </li>
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>
+                                        <strong>Heat waves</strong> will occur more frequently.
+                                    </li>
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>
+                                        A considerable percentage of terrestrial and marine species will be unable to
+                                        adapt
+                                        and will increase their <strong>risk of extinction</strong>.
+                                    </li>
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>
+                                        The risk of flooding and erosion of <strong>coastal areas</strong> will be
+                                        increased.
+                                    </li>
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>
+                                        The quantity and quality of <strong>drinking water</strong> will be reduced;
+                                        above
+                                        all, in tropical and subtropical regions.
+                                    </li>
+                                    <li><i class="fa-li fa fa-warning text-danger"></i>
+                                        The spread of <strong>diseases</strong> by vectors, water and food is likely to
+                                        be
+                                        increased.
+                                    </li>
+                                </ul>
+                            {% endblocktrans %}
+                        </div>
+                    </div>
+                    <p class="col-md-8 col-lg-7 text-muted offset-lg-1">
+                        {% blocktrans trimmed %}
+                            <strong>Credit: </strong>IPCC. The full report is available
+                            <a href="https://www.ipcc.ch/pdf/assessment-report/ar5/syr/SYR_AR5_FINAL_full_wcover.pdf"
+                               target="_blank">here</a>.
+                        {% endblocktrans %}
+                    </p>
+                    <div class="col-md-3 pr-0 d-flex align-self-bottom text-muted justify-content-end">
+                        <a href="#"
+                           onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body_content %}
+
+{% block final_initialization_block %}
+
+    {% csrf_token %}
+
+    <script>
+        function getSeaLevelRiseData() {
+            $('#seaLevelRiseCard').removeClass('d-none');
+            showElement('seaLevelRiseCard', -40, 80);
+            if ($('#seaLevelRiseChartsDiv').is(":visible")) {
+                return;
+            }
+            var url = "/global/sea-level-rise";
+            $.ajax({
+                type: "POST",
+                url: url,
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+                    $("#seaLevelRiseAlertsDiv").addClass('d-flex').removeClass('d-none');
+                    $("#seaLevelRiseLoadDataWrapper").addClass('d-none');
+                    $("#noHistoricalData").addClass('d-none');
+                    $("#seaLevelRiseDataError").addClass('d-none');
+                    $("#seaLevelRiseDataLoader").removeClass('d-none');
+                    $("#seaLevelRiseChartsDiv").addClass('d-none');
+                },
+                complete: function () {
+                    $("#seaLevelRiseDataLoader").addClass('d-none');
+                },
+                success: function (data) {
+                    if (data.total_data > 0) {
+                        displayLineChart(data.data, "{% trans "Sea level rise (mm)" %}", "{{ LANGUAGE_CODE }}",
+                            'mm', ['#3366cc'], 'seaLevelRiseLineChart');
+                        $("#seaLevelRiseAlertsDiv").removeClass('d-flex').addClass('d-none');
+                        $("#seaLevelRiseFrom").html(new Date(data.start).toLocaleDateString("{{ LANGUAGE_CODE }}"));
+                        $("#seaLevelRiseTo").html(new Date(data.end).toLocaleDateString("{{ LANGUAGE_CODE }}"));
+                        $("#seaLevelRiseCurrentValue").html(displayNumberLocalized(data.last,
+                            '', 1, '{{ LANGUAGE_CODE }}'));
+                        $("#seaLevelRiseLastYearMean").html(displayNumberLocalized(data.last_year_mean,
+                            '', 1, '{{ LANGUAGE_CODE }}'));
+                        $("#seaLevelRiseLastYear").html(data.last_year);
+                        if (data.last >= 0) {
+                            $("#seaLevelRiseCurrentValueArrow").addClass('fa-long-arrow-up text-danger')
+                        } else {
+                            $("#seaLevelRiseCurrentValueArrow").addClass('fa-long-arrow-down text-success')
+                        }
+                        if (data.last_year_mean >= 0) {
+                            $("#seaLevelRiseLastYearMeanArrow").addClass('fa-long-arrow-up text-danger')
+                        } else {
+                            $("#seaLevelRiseLastYearMeanArrow").addClass('fa-long-arrow-down text-success')
+                        }
+                        $("#seaLevelRiseStartYear").html(new Date(data.start).getFullYear());
+                        $('#seaLevelRiseValueCount').html(data.total_data);
+                        $("#seaLevelRiseChartsDiv").removeClass('d-none');
+                    }
+                    else {
+                        $("#seaLevelRiseChartsDiv").addClass('d-none');
+                        $("#seaLevelRiseNoData").removeClass('d-none');
+                        $("#seaLevelRiseContinueReading").addClass('disabled');
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#seaLevelRiseDataError").removeClass('d-none');
+                    $("#seaLevelRiseContinueReading").addClass('disabled');
+                }
+            });
+        }
+
+        function getIceExtentData() {
+            $('#iceExtentCard').removeClass('d-none');
+            showElement('iceExtentCard', -40, 80);
+            if ($('#iceExtentChartsDiv').is(":visible")) {
+                return;
+            }
+            var url = "/global/ice-extent";
+            $.ajax({
+                type: "POST",
+                url: url,
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+                    $("#iceExtentAlertsDiv").addClass('d-flex').removeClass('d-none');
+                    $("#iceExtentLoadDataWrapper").addClass('d-none');
+                    $("#noHistoricalData").addClass('d-none');
+                    $("#iceExtentDataError").addClass('d-none');
+                    $("#iceExtentDataLoader").removeClass('d-none');
+                    $("#iceExtentChartsDiv").addClass('d-none');
+                },
+                complete: function () {
+                    $("#iceExtentDataLoader").addClass('d-none');
+                },
+                success: function (data) {
+                    if (data.arctic.total_data > 0 || data.antarctica.total_data > 0) {
+                        $("#iceExtentAlertsDiv").removeClass('d-flex').addClass('d-none');
+                        if (data.arctic.total_data > 0) {
+                            displayLineChart(data.arctic.data, "{% trans "Ice mass loss, Arctic (Gt)" %}",
+                                "{{ LANGUAGE_CODE }}", 'Gt', ['#3B3EAC'], 'arcticIceExtentLineChart');
+                            $("#arcticIceExtentFrom").html(new Date(data.arctic.start).toLocaleDateString("{{ LANGUAGE_CODE }}"));
+                            $("#arcticIceExtentTo").html(new Date(data.arctic.end).toLocaleDateString("{{ LANGUAGE_CODE }}"));
+                            $("#arcticIceExtentCurrentValue").html(displayNumberLocalized(data.arctic.last, '',
+                                0, '{{ LANGUAGE_CODE }}'));
+                            $("#arcticIceExtentMassLoss").html(displayNumberLocalized(data.arctic.trend, '',
+                                1, '{{ LANGUAGE_CODE }}'));
+                            $("#arcticIceExtentStartYear").html(new Date(data.arctic.start).getFullYear());
+                            $('#arcticIceExtentValueCount').html(data.arctic.total_data);
+                            if (data.arctic.last < 0) {
+                                $("#arcticIceExtentCurrentValueArrow").addClass('fa-long-arrow-down text-danger')
+                            } else {
+                                $("#arcticIceExtentCurrentValueArrow").addClass('fa-long-arrow-up text-success')
+                            }
+                            if (data.arctic.trend < 0) {
+                                $("#arcticIceExtentLastYearMeanArrow").addClass('fa-long-arrow-down text-danger')
+                            } else {
+                                $("#arcticIceExtentLastYearMeanArrow").addClass('fa-long-arrow-up text-success')
+                            }
+                        }
+                        if (data.antarctica.total_data > 0) {
+                            displayLineChart(data.antarctica.data, "{% trans "Ice mass loss, Antarctica (Gt)" %}",
+                                "{{ LANGUAGE_CODE }}", 'Gt', ['#0099C6'], 'antarcticaIceExtentLineChart');
+                            $("#antarcticaIceExtentFrom").html(new Date(data.antarctica.start).toLocaleDateString("{{ LANGUAGE_CODE }}"));
+                            $("#antarcticaIceExtentTo").html(new Date(data.antarctica.end).toLocaleDateString("{{ LANGUAGE_CODE }}"));
+                            $("#antarcticaIceExtentCurrentValue").html(displayNumberLocalized(data.antarctica.last,
+                                '', 0, '{{ LANGUAGE_CODE }}'));
+                            $("#antarcticaIceExtentMassLoss").html(displayNumberLocalized(data.antarctica.trend,
+                                '', 1, '{{ LANGUAGE_CODE }}'));
+                            $("#antarcticaIceExtentStartYear").html(new Date(data.antarctica.start).getFullYear());
+                            $('#antarcticaIceExtentValueCount').html(data.antarctica.total_data);
+                            if (data.antarctica.last < 0) {
+                                $("#antarcticaIceExtentCurrentValueArrow").addClass('fa-long-arrow-down text-danger')
+                            } else {
+                                $("#antarcticaIceExtentCurrentValueArrow").addClass('fa-long-arrow-up text-success')
+                            }
+                            if (data.antarctica.trend < 0) {
+                                $("#antarcticaIceExtentLastYearMeanArrow").addClass('fa-long-arrow-down text-danger')
+                            } else {
+                                $("#antarcticaIceExtentLastYearMeanArrow").addClass('fa-long-arrow-up text-success')
+                            }
+                        }
+                        $("#iceExtentChartsDiv").removeClass('d-none');
+                    }
+                    else {
+                        $("#iceExtentChartsDiv").addClass('d-none');
+                        $("#iceExtentNoData").removeClass('d-none');
+                        $("#iceExtentContinueReading").addClass('disabled');
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#iceExtentDataError").removeClass('d-none');
+                    $("#iceExtentContinueReading").addClass('disabled');
+                }
+            });
+        }
+
+        function getRPCData() {
+            $('#RPCCard').removeClass('d-none');
+            showElement('RPCCard', -40, 80);
+            if ($('#RPCChartsDiv').is(":visible")) {
+                return;
+            }
+            var url = "/global/future-projections";
+            $.ajax({
+                type: "POST",
+                url: url,
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+                    $("#RPCAlertsDiv").addClass('d-flex').removeClass('d-none');
+                    $("#RPCLoadDataWrapper").addClass('d-none');
+                    $("#noHistoricalData").addClass('d-none');
+                    $("#RPCDataError").addClass('d-none');
+                    $("#RPCDataLoader").removeClass('d-none');
+                    $("#RPCChartsDiv").addClass('d-none');
+                },
+                complete: function () {
+                    $("#RPCDataLoader").addClass('d-none');
+                },
+                success: function (data) {
+                    if (data.total_data > 0) {
+                        displayRpcLineChart(data.data, '{% trans "ppm" %}', '{{ LANGUAGE_CODE }}', 'RPCLineChart');
+                        $("#RPCAlertsDiv").removeClass('d-flex').addClass('d-none');
+                        $("#RPCFrom").html(data.start);
+                        $("#RPCTo").html(data.end);
+                        $('#RPCValueCount').html(data.total_data);
+                        $("#RPCChartsDiv").removeClass('d-none');
+                    }
+                    else {
+                        $("#RPCChartsDiv").addClass('d-none');
+                        $("#RPCNoData").removeClass('d-none');
+                        $("#RPCContinueReading").addClass('disabled');
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#RPCDataError").removeClass('d-none');
+                    $("#RPCContinueReading").addClass('disabled');
+                }
+            });
+        }
+    </script>
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+    <script async type="text/javascript" src="http://nvd3.org/assets/lib/fisheye.js"></script>
+    <script async type="text/javascript" src="http://nvd3.org/assets/js/nv.d3.js"></script>
+    <script async type="text/javascript" src="http://nvd3.org/assets/lib/d3.v2.js"></script>
+    <script async type="text/javascript" src="{% static 'js/global-line-chart.js' %}"></script>
+    <script async type="text/javascript" src="{% static 'js/rpc-chart.js' %}"></script>
+    <script async type="text/javascript" src="{% static 'js/number-util.js' %}"></script>
+    <link rel="stylesheet" href="http://nvd3.org/assets/css/nv.d3.css">
+{% endblock final_initialization_block %}
