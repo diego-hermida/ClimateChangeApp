@@ -12,7 +12,7 @@ from threading import Condition, Thread
 from utilities.execution_util import Runnable, TransitionState, Before, AbortedStateReachedError, StateChanged
 from utilities.util import date_plus_timedelta_gt_now, deserialize_date, enum, get_config, get_exception_info, \
     get_module_name, next_exponential_backoff, read_state, serialize_date, write_state, remove_state_file, \
-    current_timestamp_utc
+    current_timestamp
 
 
 CREATED = 0
@@ -333,7 +333,7 @@ class DataConverter(ABC, Runnable):
                     self.logger.warning('%d element(s) (out of %d) were not converted.' %
                             (self.state['elements_to_convert'] - self.state['converted_elements'],
                              self.state['elements_to_convert']))
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
 
     @abstractmethod
     def _perform_data_conversion(self):
@@ -429,7 +429,7 @@ class DataConverter(ABC, Runnable):
                 self.state['backoff_time'] = {'value': value, 'units': units}
             self.state['last_error'] = self.state['error']
             self.state['last_request'] = self.state['last_request'] if self.state['last_request'] \
-                    else current_timestamp_utc()
+                    else current_timestamp(utc=True)
         # FIXES [BUG-033].
         elif not self._backoff_prevented_execution:
             self.state['backoff_time'] = MIN_BACKOFF

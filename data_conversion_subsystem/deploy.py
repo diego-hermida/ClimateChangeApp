@@ -78,7 +78,7 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         if args.all and any([args.prepare_db, args.make_migrations, args.verify_modules, args.remove_files]):
             logger.info('Since "--all" option has been passed, any other option is excluded.')
         elif not any([args.all, args.prepare_db, args.make_migrations, args.verify_modules, args.remove_files,
-                args.with_tests, args.with_test_reports]) and not sys.argv[1:]:
+                      args.with_tests, args.with_test_reports]) and not sys.argv[1:]:
             logger.info('Since no option has been passed, using "--all" as the default option.')
             args = argparse.Namespace(all=True, with_tests=False, with_test_reports=False)
 

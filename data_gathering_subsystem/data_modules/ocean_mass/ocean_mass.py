@@ -4,7 +4,7 @@ from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from ftplib import FTP
 from pymongo import UpdateOne
 from utilities.util import deserialize_date, serialize_date, decimal_date_to_millis_since_epoch, MassType, \
-        MeasureUnits, current_timestamp_utc
+        MeasureUnits, current_timestamp
 
 _singleton = None
 
@@ -84,7 +84,7 @@ class _OceanMassDataCollector(DataCollector):
                     'updated since last data collection: %s. The period between checks will be shortened, since data is'
                     ' expected to be updated soon.'%(not_modified))
         ftp.quit()
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         self.data = list(itertools.chain.from_iterable(self.data))  # Flattens list of lists
         self.state['data_elements'] = len(self.data)
         if len(not_modified) < len(file_names):

@@ -6,7 +6,7 @@ from pymongo import UpdateOne
 from pytz import UTC
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from utilities.mongo_util import MongoDBCollection
-from utilities.util import date_to_millis_since_epoch, current_timestamp_utc
+from utilities.util import date_to_millis_since_epoch, current_timestamp
 
 _singleton = None
 
@@ -197,7 +197,7 @@ class _HistoricalWeatherDataCollector(DataCollector):
                     self.state['consecutive_unmeasured_days'] = 0
                     self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
                     self.state['missing_data_check'] = True
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
 

@@ -3,7 +3,7 @@ import requests
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
 from utilities.mongo_util import MongoDBCollection
-from utilities.util import current_timestamp_utc
+from utilities.util import current_timestamp
 
 _singleton = None
 
@@ -57,7 +57,7 @@ class _WeatherForecastDataCollector(DataCollector):
         if unmatched:
             self.logger.warning('Weather forecast data is unavailable for %d location(s): %s' % (len(unmatched),
                     sorted(unmatched)))
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         # No available locations is not an error
         if not locations:
             self.logger.info('No locations are available. Data collection will be stopped.')

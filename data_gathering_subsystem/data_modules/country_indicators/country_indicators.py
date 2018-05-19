@@ -5,7 +5,7 @@ import requests
 
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
-from utilities.util import current_timestamp_utc
+from utilities.util import current_timestamp
 
 _singleton = None
 
@@ -122,7 +122,7 @@ class _CountryIndicatorsDataCollector(DataCollector):
             # Setting update frequency to a shorter time interval (data will be updated soon)
             self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
         self.state['data_elements'] = len(self.data)
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         self.data = self.data if self.data else None
 
     def _save_data(self):

@@ -4,7 +4,7 @@ import requests
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
 from utilities.mongo_util import MongoDBCollection
-from utilities.util import current_timestamp_utc
+from utilities.util import current_timestamp
 
 _singleton = None
 
@@ -65,7 +65,7 @@ class _AirPollutionDataCollector(DataCollector):
             self.logger.info('No locations are available. Data collection will be stopped.')
             self.advisedly_no_data_collected = True
         self.state['start_index'] = next_start_index
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY'] if self.state['start_index'] or not \
             locations else self.config['MAX_UPDATE_FREQUENCY']
         self.state['data_elements'] = len(self.data)

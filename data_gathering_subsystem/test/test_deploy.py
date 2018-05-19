@@ -251,7 +251,7 @@ class TestDeploy(TestCase):
 
     @mock.patch('data_gathering_subsystem.deploy.get_config', Mock(return_value={'MONGODB_INDEXES': {
         'country_indicators': {'keys': [{'year': -1}, {'country_id': 1}, {'indicator': 1}], 'unique': True},
-        'sea_level_rise': {'keys': [{'time_utc': -1}]},
+        'global__sea_level_rise': {'keys': [{'time_utc': -1}]},
         'weather_forecast': {'keys': [{'station_id': 1}], 'name': 'Index'}}}))
     @mock.patch('data_gathering_subsystem.deploy.ping_database', Mock())
     @mock.patch('data_gathering_subsystem.deploy.MongoDBCollection')

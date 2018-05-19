@@ -22,8 +22,8 @@ class TestSeaLevelRise(TestCase):
         i1._transition_state = i1._FINISHED
         self.assertIsNot(i1, sea_level_rise.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.Reader')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.FTP')
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
     def test_correct_data_collection(self, mock_collection, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
@@ -54,7 +54,7 @@ class TestSeaLevelRise(TestCase):
         self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
 
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.FTP')
     def test_data_collection_with_no_new_data(self, mock_ftp):
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['GMSL_TPJAOS_V4.jpg', 'GMSL_TPJAOS_V4_199209_201708.txt',
@@ -76,8 +76,8 @@ class TestSeaLevelRise(TestCase):
         self.assertEqual(self.data_collector.config['MIN_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
 
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.Reader')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.FTP')
     def test_data_collection_invalid_data_from_server(self, mock_ftp, mock_reader):
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['GMSL_TPJAOS_V4.jpg', 'GMSL_TPJAOS_V4_199209_201708.txt',
@@ -94,8 +94,8 @@ class TestSeaLevelRise(TestCase):
         self.assertIsNone(self.data_collector.state['inserted_elements'])
         self.assertIsNotNone(self.data_collector.state['error'])
 
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.Reader')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.FTP')
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
     def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
@@ -136,8 +136,8 @@ class TestSeaLevelRise(TestCase):
         self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
 
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.Reader')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.FTP')
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
     def test_data_collection_with_too_much_items_not_saved(self, mock_collection, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
@@ -177,8 +177,8 @@ class TestSeaLevelRise(TestCase):
         self.assertEqual(9, self.data_collector.state['inserted_elements'])
         self.assertIsNotNone(self.data_collector.state['error'])
 
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
-    @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.Reader')
+    @mock.patch('data_gathering_subsystem.data_modules.global__sea_level_rise.global__sea_level_rise.FTP')
     @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
     def test_data_collection_with_no_items_saved(self, mock_collection, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations

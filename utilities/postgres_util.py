@@ -1,5 +1,7 @@
+import re
 from os import environ
 
+from django.db.models import Q
 from psycopg2cffi import connect
 from psycopg2cffi._impl.connection import Connection
 from psycopg2cffi.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -27,9 +29,9 @@ def get_connection(with_autocommit=True) -> Connection:
         :return:
     """
     connection = connect(host=environ.get(GLOBAL_CONFIG['POSTGRES_SERVER'], 'localhost'),
-            port=environ.get(GLOBAL_CONFIG['POSTGRES_PORT'], 5432), user=GLOBAL_CONFIG['POSTGRES_ROOT'], password=GLOBAL_CONFIG[
-            'POSTGRES_ROOT_PASSWORD'], database=GLOBAL_CONFIG['POSTGRES_ROOT'], connect_timeout=GLOBAL_CONFIG[
-            'POSTGRES_MAX_SECONDS_WAIT'])
+                         port=environ.get(GLOBAL_CONFIG['POSTGRES_PORT'], 5432), user=GLOBAL_CONFIG['POSTGRES_ROOT'],
+                         password=GLOBAL_CONFIG['POSTGRES_ROOT_PASSWORD'], database=GLOBAL_CONFIG['POSTGRES_ROOT'],
+                         connect_timeout=GLOBAL_CONFIG['POSTGRES_MAX_SECONDS_WAIT'])
     if with_autocommit:
         connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     return connection
@@ -115,10 +117,10 @@ def create_application_user(connection=None, close_after=False):
     cursor = connection.cursor()
     try:
         cursor.execute("DROP USER IF EXISTS %s;" % GLOBAL_CONFIG['POSTGRES_USERNAME'])
-        cursor.execute("CREATE USER %s WITH PASSWORD '%s';" % (GLOBAL_CONFIG['POSTGRES_USERNAME'],
-                GLOBAL_CONFIG['POSTGRES_USER_PASSWORD']))
-        cursor.execute("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;" % (GLOBAL_CONFIG['POSTGRES_DATABASE'],
-                GLOBAL_CONFIG['POSTGRES_USERNAME']))
+        cursor.execute("CREATE USER %s WITH PASSWORD '%s';" % (
+            GLOBAL_CONFIG['POSTGRES_USERNAME'], GLOBAL_CONFIG['POSTGRES_USER_PASSWORD']))
+        cursor.execute("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;" % (
+            GLOBAL_CONFIG['POSTGRES_DATABASE'], GLOBAL_CONFIG['POSTGRES_USERNAME']))
     finally:
         cursor.close()
         try:
@@ -144,3 +146,34 @@ def ping_database(connection=None, close_after=False):
     except Exception as e:
         raise EnvironmentError('Connection could not be established.') from e
 
+
+def normalize_query(query_string, findterms=re.compile(r'"([^"]+)"|(\S+)').findall,
+                    normspace=re.compile(r'\s{2,}').sub):
+    """
+        Splits the query string in invidual keywords, getting rid of unecessary spaces
+        and grouping quoted words together. Example:
+            >>> normalize_query('  some random  words "with   quotes  " and   spaces')
+            ['some', 'random', 'words', 'with quotes', 'and', 'spaces']
+    """
+    return [normspace(' ', (t[0] or t[1]).strip()) for t in findterms(query_string)]
+
+
+def get_query(keywords: list, search_fields):
+    """
+        Returns a query, that is a combination of Q objects. That combination
+        aims to search keywords within a model by testing the given search fields.
+    """
+    query = None  # Query to search for every search term
+    for term in keywords:
+        or_query = None  # Query to search for a given term in each field
+        for field_name in search_fields:
+            q = Q(**{"%s__icontains" % field_name: term})
+            if or_query is None:
+                or_query = q
+            else:
+                or_query = or_query | q
+        if query is None:
+            query = or_query
+        else:
+            query = query & or_query
+    return query

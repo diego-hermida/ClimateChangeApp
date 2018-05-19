@@ -4,7 +4,7 @@ import requests
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
 from utilities.mongo_util import MongoDBCollection
-from utilities.util import date_to_millis_since_epoch, current_timestamp_utc
+from utilities.util import date_to_millis_since_epoch, current_timestamp
 
 _singleton = None
 
@@ -80,7 +80,7 @@ class _EnergySourcesDataCollector(DataCollector):
             self.logger.info('No countries are available. Data collection will be stopped.')
             self.advisedly_no_data_collected = True
             self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         if self.data:
             self.state['update_frequency'] = self.config['MAX_UPDATE_FREQUENCY']
         self.state['data_elements'] = len(self.data)
@@ -114,7 +114,7 @@ class _EnergySourcesDataCollector(DataCollector):
 
     @staticmethod
     def get_last_date_to_millis() -> int:
-        date = current_timestamp_utc()
+        date = current_timestamp(utc=True)
         if date.minute < 15:
             date = date.replace(minute=0, second=0, microsecond=0)
         elif date.minute < 30:

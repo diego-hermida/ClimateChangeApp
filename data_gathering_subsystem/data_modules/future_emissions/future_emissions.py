@@ -1,6 +1,6 @@
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from data_gathering_subsystem.config.config import DGS_CONFIG
-from utilities.util import current_timestamp_utc
+from utilities.util import current_timestamp
 
 _singleton = None
 
@@ -40,7 +40,7 @@ class _FutureEmissionsDataCollector(DataCollector):
                     self.data.append(d)
         self.state['update_frequency'] = self.config['UPDATE_FREQUENCY'] if self.data else self.config[
                 'STATE_STRUCT']['update_frequency']
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         self.state['data_elements'] = len(self.data)
         self.logger.info('RPC Database file(s) were correctly parsed. %d measures have been collected.'%(len(self.data)))
         self.data = self.data if self.data else None

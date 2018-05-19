@@ -2,7 +2,7 @@ import json
 import requests
 
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
-from utilities.util import current_timestamp_utc
+from utilities.util import current_timestamp
 
 _singleton = None
 
@@ -49,7 +49,7 @@ class _CountriesDataCollector(DataCollector):
             raise Exception('Data collection has been aborted. So many bad values.')
         elif unmatched:
             self.logger.warning('%d countries (out of %d) have malformed data.'%(unmatched, metadata['total']))
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         self.state['update_frequency'] = self.config['UPDATE_FREQUENCY'] if self.data else self.config['STATE_STRUCT'][
                 'update_frequency']
         self.state['data_elements'] = len(self.data)

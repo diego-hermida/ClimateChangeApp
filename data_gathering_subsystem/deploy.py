@@ -79,10 +79,10 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
             logger.info('Deploy operations have been skipped.')
             exit(0)
         if args.all and any([args.db_user, args.drop_database, args.verify_modules, args.remove_files,
-                args.create_indexes]):
+                                           args.create_indexes]):
             logger.info('Since "--all" option has been passed, any other option is excluded.')
         elif not any([args.all, args.db_user, args.drop_database, args.verify_modules, args.remove_files,
-                args.with_tests, args.with_test_reports, args.create_indexes]) and not sys.argv[1:]:
+                      args.with_tests, args.with_test_reports, args.create_indexes]) and not sys.argv[1:]:
             logger.info('Since no option has been passed, using "--all" as the default option.')
             args = argparse.Namespace(all=True, with_tests=False, with_test_reports=False)
 

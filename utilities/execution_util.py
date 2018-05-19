@@ -2,6 +2,7 @@ from abc import abstractmethod
 from functools import wraps
 from queue import Queue
 from threading import Condition, Thread
+
 from utilities.util import enum
 
 MessageType = enum('register', 'finished', 'report', 'exit')
@@ -32,6 +33,7 @@ class SupervisorThreadRunner(Thread):
         This class allows a Supervisor instance to be executed in its own thread.
         The thread is set as a Daemon thread, as we want the thread to be stopped when Main component exits.
     """
+
     def __init__(self, supervisor):
         self.supervisor = supervisor
         Thread.__init__(self)
@@ -120,6 +122,7 @@ class Before:
         def post_action(*args):
             self.action(args[0])
             return callee(args[0])  # args[0] is the calling object.
+
         return post_action
 
 

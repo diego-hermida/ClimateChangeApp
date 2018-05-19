@@ -6,7 +6,7 @@ from utilities.mongo_util import MongoDBCollection
 from utilities.execution_util import Runnable, TransitionState, Before, AbortedStateReachedError, StateChanged
 from utilities.util import date_plus_timedelta_gt_now, deserialize_date, get_config, get_exception_info, \
     get_module_name, next_exponential_backoff, read_state, serialize_date, write_state, remove_state_file, \
-    current_timestamp_utc
+    current_timestamp
 
 
 CREATED = 0
@@ -318,7 +318,7 @@ class DataCollector(ABC, Runnable):
                 self.state['backoff_time'] = {'value': value, 'units': units}
             self.state['last_error'] = self.state['error']
             self.state['last_request'] = self.state['last_request'] if self.state['last_request'] \
-                    else current_timestamp_utc()
+                    else current_timestamp(utc=True)
         # FIXES [BUG-033].
         elif not self._backoff_prevented_execution:
             self.state['backoff_time'] = MIN_BACKOFF

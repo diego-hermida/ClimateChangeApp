@@ -10,7 +10,7 @@ from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from unidecode import unidecode
 from utilities.mongo_util import MongoDBCollection
 from utilities.util import check_coordinates, date_to_millis_since_epoch, deserialize_date, MeasureUnits, \
-        serialize_date, current_timestamp_utc
+        serialize_date, current_timestamp
 
 _singleton = None
 
@@ -211,7 +211,7 @@ class _LocationsDataCollector(DataCollector):
             # Setting update frequency to a shorter time interval (file is near to be modified)
             self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
             self.advisedly_no_data_collected = True
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
 

@@ -2,7 +2,7 @@ from ftplib import FTP
 from pymongo import UpdateOne
 from data_gathering_subsystem.data_collector.data_collector import DataCollector, Reader
 from utilities.util import decimal_date_to_millis_since_epoch, serialize_date, deserialize_date, MeasureUnits, \
-    current_timestamp_utc
+    current_timestamp
 
 _singleton = None
 
@@ -70,13 +70,13 @@ class _SeaLevelDataCollector(DataCollector):
             self.state['update_frequency'] = self.config['MIN_UPDATE_FREQUENCY']
             self.advisedly_no_data_collected = True
         ftp.quit()
-        self.state['last_request'] = current_timestamp_utc()
+        self.state['last_request'] = current_timestamp(utc=True)
         self.state['data_elements'] = len(self.data)
         self.data = self.data if self.data else None
 
     def _save_data(self):
         """
-            Saves collected data (stored in 'self.data' variable), into a MongoDB collection called 'sea_level_rise'.
+            Saves collected data (stored in 'self.data' variable), into a MongoDB collection called 'global__sea_level_rise'.
             Existent records are not updated, and new ones are inserted as new ones.
             Postcondition: 'self.data' variable is dereferenced to allow GC to free up memory.
         """
