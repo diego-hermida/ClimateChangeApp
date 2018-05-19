@@ -1,0 +1,144 @@
+{% extends "climate/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block page_title %}
+    {% trans "About" %}
+{% endblock page_title %}
+
+{% block initialization_block %}
+    <style>
+        .card {
+            min-width: 300px;
+        }
+    </style>
+{% endblock initialization_block %}
+
+{% block body_content %}
+    <div class="container pb-4" style="max-width: 800px">
+        <div class="mt-4">
+            <h1 class="text-dark text-center">{% trans "About" %}</h1>
+        </div>
+        <div class="card-deck mt-4 mt-md-5">
+            <div class="mb-4 card border-primary">
+                <div class="mt-3 text-center">
+                    <img class="rounded-circle" width="150" height="150" src="{% static "/images/student.jpg" %}">
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title text-center">Diego Hermida Carrera</h2>
+                    <h5 class="card-subtitle text-muted text-center">{% trans "Student" %}</h5>
+                    <div class="d-flex my-4 align-items-center justify-content-center">
+                        <a class="text-primary mx-1" href="https://www.linkedin.com/in/diego-hermida/" target="_blank">
+                            <i class="fa fa-linkedin-square fa-2x px-1"></i>
+                        </a>
+                        <a class="text-primary mx-1" href="mailto:diego.hermida@udc.es">
+                            <i class="fa fa-envelope fa-2x px-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-text pb-3">
+                    <h6 class="mb-3 text-center text-muted">{% trans "Roles" %}</h6>
+                    <div class="row align-items-center justify-content-center">
+                        <h5 class="mx-2">
+                            <span class="badge badge-primary">{% trans "Designer" %}</span>
+                        </h5>
+                        <h5 class="mx-2">
+                            <span class="badge badge-primary">{% trans "Developer" %}</span>
+                        </h5>
+                        <h5 class="mx-2">
+                            <span class="badge badge-primary">{% trans "Tester" %}</span>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-4 card border-info">
+                <div class="mt-3 text-center">
+                    <img class="rounded-circle" width="150" height="150" src="{% static "/images/director.jpeg" %}">
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title text-center">Diego Andrade Canosa</h2>
+                    <h5 class="card-subtitle text-muted text-center">{% trans "Director" %}</h5>
+                    <div class="d-flex my-4 align-items-center justify-content-center">
+                        <a class="text-info mx-2" href="https://www.linkedin.com/in/diegoandradecanosa/"
+                           target="_blank">
+                            <i class="fa fa-linkedin-square fa-2x px-2 px-2"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-text pb-3">
+                    <h6 class="mb-3 text-center text-muted">{% trans "Roles" %}</h6>
+                    <div class="row align-items-center justify-content-center">
+                        <h5 class="mx-2">
+                            <span class="badge badge-info">{% trans "Client" %}</span>
+                        </h5>
+                        <h5 class="mx-2">
+                            <span class="badge badge-info">{% trans "Director" %}</span>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 card border-secondary">
+            <div class="mt-3 text-center">
+                <img height="115" src="{% static "/images/udc_logo.png" %}">
+            </div>
+            <div class="card-body">
+                <h2 class="card-title text-center">{% trans "University of A Coruña" %}</h2>
+                <h5 class="card-subtitle text-muted text-center">{% trans "Faculty of Computing" %}</h5>
+                <div class="d-flex mt-5 mb-4 align-items-center justify-content-center">
+                    <a class="text-secondary mx-2" href="https://twitter.com/UDC_gal" target="_blank">
+                        <i class=" fa fa-twitter fa-2x px-2"></i>
+                    </a>
+                    <a class="text-secondary mx-2" href="http://www.facebook.com/udc.gal" target="_blank">
+                        <i class="fa fa-facebook-square fa-2x px-2"></i>
+                    </a>
+                    <a class="text-secondary mx-2" href="https://instagram.com/udc_gal" target="_blank">
+                        <i class="fa fa-instagram fa-2x px-2 px-2"></i>
+                    </a>
+                    <a class="text-secondary mx-2" href="https://www.youtube.com/channel/UC1QekatBPFx7RRLqhT4bpDg"
+                       target="_blank">
+                        <i class="fa fa-youtube-square fa-2x px-2"></i>
+                    </a>
+                </div>
+                {% blocktrans trimmed %}
+                    <p class="card-text text-justify">
+                        The <strong>University of A Coruña</strong> was founded in 1989. Is a Spanish public university
+                        with campus in A Coruña, Ferrol and Bastiagueiro.
+                    </p>
+                    <p>
+                        Its primary objective is the <strong>generation, management and dissemination</strong> of
+                        culture and scientific, technological and professional knowledge through the development of
+                        research and teaching.
+                    </p>
+                    <p>
+                        The University of A Coruña explicitly expresses its <strong>commitment to the study</strong> and
+                        the integral development of Galicia, its social, cultural and linguistic identity, and it will
+                        promote its <strong>full integration</strong> into the European Higher Education and and the
+                        projection in Latin America.
+                    </p>
+                {% endblocktrans %}
+                <div class="offset-lg-2 offset-xl-3">
+                    <span>
+                        {% blocktrans trimmed %}
+                            <strong>Useful links:</strong>
+                        {% endblocktrans %}
+                    </span>
+                    <ul>
+                        <li>
+                            {% blocktrans trimmed %}
+                                University of A Coruña's
+                                <a href="https://www.udc.es/index.html?language=en" target="_blank">website</a>.
+                            {% endblocktrans %}
+                        </li>
+                        <li>
+                            {% blocktrans trimmed %}
+                                Faculty of Computing's
+                                <a href="https://www.fic.udc.es/es" target="_blank">website</a> (in Spanish).
+                            {% endblocktrans %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body_content %}
