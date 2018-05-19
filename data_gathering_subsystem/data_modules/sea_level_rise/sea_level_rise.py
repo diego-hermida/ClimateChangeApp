@@ -76,7 +76,7 @@ class _SeaLevelDataCollector(DataCollector):
 
     def _save_data(self):
         """
-            Saves collected data (stored in 'self.data' variable), into a MongoDB collection called 'global__sea_level_rise'.
+            Saves collected data (stored in 'self.data' variable), into a MongoDB collection called 'sea_level_rise'.
             Existent records are not updated, and new ones are inserted as new ones.
             Postcondition: 'self.data' variable is dereferenced to allow GC to free up memory.
         """

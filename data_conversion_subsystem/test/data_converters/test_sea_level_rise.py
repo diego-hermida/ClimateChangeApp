@@ -55,7 +55,7 @@ class TestSeaLevelRise(TestCase):
         self.data_converter._perform_data_conversion()
         self.assertListEqual([], self.data_converter.data)
 
-    @mock.patch('data_conversion_subsystem.data_converters.global__sea_level_rise.global__sea_level_rise.SeaLevelRiseMeasure.objects.'
+    @mock.patch('data_conversion_subsystem.data_converters.sea_level_rise.sea_level_rise.SeaLevelRiseMeasure.objects.'
                 'bulk_create', Mock(return_value=[1, 2, 3]))
     def test_save_data(self):
         self.data_converter.data = [1, 2, 3]
