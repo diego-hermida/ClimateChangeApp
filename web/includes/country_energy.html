@@ -1,0 +1,387 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<div class="d-flex align-items-center justify-content-center mb-4 lead">
+    <h3 class="mb-1">{% trans "Energy production and CO₂ emissions" %}</h3>
+</div>
+<div class="card-text mt-lg-0 mt-xl-0">
+    <div class="my-4 mt-md-3">
+        <form id="countryEnergyForm" class="search mb-4 mb-md-0">
+            <div class="offset-lg-1 row justify-content-end align-items-center">
+                <input type="text" name="country_id" value="{{ current_country.country.iso2_code }}" class="d-none"/>
+                <div class="col- col-md col-lg-6 my-2 my-md-0 d-inline-flex">
+                    <div class="mr-1 input-group date mb-auto" data-provide="countryEnergyFrom">
+                        <div class="input-group-prepend">
+                            <button type="button" class="btn btn-outline-primary"
+                                    onclick="$('#countryEnergyFrom').datepicker().data('datepicker').show()">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                        <input id="countryEnergyFrom" type="text" name="start_year" data-date-format="yyyy"
+                               class="form-control border-primary bg-white" placeholder="{% trans "Min." %}"
+                               required readonly aria-readonly="true" style="border-radius: 0 0.25rem 0.25rem 0;">
+                        <div class="invalid-feedback">
+                            {% trans "Invalid field" %}
+                        </div>
+                        <div class="valid-feedback">{% trans "Good!" %}</div>
+                    </div>
+                    <div class="ml-1 input-group date mb-auto" data-provide="countryEnergyTo">
+                        <div class="input-group-prepend">
+                            <button type="button" class="btn btn-outline-primary"
+                                    onclick="$('#countryEnergyTo').datepicker().data('datepicker').show()">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                        <input id="countryEnergyTo" type="text" name="end_year"
+                               class="form-control border-primary bg-white" placeholder="{% trans "Max." %}" required
+                               readonly aria-readonly="true" style="border-radius: 0 0.25rem 0.25rem 0;">
+                        <div class="invalid-feedback">
+                            {% trans "Invalid field" %}
+                        </div>
+                        <div class="valid-feedback">{% trans "Good!" %}</div>
+                    </div>
+                </div>
+                {% csrf_token %}
+                <div class="col-auto mt-2 mt-md-0">
+                    <button type="submit" class="btn btn-primary">{% trans "Search" %}</button>
+                </div>
+            </div>
+        </form>
+        <div id="countryEnergyAlertsDiv" class="d-flex mt-1 mt-lg-0 align-items-center"
+             style="min-height: 200px;">
+            <div id="energyYearRangeNotChosen" class="mx-auto alert alert-primary alert-sized" role="alert">
+                    <span>
+                        {% blocktrans trimmed %}
+                            Select a <strong>year range</strong> by clicking on the <kbd><i
+                                class="fa fa-calendar"></i></kbd> buttons.
+                            <br/>
+                            Once done, press the search button, and an <strong>area chart</strong>
+                            with historical CO₂ data will appear here.
+                        {% endblocktrans %}
+                    </span>
+            </div>
+            <div id="noEnergyData" class="mx-auto alert alert-primary alert-sized d-none" role="alert">
+                <span class="text-justify">{% trans "Your search returned 0 results." %}</span>
+            </div>
+            <div id="countryEnergyDataError" class="mx-auto alert alert-danger alert-sized d-none" role="alert">
+                {% trans "Data could not be retrieved." %}
+            </div>
+            <div id="countryEnergyDataLoader" class="d-none mx-auto">
+                <i class="fa fa-spinner fa-spin fa-3x"></i>
+            </div>
+        </div>
+        <div id="countryEnergyChartsDiv" class="row d-none h-100 mx-0">
+            <div class="col- mt-2 h-100 w-100">
+                <h4 class="mt-4 mb-0 text-muted">{% trans "CO₂ emissions" %}</h4>
+                <div class="row">
+                    <div class="col-12 col-lg-8 mt-3">
+                        <div id="countryEnergyAreaChart" class="w-100 with-3d-shadow with-transitions">
+                            <svg class="h-100 w-100" style="min-height: 450px; max-height: 450px"></svg>
+                        </div>
+                        <div class="d-flex mt-2 justify-content-center align-items-center text-center">
+                            <p class="text-muted">
+                                {% blocktrans trimmed %}
+                                    <span>Annual CO₂ emissions between</span>
+                                    <span class="font-weight-bold countryPollutionFrom"></span>
+                                    and
+                                    <span class="font-weight-bold countryPollutionTo"></span>
+                                {% endblocktrans %}
+                                <span id="countryPollutionValueCount" class="ml-2 badge badge-pill badge-primary"
+                                      data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                      title="{% trans "Number of measures with non-null values" %}">
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-3 mt-lg-5 col-12 col-lg-4 w-100">
+                        <div class="mt-lg-4 h-100 row align-items-baseline">
+                            <div class="col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column align-items-center
+                                    align-items-lg-start offset-lg-1 offset-xl-2">
+                                <div class="d-flex align-items-end">
+                                    <h1 class="mb-0 display-4">
+                                        <span id="lastYearEnergyEmissions" class="display-4"></span>
+                                    </h1>
+                                </div>
+                                <p class="lead offset-1 px-2">
+                                    {% blocktrans trimmed %}
+                                        of CO₂ in
+                                        <span class="countryPollutionTo"></span>
+                                    {% endblocktrans %}
+                                </p>
+                            </div>
+                            <div class="mt-4 mt-sm-0 mt-lg-4 col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column
+                                    align-items-center align-items-lg-start offset-lg-1  offset-xl-2">
+                                <div class="d-flex align-items-end">
+                                    <h1 class="mb-0 display-4">
+                                        <span id="totalEnergyEmissions" class="display-4"></span>
+                                    </h1>
+                                </div>
+                                <p class="lead offset-1 px-2">
+                                    {% blocktrans trimmed %}
+                                        of CO₂ emitted since
+                                        <span class="countryPollutionFrom"></span>
+                                    {% endblocktrans %}
+                                </p>
+                            </div>
+                            <div class="w-100 row justify-content-end mx-0">
+                                <span class="col-md-6 col-lg-12 mt-4 text-muted text-right">
+                                    {% trans "Tt: tera-ton (1 Tt = 10¹² tons)" %}
+                                </span>
+                                <span class="col-md-6 col-lg-12 mt-md-4 mt-lg-0 text-muted text-right">
+                                    {% trans "Gt: giga-ton (1 Gt = 10⁹ tons)" %}
+                                </span>
+                                <span class="col-md-6 col-lg-12 text-muted text-right">
+                                    {% trans "Mt: mega-ton (1 Mt = 10⁶ tons)" %}
+                                </span>
+                                <span class="col-md-6 col-lg-12 text-muted text-right">
+                                    {% trans "kt: kilo-ton (1 kt = 10³ tons)" %}
+                                </span>
+                                <span class="col text-muted text-right">
+                                    {% trans "1 ton = 1000 kg" %}
+                                </span>
+                            </div>
+                            <div class="w-100 d-flex mr-3 mt-4 mt-lg-2 align-self-bottom text-muted justify-content-end">
+                                <a href="#"
+                                   onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <h4 class="text-muted mb-0">{% trans "Energy production" %}</h4>
+                <div class="d-flex mx-auto my-4 mb-1 alert alert-info alert-sized">
+                    <span>
+                        {% blocktrans trimmed %}
+                            <strong>Tip:</strong> Click on the legend items (coloured circles) to
+                            <strong>hide</strong> or <strong>display</strong> its series.
+                        {% endblocktrans %}
+                        <br>
+                        {% blocktrans trimmed %}
+                            Hover over the chart series in order to display their values.
+                        {% endblocktrans %}
+                    </span>
+                    <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                            aria-label="Close">
+                        <span aria-hidden="true"> &times;</span>
+                    </button>
+                </div>
+
+                <div class="mt-4 row">
+                    <div class="col-12 col-lg-7 mt-3">
+                        <div id="countryEnergyLineChart" class="w-100 with-3d-shadow with-transitions">
+                            <svg class="h-100 w-100" style="min-height: 450px; max-height: 450px"></svg>
+                        </div>
+                        <div class="d-flex mt-4 justify-content-center align-items-center text-center">
+                            <p class="text-muted">
+                                {% blocktrans trimmed %}
+                                    <span>Annual energy production between</span>
+                                    <span class="font-weight-bold countryEnergyFrom"></span>
+                                    and
+                                    <span class="font-weight-bold countryEnergyTo"></span>
+                                {% endblocktrans %}
+                                <span id="countryEnergyValueCount" class="ml-2 badge badge-pill badge-primary"
+                                      data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                      title="{% trans "Number of measures with non-null values" %}">
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-5 mt-3 w-100 h-100%">
+                        <div class="mt-lg-4 h-100 align-items-center">
+                            <div id="noLastYearEnergyData"
+                                 class="align-items-center justify-content-center h-100 pb-lg-5 d-none">
+                                <div class="alert alert-primary alert-sized"
+                                     role="alert">
+                                    {% blocktrans trimmed %}
+                                        Energy production details for
+                                        <strong class="countryEnergyTo"></strong>
+                                        are not available yet.
+                                    {% endblocktrans %}
+                                </div>
+                            </div>
+                            <div id="countryEnergyPieChart"
+                                 class="d-flex flex-column pt-3 pt-lg-4 w-100 with-3d-shadow with-transitions">
+                                <svg class="h-100 w-100" style="min-height: 350px; max-height: 350px"></svg>
+                                <div class="d-flex w-100 justify-content-center align-items-center text-center">
+                                    <p class="text-muted mb-0 mb-lg-3">
+                                        {% blocktrans trimmed %}
+                                            Energy production details for <strong class="countryEnergyTo"></strong>
+                                        {% endblocktrans %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row text-muted align-items-end">
+    <div class="col">
+        <p class="mb-0 pl-3">
+            {% blocktrans trimmed %}
+                <strong>Credit: </strong><a href="https://data.worldbank.org/" target="_blank">World Bank</a>.
+            {% endblocktrans %}
+        </p>
+    </div>
+    <div class="col-auto pt-3 pt-sm-0 ml-auto text-muted justify-content-end">
+        <a href="#"
+           onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+    </div>
+</div>
+<script>
+    $("#countryEnergyForm").submit(function (e) {
+
+        var url = "/countries/energy-consumption-data";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: $("#countryEnergyForm").serialize(),
+            beforeSend: function () {
+                $("#countryEnergyAlertsDiv").addClass('d-flex').removeClass('d-none');
+                $("#energyYearRangeNotChosen").addClass('d-none');
+                $("#noEnergyData").addClass('d-none');
+                $("#countryEnergyDataError").addClass('d-none');
+                $("#countryEnergyDataLoader").removeClass('d-none');
+                $("#countryEnergyChartsDiv").addClass('d-none');
+                $('#noLastYearEnergyData').addClass('d-none').removeClass('d-flex');
+                $('#countryEnergyFrom').removeClass('is-invalid').removeClass('is-valid').addClass('border-primary');
+                $('#countryEnergyTo').removeClass('is-invalid').removeClass('is-valid').addClass('border-primary');
+            },
+            complete: function () {
+                $("#countryEnergyDataLoader").addClass('d-none');
+            },
+            success: function (data) {
+                function validate() {
+                    if (data.validation_error === true) {
+                        index = data.invalid_data.indexOf('start_year');
+                        if (index > -1) {
+                            $('#countryEnergyFrom').removeClass('border-primary').addClass('is-invalid');
+                            showElement('countryEnergyFrom', -40, 180);
+                            data.invalid_data.splice(index, 1);
+                            if (data.invalid_data.length === 0)
+                                return;
+                        } else {
+                            $('#countryEnergyFrom').removeClass('border-primary').addClass('is-valid')
+                        }
+                        index = data.invalid_data.indexOf('end_year');
+                        if (index > -1) {
+                            $('#countryEnergyTo').removeClass('border-primary').addClass('is-invalid');
+                            showElement('countryEnergyTo', -40, 180);
+                        } else {
+                            $('#countryEnergyTo').removeClass('border-primary').addClass('is-valid')
+                        }
+                    } else {
+                        $('#countryEnergyFrom').removeClass('border-primary').addClass('is-valid');
+                        $('#countryEnergyTo').removeClass('border-primary').addClass('is-valid');
+                    }
+                }
+
+                validate();
+                if ((data.energy == null && data.pollution == null) || (data.energy.data == null || data.pollution.data == null)) {
+                    $("#countryEnergyChartsDiv").addClass('d-none');
+                    $("#noEnergyData").removeClass('d-none');
+                } else {
+                    lineChartSeries = [
+                        '{% trans "Coal" %}', '{% trans "Hydroelectric" %}',
+                        '{% trans "Natural gas" %}', '{% trans "Nuclear" %}', '{% trans "Oil" %}',
+                        '{% trans "Renewable" %}'
+                    ];
+                    pieChartSeries = [
+                        '{% trans "Coal" %}', '{% trans "Hydroelectric" %}',
+                        '{% trans "Natural gas" %}', '{% trans "Nuclear" %}', '{% trans "Oil" %}',
+                        '{% trans "Other" %}'
+                    ];
+                    displayCountryEnergyAreaChart('{% trans "CO₂ (kt)" %}', data.pollution.data,
+                        "{{ LANGUAGE_CODE }}", 'countryEnergyAreaChart');
+                    displayLineChart(lineChartSeries, data.energy.data, '{{ LANGUAGE_CODE }}',
+                        'countryEnergyLineChart');
+                    $("#countryEnergyAlertsDiv").removeClass('d-flex').addClass('d-none');
+                    $(".countryPollutionFrom").html(data.pollution.start_year);
+                    $(".countryPollutionTo").html(data.pollution.end_year);
+                    $(".countryEnergyFrom").html(data.energy.start_year);
+                    $(".countryEnergyTo").html(data.energy.end_year);
+                    $('#lastYearEnergyEmissions').html(displayNumberLocalizedAndWithSuffix(
+                        data.pollution.last_year_emissions, 1000, 't', 1, '{{ LANGUAGE_CODE }}'));
+                    $('#totalEnergyEmissions').html(displayNumberLocalizedAndWithSuffix(
+                        data.pollution.total_emissions, 1000, 't', 1, '{{ LANGUAGE_CODE }}'));
+                    $('#countryPollutionValueCount').html(data.pollution.total_data);
+                    $('#countryEnergyValueCount').html(data.energy.total_data);
+                    $('#countryEnergyStatsCount').html(data.pollution.total_data);
+                    $("#countryEnergyChartsDiv").removeClass('d-none');
+                    if (data.energy.last_year_data == null) {
+                        $('#noLastYearEnergyData').removeClass('d-none').addClass('d-flex');
+                        $('#countryEnergyPieChart').addClass('d-none').removeClass('d-flex');
+                    } else {
+                        displayPieChart(pieChartSeries, data.energy.last_year_data, '%',
+                            ["#DC3912", "#3366CC", "#AAAA11", "#FF9900", "#000000", "#BEBEBE"],
+                            '{{ LANGUAGE_CODE }}', 'countryEnergyPieChart');
+                        $('#noLastYearEnergyData').addClass('d-none').removeClass('d-flex');
+                        $('#countryEnergyPieChart').removeClass('d-none').addClass('d-flex');
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                $("#countryEnergyDataError").removeClass('d-none');
+            }
+        });
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+    });
+
+    $(document).ready(function () {
+        $.fn.datepicker.dates['{{ LANGUAGE_CODE }}'] = {
+            // All settings but "clear" won't have effect, since this calendar only shows numbers.
+            days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+            daysMin: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+            months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+            monthsShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            today: "Today",
+            clear: "{% trans "Clear" %}",
+            format: "mm/dd/yyyy",
+            titleFormat: "MM yyyy", /* Leverages same syntax as 'format' */
+            weekStart: 0
+        };
+        $('#countryEnergyFrom').datepicker({
+            format: "yyyy",
+            clearBtn: true,
+            enableOnReadonly: true,
+            endDate: moment().subtract(1, 'year').toDate(),
+            startView: "years",
+            minViewMode: "years",
+            maxViewMode: "decades",
+            autoclose: true,
+            orientation: 'top',
+            todayHighlight: true,
+            language: "{{ LANGUAGE_CODE }}"
+        }).on('changeDate', function (selected) {
+            var to = $('#countryEnergyTo');
+            startDate = parseInt($("#countryEnergyFrom").val());
+            if (startDate >= parseInt(to.val())) {
+                to.val('')
+            }
+            to.datepicker('setStartDate', (startDate + 1).toString());
+        });
+        $('#countryEnergyTo').datepicker({
+            format: "yyyy",
+            clearBtn: true,
+            enableOnReadonly: true,
+            endDate: moment().toDate(),
+            startView: "years",
+            minViewMode: "years",
+            maxViewMode: "decades",
+            autoclose: true,
+            orientation: 'top',
+            todayHighlight: true,
+            language: "{{ LANGUAGE_CODE }}"
+        }).on('changeDate', function (selected) {
+            var to = $('#countryEnergyTo');
+            startDate = parseInt($("#countryEnergyFrom").val());
+            if (startDate >= parseInt(to.val())) {
+                to.val('')
+            }
+            to.datepicker('setStartDate', (startDate + 1).toString());
+        });
+    });
+</script>

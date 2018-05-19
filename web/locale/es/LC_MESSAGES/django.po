@@ -1,0 +1,3887 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-19 21:25+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: climate/context_processor.py:35 climate/templates/climate/locations.html:9
+#: climate/templates/climate/locations.html:11
+msgid "Locations"
+msgstr "Localizaciones"
+
+#: climate/context_processor.py:35 climate/templates/climate/countries.html:8
+#: climate/templates/climate/countries.html:10
+msgid "Countries"
+msgstr "Países"
+
+#: climate/context_processor.py:36
+#: climate/templates/climate/global_change.html:8
+msgid "Global"
+msgstr "Global"
+
+#: climate/context_processor.py:43
+msgid "Manage profile"
+msgstr "Gestionar perfil"
+
+#: climate/context_processor.py:44 climate/templates/climate/messages.html:40
+msgid "Manage messages"
+msgstr "Administrar mensajes"
+
+#: climate/context_processor.py:51
+msgid "World"
+msgstr "Mundo"
+
+#: climate/context_processor.py:51
+msgid "Africa"
+msgstr "África"
+
+#: climate/context_processor.py:52
+msgid "European Union"
+msgstr "Unión Europea"
+
+#: climate/context_processor.py:52
+msgid "Euro area"
+msgstr "Zona Euro"
+
+#: climate/context_processor.py:53
+msgid "Europe & Central Asia"
+msgstr "Europa y Asia Central"
+
+#: climate/context_processor.py:54
+msgid "North America"
+msgstr "América del Norte"
+
+#: climate/context_processor.py:55
+msgid "Central America"
+msgstr "América Central"
+
+#: climate/context_processor.py:56
+msgid "Latin America & Caribbean"
+msgstr "América Latina y Caribe"
+
+# Country names
+#: climate/context_processor.py:57
+msgid "Arab World"
+msgstr "Mundo Árabe"
+
+#: climate/context_processor.py:58
+msgid "East Asia & Pacific"
+msgstr "Asia oriental y Pacífico"
+
+#: climate/context_processor.py:59
+msgid "Middle East & North Africa"
+msgstr "Norte de África y Medio Este"
+
+#: climate/context_processor.py:60
+msgid "South Asia"
+msgstr "Sur de Asia"
+
+#: climate/context_processor.py:61
+msgid "Sub-Saharan Africa"
+msgstr "África subsahariana"
+
+#: climate/context_processor.py:67
+msgid "High income"
+msgstr "Renta alta"
+
+#: climate/context_processor.py:67
+msgid "Lower middle income"
+msgstr "Renta medio-baja"
+
+#: climate/context_processor.py:68
+msgid "Low income"
+msgstr "Renta baja"
+
+#: climate/context_processor.py:68
+msgid "Middle income"
+msgstr "Renta media"
+
+#: climate/context_processor.py:69
+msgid "Upper middle income"
+msgstr "Renta medio-alta"
+
+#: climate/templates/climate/about.html:6
+#: climate/templates/climate/about.html:20
+#: climate/templates/climate/base.html:82
+#: climate/templates/climate/base.html:84
+msgid "About"
+msgstr "Acerca de"
+
+#: climate/templates/climate/about.html:29
+msgid "Student"
+msgstr "Estudiante"
+
+#: climate/templates/climate/about.html:40
+#: climate/templates/climate/about.html:70
+msgid "Roles"
+msgstr "Roles"
+
+#: climate/templates/climate/about.html:43
+msgid "Designer"
+msgstr "Diseñador"
+
+#: climate/templates/climate/about.html:46
+msgid "Developer"
+msgstr "Desarrollador"
+
+#: climate/templates/climate/about.html:49
+msgid "Tester"
+msgstr "Probador"
+
+#: climate/templates/climate/about.html:61
+#: climate/templates/climate/about.html:76
+msgid "Director"
+msgstr "Director"
+
+#: climate/templates/climate/about.html:73
+msgid "Client"
+msgstr "Cliente"
+
+#: climate/templates/climate/about.html:87
+msgid "University of A Coruña"
+msgstr "Universidad de A Coruña"
+
+#: climate/templates/climate/about.html:88
+msgid "Faculty of Computing"
+msgstr "Facultad de Informática"
+
+#: climate/templates/climate/about.html:104
+msgid ""
+"<p class=\"card-text text-justify\"> The <strong>University of A Coruña</"
+"strong> was founded in 1989. Is a Spanish public university with campus in A "
+"Coruña, Ferrol and Bastiagueiro. </p> <p> Its primary objective is the "
+"<strong>generation, management and dissemination</strong> of culture and "
+"scientific, technological and professional knowledge through the development "
+"of research and teaching. </p> <p> The University of A Coruña explicitly "
+"expresses its <strong>commitment to the study</strong> and the integral "
+"development of Galicia, its social, cultural and linguistic identity, and it "
+"will promote its <strong>full integration</strong> into the European Higher "
+"Education and and the projection in Latin America. </p>"
+msgstr ""
+"<p class=\"card-text text-justify\"> La <strong>Universidad de A Coruña</"
+"strong> se fundó en 1989. Es una universidad pública española con campus en "
+"A Coruña, Ferrol y Bastiagueiro. </p> <p> Su finalidad esencial es "
+"la<strong>generación, gestión y difusión</strong> de la cultura y el "
+"conocimiento científico, tecnológico y profesional a través del desarrollo "
+"de la investigación y de docencia. </p> <p> La Universidad de A Coruña "
+"manifiesta explícitamente su <strong>compromiso con el estudio</strong> y "
+"desarrollo integral de Galicia, singularmente de su identidad social, "
+"cultural y lingüística, y asimismo promoverá su <strong>plena integración</"
+"strong> en el Espacio Europeo de Enseñanza Superior y la proyección en "
+"América Latina. </p>"
+
+#: climate/templates/climate/about.html:123
+msgid "<strong>Useful links:</strong>"
+msgstr "<strong>Enlaces de utilidad:</strong>"
+
+#: climate/templates/climate/about.html:129
+msgid ""
+"University of A Coruña's <a href=\"https://www.udc.es/index.html?language=en"
+"\" target=\"_blank\">website</a>."
+msgstr ""
+"<a href=\"https://www.udc.es/index.html?language=es\" target=\"_blank"
+"\">Sitio web</a> de la Universidad de A Coruña."
+
+#: climate/templates/climate/about.html:135
+msgid ""
+"Faculty of Computing's <a href=\"https://www.fic.udc.es/es\" target=\"_blank"
+"\">website</a> (in Spanish)."
+msgstr ""
+"<a href=\"https://www.fic.udc.es/es\" target=\"_blank\">Sitio web</a> de la "
+"Facultad de Informática."
+
+#: climate/templates/climate/admin.html:5
+#: climate/templates/climate/base.html:105
+#: climate/templates/climate/base.html:162
+msgid "Admin zone"
+msgstr "Administración"
+
+#: climate/templates/climate/admin.html:10
+msgid "Welcome to the admin zone"
+msgstr "Bienvenido a la zona de administración"
+
+#: climate/templates/climate/admin.html:14
+msgid "Here you can:"
+msgstr "Aquí, usted puede:"
+
+#: climate/templates/climate/admin.html:20
+msgid "<a href=\"/admin/profile\">Manage your profile</a>."
+msgstr "<a href=\"/admin/profile\">Gestionar su perfil</a>."
+
+#: climate/templates/climate/admin.html:25
+msgid ""
+"<a href=\"/admin/messages\">Manage messages</a> sent by application's users."
+msgstr ""
+"<a href=\"/admin/messages\">Gestionar los mensajes</a> enviados por los "
+"usuarios de la aplicación."
+
+#: climate/templates/climate/admin_login.html:5
+msgid "Login - Admin zone"
+msgstr "Iniciar sesión - Administración"
+
+#: climate/templates/climate/admin_login.html:10
+#: climate/templates/climate/admin_login.html:54
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+#: climate/templates/climate/admin_login.html:16
+msgid "Username:"
+msgstr "Usuario:"
+
+#: climate/templates/climate/admin_login.html:18
+msgid "john.doe"
+msgstr "juan.perez"
+
+#: climate/templates/climate/admin_login.html:20
+#: climate/templates/climate/admin_login.html:36
+msgid "This field cannot be empty."
+msgstr "Este campo no puede estar vacío."
+
+#: climate/templates/climate/admin_login.html:23
+#: climate/templates/climate/admin_login.html:39
+#: climate/templates/climate/contact.html:70
+#: climate/templates/climate/contact.html:89
+#: climate/templates/climate/contact.html:106
+#: climate/templates/climate/contact.html:120
+#: climate/templates/climate/countries.html:173
+#: climate/templates/climate/locations.html:166 includes/air_pollution.html:247
+#: includes/country_energy.html:26 includes/country_energy.html:41
+#: includes/country_environment.html:31 includes/country_environment.html:46
+#: includes/historical_weather.html:47 includes/historical_weather.html:62
+msgid "Good!"
+msgstr "¡Bien!"
+
+#: climate/templates/climate/admin_login.html:26
+msgid ""
+"The administrator should have provided you with your <strong>credentials</"
+"strong>."
+msgstr ""
+"El administrador debería haberle proporcionado sus <strong>credenciales</"
+"strong>."
+
+#: climate/templates/climate/admin_login.html:33
+msgid "Password:"
+msgstr "Contraseña:"
+
+#: climate/templates/climate/admin_login.html:46
+msgid "An error occurred while processing your authentication."
+msgstr "Ha ocurrido un error al procesar la autenticación."
+
+#: climate/templates/climate/admin_login.html:50
+msgid "Your credentials are invalid."
+msgstr "Sus credenciales son inválidas."
+
+#: climate/templates/climate/base.html:64
+#: climate/templates/climate/base_admin.html:64
+#: climate/templates/climate/index.html:9
+msgid "Climate Change"
+msgstr "Cambio Climático"
+
+#: climate/templates/climate/base.html:89
+#: climate/templates/climate/base.html:91
+#: climate/templates/climate/contact.html:5
+#: climate/templates/climate/contact.html:10
+msgid "Contact"
+msgstr "Contacto"
+
+#: climate/templates/climate/base.html:100
+#: climate/templates/climate/base_admin.html:84
+#, python-format
+msgid "Logged in as <strong>%(username)s</strong>"
+msgstr "Conectado como <strong>%(username)s</strong>"
+
+#: climate/templates/climate/base.html:110
+#: climate/templates/climate/base_admin.html:89
+msgid "Logout"
+msgstr "Cerrar sesión"
+
+#: climate/templates/climate/base.html:124
+#: climate/templates/climate/base_admin.html:103
+#, python-format
+msgid "© University of A Coruña, <strong>%(current_year)s</strong>."
+msgstr "© Universidad de A Coruña, <strong>%(current_year)s</strong>."
+
+#: climate/templates/climate/base.html:129
+#: climate/templates/climate/base_admin.html:108
+msgid ""
+"This is the <strong>end-of-degree</strong> project of <a class=\"text-info\" "
+"href=\"/about\"><strong>Diego Hermida Carrera.</strong></a>"
+msgstr ""
+"Este es el Trabajo de Fin de Grado <strong>(TFG)</strong> de <a class=\"text-"
+"info\" href=\"/about\"><strong>Diego Hermida Carrera.</strong></a>"
+
+#: climate/templates/climate/base.html:136
+msgid "<cite>Like</cite> this app"
+msgstr "<cite>Me gusta</cite> esta app"
+
+#: climate/templates/climate/base.html:141
+msgid "You have already liked the app"
+msgstr "Ya ha dado 'Me gusta' a la app"
+
+#: climate/templates/climate/base.html:164
+msgid "List all monitored locations"
+msgstr "Listar todas las localizaciones monitorizadas"
+
+#: climate/templates/climate/contact.html:13
+msgid "Do not hesitate to contact us if you:"
+msgstr "No dude en contactarnos si usted:"
+
+#: climate/templates/climate/contact.html:17
+msgid ""
+"Have found a <strong>bug</strong>. If so, a detailed explanation would be "
+"ideal."
+msgstr ""
+"Ha encontrado un <strong>fallo</strong>. En ese caso, una explicación "
+"detallada sería ideal."
+
+#: climate/templates/climate/contact.html:22
+msgid ""
+"Think some data showed in this application could be <strong>invalid</strong>."
+msgstr ""
+"Cree que algún dato mostrado en esta aplicación podría ser <strong>inválido</"
+"strong>."
+
+#: climate/templates/climate/contact.html:27
+msgid "Want <strong>new</strong> content and/or data."
+msgstr "Quiere <strong>nuevo</strong> contenido y/o datos."
+
+#: climate/templates/climate/contact.html:32
+msgid ""
+"Want to <strong>translate</strong> the application to a new language and/or "
+"make another <strong>contribution</strong>."
+msgstr ""
+"Quiere <strong>traducir</strong> la aplicación a un nuevo idioma y/o "
+"realizar alguna otra <strong>contribución</strong>."
+
+#: climate/templates/climate/contact.html:39
+msgid "However, if you pretend to:"
+msgstr "No obstante, si usted pretende:"
+
+#: climate/templates/climate/contact.html:43
+msgid ""
+"Say you <cite>like</cite> this app: You can use the <i class=\"px-1 fa fa-"
+"thumbs-up fa-lg text-info\"></i> button at the bottom of this page!"
+msgstr ""
+"Decir que <cite>le gusta</cite> esta app: ¡use el botón <i class=\"px-1 fa "
+"fa-thumbs-up fa-lg text-info\"></i> situado al fondo de esta página!"
+
+#: climate/templates/climate/contact.html:49
+msgid ""
+"Contact the <strong>developing team</strong>, you can do it <a href=\"/about"
+"\">here</a>."
+msgstr ""
+"Contactar con el <strong>equipo de desarrollo</strong>, puede hacerlo <a "
+"href=\"/about\">aquí</a>."
+
+#: climate/templates/climate/contact.html:59
+msgid "Subject:"
+msgstr "Asunto:"
+
+#: climate/templates/climate/contact.html:61
+msgid "I've found a bug!"
+msgstr "¡He encontrado un fallo!"
+
+#: climate/templates/climate/contact.html:65
+#, python-format
+msgid ""
+"The subject length must be %(min_subject)s-%(max_subject)s characters long."
+msgstr ""
+"La longitud del asunto debe ser de %(min_subject)s-%(max_subject)s "
+"caracteres."
+
+#: climate/templates/climate/contact.html:73
+msgid "This should summarize your message."
+msgstr "Esto debería resumir su mensaje."
+
+#: climate/templates/climate/contact.html:77
+msgid "E-mail:"
+msgstr "E-mail:"
+
+#: climate/templates/climate/contact.html:79
+msgid "john.doe@example.com"
+msgstr "nombre@ejemplo.com"
+
+#: climate/templates/climate/contact.html:83
+#, python-format
+msgid ""
+"The e-mail address must be valid, and its length must be %(min_email)s-"
+"%(max_email)s characters long, and must include a \"@\"."
+msgstr ""
+"La dirección de e-mail debe ser válida, y su longitud debe ser de "
+"%(min_email)s-%(max_email)s caracteres, y debe incluir un \"@\"."
+
+#: climate/templates/climate/contact.html:92
+msgid "We will reply you to this address as soon as possible."
+msgstr "Le responderemos a dicha dirección tan pronto como sea posible."
+
+#: climate/templates/climate/contact.html:96
+msgid "Name:"
+msgstr "Nombre:"
+
+#: climate/templates/climate/contact.html:98
+msgid "John Doe"
+msgstr "Juan Pérez"
+
+#: climate/templates/climate/contact.html:101
+#, python-format
+msgid "The name length must be %(min_name)s-%(max_name)s characters long."
+msgstr ""
+"La longitud del nombre debe ser de %(min_name)s-%(max_name)s caracteres."
+
+#: climate/templates/climate/contact.html:110
+msgid "Message:"
+msgstr "Mensaje:"
+
+#: climate/templates/climate/contact.html:112
+msgid "Your message goes here."
+msgstr "Su mensaje va aquí."
+
+#: climate/templates/climate/contact.html:115
+#, python-format
+msgid ""
+"The message length must be %(min_message)s-%(max_message)s characters long."
+msgstr ""
+"La longitud del mensaje debe ser de %(min_message)s-%(max_message)s "
+"caracteres."
+
+#: climate/templates/climate/contact.html:126
+msgid "Your message has been successfully sent."
+msgstr "Su mensaje ha sido correctamente enviado."
+
+#: climate/templates/climate/contact.html:130
+msgid "An error occurred while sending your message."
+msgstr "Ha ocurrido un error al enviar su mensaje."
+
+#: climate/templates/climate/contact.html:134
+msgid "Send"
+msgstr "Enviar"
+
+#: climate/templates/climate/contact.html:138
+msgid "Return to the main page"
+msgstr "Volver a la página principal"
+
+#: climate/templates/climate/countries.html:69
+#: climate/templates/climate/locations.html:54
+msgid "Geolocation has been successfully enabled."
+msgstr "La geolocalización se ha activado correctamente."
+
+#: climate/templates/climate/countries.html:79
+#: climate/templates/climate/locations.html:64
+msgid "Your search returned multiple results."
+msgstr "La búsqueda ha devuelto múltiples resultados."
+
+#: climate/templates/climate/countries.html:93
+#: climate/templates/climate/locations.html:85 includes/air_pollution.html:282
+#: includes/country_energy.html:64 includes/country_environment.html:69
+#: includes/historical_weather.html:101
+msgid "Your search returned 0 results."
+msgstr "La búsqueda no ha devuelto resultados."
+
+#: climate/templates/climate/countries.html:99
+msgid "Such country does not exist, or there is no data available for it."
+msgstr "Ese país no existe, o no existe información disponible sobre él."
+
+#: climate/templates/climate/countries.html:105
+msgid ""
+"Geolocation is disabled. <br/> <strong>Tip:</strong> Search for countries "
+"using the <strong>Search bar</strong>, or enable <strong>Geolocation</"
+"strong> by clicking on the <kbd><i class=\"fa fa-location-arrow\"></i></kbd> "
+"button."
+msgstr ""
+"La geolocalización está desactivada. <br/> <strong>Consejo:</strong> Busque "
+"países usando la <strong>Barra de búsqueda</strong>, o active la "
+"<strong>geolocalización</strong> presionando el botón <kbd><i class=\"fa fa-"
+"location-arrow\"></i></kbd> ."
+
+#: climate/templates/climate/countries.html:115
+#: climate/templates/climate/locations.html:107
+msgid "An error occurred while retrieving your current position."
+msgstr "Ha ocurrido un error al intentar determinar su posición actual."
+
+#: climate/templates/climate/countries.html:123
+msgid "View nearest country"
+msgstr "Visualice el país más cercano"
+
+#: climate/templates/climate/countries.html:130
+msgid "View all countries"
+msgstr "Visualice todos los países"
+
+#: climate/templates/climate/countries.html:138
+#: climate/templates/climate/locations.html:130
+msgid "Show or hide the map"
+msgstr "Muestre u oculte el mapa"
+
+#: climate/templates/climate/countries.html:143
+#: climate/templates/climate/locations.html:135
+msgid "Geolocation is enabled"
+msgstr "La geolocalización está activada"
+
+#: climate/templates/climate/countries.html:150
+#: climate/templates/climate/locations.html:142
+msgid "Enable geolocation"
+msgstr "Active la geolocalización"
+
+#: climate/templates/climate/countries.html:162 includes/location_info.html:39
+msgid "Country"
+msgstr "País"
+
+#: climate/templates/climate/countries.html:169
+#: climate/templates/climate/locations.html:162
+#, python-format
+msgid "Keywords are invalid: \"%(keywords)s\""
+msgstr "La entrada de texto es inválida: \"%(keywords)s\""
+
+#: climate/templates/climate/countries.html:182
+msgid ""
+"Click on the dropdown button to show pre-selected <strong>regions</strong> "
+"and <strong>income levels</strong>. You can click on any of them to see its "
+"data. <br>Note: Some regions might not have data."
+msgstr ""
+"Haga click en el botón desplegable para mostrar las <strong>regiones</"
+"strong> y <strong>niveles de renta</strong> pre-seleccionados. Puede hacer "
+"click en cualquiera de ellos para ver sus datos. <br>Nota: Algunas regiones "
+"pueden no tener datos."
+
+#: climate/templates/climate/countries.html:187
+msgid "Regions and income levels"
+msgstr "Regiones y niveles de renta"
+
+#: climate/templates/climate/countries.html:202
+msgid ""
+"<div> <strong>Tips:</strong> <ul> <li> <strong>Click</strong> on the map "
+"surface and <strong>drag</strong> to move it. </li> <li> Use the &nbsp;<kbd>"
+"+</kbd>&nbsp; and &nbsp;<kbd>-</kbd>&nbsp; buttons, or <strong> tap twice</"
+"strong> on the map's surface to zoom in and out. </li> <li> <strong>Select</"
+"strong> a country by <strong>clicking</strong> on it. </li> <li>You can also "
+"use the <strong>Search bar</strong> to select countries.</li> </ul> </div>"
+msgstr ""
+"<div> <strong>Consejos:</strong> <ul> <li> Haga <strong>click</strong> sobre "
+"la superficie del mapa y <strong>arrastre</strong> para moverlo. </li> <li> "
+"Use los botones &nbsp;<kbd>+</kbd>&nbsp; y &nbsp;<kbd>-</kbd>&nbsp;, o "
+"<strong> toque dos veces</strong> sobre la superficie del mapa para "
+"ampliarlo o reducirlo. </li> <li> <strong>Seleccione</strong> un país "
+"haciendo <strong>click</strong> sobre él. </li> <li>También puede usar la "
+"<strong>barra de búsqueda</strong> para seleccionar países.</li> </ul> </div>"
+
+#: climate/templates/climate/countries.html:232
+msgid ""
+"To represent this map, <a href=\"https://www.amcharts.com/\" target=\"_blank"
+"\">amCharts</a> libraries have been used."
+msgstr ""
+"Para representar este mapa, se han empleado librerías de <a href=\"https://"
+"www.amcharts.com/\" target=\"_blank\">amCharts</a>."
+
+#: climate/templates/climate/countries.html:267
+msgid "Once you have selected a country, more info will appear here."
+msgstr "Una vez haya seleccionado un país, aquí aparecerá más información."
+
+#: climate/templates/climate/global_change.html:41
+#: climate/templates/climate/global_change.html:94
+msgid "Sea level rise"
+msgstr "Nivel del mar"
+
+#: climate/templates/climate/global_change.html:42
+msgid ""
+"Climate change is accelerating the rise in sea level. Cities at sea level "
+"will be the first to be affected."
+msgstr ""
+"El cambio climático está acelerando la subida en el nivel del mar. Las "
+"ciudades a nivel del mar serán las primeras en verse afectadas."
+
+#: climate/templates/climate/global_change.html:49
+#: climate/templates/climate/global_change.html:63
+#: climate/templates/climate/global_change.html:77
+msgid "Continue reading"
+msgstr "Continúe leyendo"
+
+#: climate/templates/climate/global_change.html:55
+#: climate/templates/climate/global_change.html:219
+msgid "Polar ice extension"
+msgstr "Extensión de hielo polar"
+
+#: climate/templates/climate/global_change.html:56
+msgid ""
+"If the current situation is not controlled, before the end of the century "
+"the Arctic will be no more than a memory. <br>"
+msgstr ""
+"Si la situación actual no se controla, antes de final de siglo el Ártico no "
+"será más que un recuerdo. <br>"
+
+#: climate/templates/climate/global_change.html:70
+#: climate/templates/climate/global_change.html:404
+msgid "Climate projections"
+msgstr "Proyecciones climáticas"
+
+#: climate/templates/climate/global_change.html:71
+msgid ""
+"Climatic projections venture a pessimistic future if polluting emissions are "
+"not reduced."
+msgstr ""
+"Las proyeccciones climáticas aventuran un futuro pesimista si no se reducen "
+"las emisiones contaminantes."
+
+#: climate/templates/climate/global_change.html:100
+#: climate/templates/climate/global_change.html:225
+#: climate/templates/climate/global_change.html:410
+msgid "Load data"
+msgstr "Mostrar los datos"
+
+#: climate/templates/climate/global_change.html:104
+#: climate/templates/climate/global_change.html:229
+#: climate/templates/climate/global_change.html:414
+msgid "No data has been found."
+msgstr "No se han encontrado datos."
+
+#: climate/templates/climate/global_change.html:107
+#: climate/templates/climate/global_change.html:232
+#: climate/templates/climate/global_change.html:417
+#: includes/air_pollution.html:285 includes/country_energy.html:67
+#: includes/country_environment.html:72 includes/historical_weather.html:104
+msgid "Data could not be retrieved."
+msgstr "Ocurrió un error al intentar obtener los datos."
+
+#: climate/templates/climate/global_change.html:121
+msgid ""
+"Sea level rise from <span id=\"seaLevelRiseFrom\" class=\"font-weight-bold"
+"\"></span> to <span id=\"seaLevelRiseTo\" class=\"font-weight-bold\"></span>"
+msgstr ""
+"Subida del nivel del mar desde <span id=\"seaLevelRiseFrom\" class=\"font-"
+"weight-bold\"></span> hasta <span id=\"seaLevelRiseTo\" class=\"font-weight-"
+"bold\"></span>"
+
+#: climate/templates/climate/global_change.html:130
+#: climate/templates/climate/global_change.html:256
+#: climate/templates/climate/global_change.html:336
+#: climate/templates/climate/global_change.html:440
+#: includes/air_pollution.html:321
+msgid "Number of plotted values"
+msgstr "Número de valores representados"
+
+#: climate/templates/climate/global_change.html:133
+msgid ""
+"Showing Global Mean Sea Level (GMSL) variations computed at the NASA Goddard "
+"Space Flight Center under the auspices of the NASA MEaSUREs program, using "
+"the Integrated Multi-Mission Ocean Altimeter Data for Climate Research."
+msgstr ""
+"Mostrando variaciones del Nivel Global Medio del Mar (GMSL), calculadas en "
+"el Centro de Vuelos Espaciales Goddard de la NASA, bajo los auspicios del "
+"programa MEaSUREs de la NASA, utilizando los datos del Multi-Mission Ocean "
+"Altimeter para la investigación del clima."
+
+#: climate/templates/climate/global_change.html:140
+msgid ""
+"<strong>Credit: </strong>B. Beckley, supported by NASA's MEaSUREs program."
+msgstr ""
+"<strong>Reconocimiento: </strong>B. Beckley, apoyado por el programa "
+"MEaSUREs de la NASA."
+
+#: climate/templates/climate/global_change.html:158
+msgid "from <span id=\"seaLevelRiseStartYear\"></span> levels"
+msgstr "desde los niveles de <span id=\"seaLevelRiseStartYear\"></span>"
+
+#: climate/templates/climate/global_change.html:175
+msgid "in <span id=\"seaLevelRiseLastYear\"></span>"
+msgstr "en <span id=\"seaLevelRiseLastYear\"></span>"
+
+#: climate/templates/climate/global_change.html:182
+msgid ""
+"<p class=\"text-justify mt-3 mb-2\"> In the last 20 years, the sea level has "
+"increased by <strong>8 cm</strong>. However, scientific predictions indicate "
+"that sea level could rise up to <strong>0.9 meters by the end of the "
+"century</strong>. <br> This increase is mainly due to the <strong>melting</"
+"strong> of the Arctic and Antarctic. <br> </p> Among the consequences of "
+"<strong>sea level rise</strong>, we can highlight: <ul class=\"fa-ul mt-1 "
+"pl-3\"> <li><i class=\"fa-li fa fa-warning text-danger\"></i>Loss of "
+"biodiversity.</li> <li><i class=\"fa-li fa fa-warning text-danger\"></"
+"i>Storms, hurricanes and other more violent and more intense atmospheric "
+"phenomena. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></"
+"i>Possible forced migration of the population living in coastal regions. </"
+"li> </ul>"
+msgstr ""
+"<p class=\"text-justify mt-3 mb-2\"> En los últimos 20 años, el nivel del "
+"mar ha subido unos <strong>8 cm</strong>. No obstante, las predicciones "
+"científicas indican que el nivel del mar podría aumentar hasta <strong>0,9 "
+"metros hacia final de siglo</strong>. <br> Este aumento se debe "
+"mayoritariamente al <strong>deshielo</strong> del Ártico y la Antártida. "
+"<br> </p> Entre las consecuencias del <strong>aumento del nivel del mar</"
+"strong>, se pueden destacar: <ul class=\"fa-ul mt-1 pl-3\"> <li><i class="
+"\"fa-li fa fa-warning text-danger\"></i>Pérdida de biodiversidad.</li> "
+"<li><i class=\"fa-li fa fa-warning text-danger\"></i>Tormentas, huracanes y "
+"otros fenómenos atmosféricos se volverán más vielentos e intensos. </li> "
+"<li><i class=\"fa-li fa fa-warning text-danger\"></i>Posible migración "
+"forzada de la población que habita en zonas costeras. </li> </ul>"
+
+#: climate/templates/climate/global_change.html:210
+#: climate/templates/climate/global_change.html:314
+#: climate/templates/climate/global_change.html:394
+#: climate/templates/climate/global_change.html:687
+#: climate/templates/climate/index.html:202 includes/air_pollution.html:203
+#: includes/air_pollution.html:429 includes/country_energy.html:145
+#: includes/country_energy.html:230 includes/country_environment.html:247
+#: includes/country_info.html:117 includes/historical_weather.html:182
+#: includes/historical_weather.html:278 includes/location_info.html:273
+msgid "Go to top"
+msgstr "Al principio"
+
+#: climate/templates/climate/global_change.html:239
+msgid "Arctic"
+msgstr "Ártico"
+
+#: climate/templates/climate/global_change.html:247
+msgid ""
+"Arctic ice extent loss from <span id=\"arcticIceExtentFrom\" class=\"font-"
+"weight-bold\"></span> to <span id=\"arcticIceExtentTo\" class=\"font-weight-"
+"bold\"></span>"
+msgstr ""
+"Pérdida de masa de hielo en el Ártico desde el <span id=\"arcticIceExtentFrom"
+"\" class=\"font-weight-bold\"></span> hasta el <span id=\"arcticIceExtentTo"
+"\" class=\"font-weight-bold\"></span>"
+
+#: climate/templates/climate/global_change.html:259
+msgid ""
+"Showing anomalies relative to April 2002 computed at the Jet Propulsion "
+"Laboratory under the auspices of the NASA MEaSUREs program. The Greenland "
+"mass anomalies are generated using GRACE data from the JPL RL05M.1 Mascon "
+"Solution: Version 2."
+msgstr ""
+"Mostrando anomalías relativas a abril de 2002 calculadas en el Jet "
+"Propulsion Laboratory bajo los auspicios del programa MEaSUREs de la NASA. "
+"Las anomalías de masa en Groenlandia se generan usando datos del GRACE desde "
+"el JPL RL05M.1 Mascon Solution: Version 2."
+
+#: climate/templates/climate/global_change.html:266
+#: climate/templates/climate/global_change.html:346
+msgid ""
+"<strong>Credit: </strong><a href=\"https://www.nasa.gov/\" target=\"_blank"
+"\">NASA</a>."
+msgstr ""
+"<strong>Atribuciones: </strong><a href=\"https://www.nasa.gov/\" target="
+"\"_blank\">NASA</a>."
+
+#: climate/templates/climate/global_change.html:284
+msgid "from <span id=\"arcticIceExtentStartYear\"></span> levels"
+msgstr "desde los niveles de <span id=\"arcticIceExtentStartYear\"></span>"
+
+#: climate/templates/climate/global_change.html:301
+#: climate/templates/climate/global_change.html:381
+msgid "per year"
+msgstr "por año"
+
+#: climate/templates/climate/global_change.html:306
+#: climate/templates/climate/global_change.html:386
+msgid "Gt: giga-ton"
+msgstr "Gt: giga-tonelada"
+
+#: climate/templates/climate/global_change.html:309
+#: climate/templates/climate/global_change.html:389
+msgid "(10⁹ tons; 1 ton = 1000 kg)"
+msgstr "(10⁹ toneladas; 1 tonelada = 1000 kg)"
+
+#: climate/templates/climate/global_change.html:319
+msgid "Antarctica"
+msgstr "Antártida"
+
+#: climate/templates/climate/global_change.html:327
+msgid ""
+"Antarctica ice extent loss from <span id=\"antarcticaIceExtentFrom\" class="
+"\"font-weight-bold\"></span> to <span id=\"antarcticaIceExtentTo\" class="
+"\"font-weight-bold\"></span>"
+msgstr ""
+"Pérdida de masa de hielo en la Antártida desde el <span id="
+"\"antarcticaIceExtentFrom\" class=\"font-weight-bold\"></span> hasta el "
+"<span id=\"antarcticaIceExtentTo\" class=\"font-weight-bold\"></span>"
+
+#: climate/templates/climate/global_change.html:339
+msgid ""
+"Showing anomalies relative to April 2002 computed at the Jet Propulsion "
+"Laboratory under the auspices of the NASA MEaSUREs program. The Antarctic "
+"mass anomalies are generated using GRACE data from the JPL RL05M.1 Mascon "
+"Solution: Version 2."
+msgstr ""
+"Mostrando anomalías relativas a abril de 2002 calculadas en el Jet "
+"Propulsion Laboratory bajo los auspicios del programa MEaSUREs de la NASA. "
+"Las anomalías de masa en la Antártida se generan usando datos del GRACE "
+"desde el JPL RL05M.1 Mascon Solution: Version 2."
+
+#: climate/templates/climate/global_change.html:364
+msgid "from <span id=\"antarcticaIceExtentStartYear\"></span> levels"
+msgstr "desde los niveles de <span id=\"antarcticaIceExtentStartYear\"></span>"
+
+#: climate/templates/climate/global_change.html:431
+msgid ""
+"Climate projections (CO₂ emissions) from <span id=\"RPCFrom\" class=\"font-"
+"weight-bold\"></span> to <span id=\"RPCTo\" class=\"font-weight-bold\"></"
+"span>"
+msgstr ""
+"Proyecciones climáticas (emisiones de CO₂) desde <span id=\"RPCFrom\" class="
+"\"font-weight-bold\"></span> hasta <span id=\"RPCTo\" class=\"font-weight-"
+"bold\"></span>"
+
+#: climate/templates/climate/global_change.html:443
+msgid ""
+"<strong>Credit: </strong>RPC Database. Full attributions list is available "
+"<a href=\"http://www.iiasa.ac.at/web-apps/tnt/RcpDb/dsd?"
+"Action=htmlpage&page=about#\" target=\"_blank\">here</a>."
+msgstr ""
+"<strong>Reconocimiento: </strong>RPC Database. La lista completa de "
+"atribuciones está disponible <a href=\"http://www.iiasa.ac.at/web-apps/tnt/"
+"RcpDb/dsd?Action=htmlpage&page=about#\" target=\"_blank\">aquí</a>."
+
+#: climate/templates/climate/global_change.html:452
+msgid "What are RPCs?"
+msgstr "¿Qué son los RPCs?"
+
+#: climate/templates/climate/global_change.html:453
+msgid ""
+"<p> Climate predictions are based on <strong>climate models</strong>, which "
+"stimulate aspects such as the temperature of the atmosphere and the oceans, "
+"rainfall, winds, cloud formations, ocean currents and ice masses. In "
+"addition, factors of human activity such as economic and demographic growth, "
+"lifestyles, energy use, technology and climate policies are taken into "
+"account. </p> <p> To obtain the projections of the parameters to be "
+"evaluated (concentration of greenhouse gases, average temperature of the "
+"planet, etc.), climate models are used using information present in "
+"scenarios, known as <strong>Representative Concentration Pathways</strong> "
+"or <strong>RPC</strong>s. These describe alternative trajectories for the "
+"parameters of interest, and cover up to the year <strong>2100</strong>. </p>"
+msgstr ""
+"<p>Las predicciones del clima se basan en <strong>modelos climáticos</"
+"strong>, que estimulan aspectos como la temperatura de la atmósfera y los "
+"océanos, precipitaciones, vientos, formaciones nubosas, corrientes oceánicas "
+"y masas de hielo. Además, se tienen en cuenta factores de la actividad "
+"humana tales como el crecimiento económico y demográfico, estilos de vida, "
+"uso energético, tecnología y políticas climáticas.</p> <p>Para obtener las "
+"proyecciones de los parámetros a evaluar (concentración de gases "
+"invernadero, temperatura media del planeta, etcétera) se emplean los modelos "
+"climáticos usando información presente en escenarios, conocidos como "
+"<strong>Representative Concentration Pathways</strong> o <strong>RPC</"
+"strong>s. Éstos describen trayectorias alternativas para los parámetros de "
+"interés, y cubren hasta el año <strong>2100</strong>."
+
+#: climate/templates/climate/global_change.html:474
+msgid "RPC 2.6"
+msgstr "RPC 2.6"
+
+#: climate/templates/climate/global_change.html:480
+#: climate/templates/climate/global_change.html:525
+#: climate/templates/climate/global_change.html:563
+#: climate/templates/climate/global_change.html:601
+msgid "CO₂ emissions: "
+msgstr "Emisiones de CO₂:"
+
+#: climate/templates/climate/global_change.html:482
+msgid ""
+"They reach a maximum in 2020 (and are reduced to 0 in 2080), with a maximum "
+"concentration of 440 ppm."
+msgstr ""
+"Alcanzan un máximo en 2020 (y se reducen a 0 hacia 2080), con una "
+"concentración máxima de 440 ppm."
+
+#: climate/templates/climate/global_change.html:489
+#: climate/templates/climate/global_change.html:535
+#: climate/templates/climate/global_change.html:573
+#: climate/templates/climate/global_change.html:610
+msgid "Population: "
+msgstr "Población: "
+
+#: climate/templates/climate/global_change.html:491
+msgid "Around 9,000 million in 2050. Economic development is high."
+msgstr "Alrededor de 9.000 millones en 2050. El desarrollo económico es alto."
+
+#: climate/templates/climate/global_change.html:497
+#: climate/templates/climate/global_change.html:543
+#: climate/templates/climate/global_change.html:581
+#: climate/templates/climate/global_change.html:618
+msgid "Energy: "
+msgstr "Energía: "
+
+#: climate/templates/climate/global_change.html:499
+msgid ""
+"Abandonment of oil as a fuel, replaced by other fossil fuels and renewable "
+"energies."
+msgstr ""
+"Abandono del petróleo como combustible, sustituido por otros combustibles "
+"fósiles y energías renovables."
+
+#: climate/templates/climate/global_change.html:508
+msgid ""
+"<i class=\"fa fa-check-circle text-success px-1\"></i> This is the only "
+"scenario that meets the objective of maintaining the temperature of the "
+"Earth <strong>below 2ºC above pre-industrial levels</strong>."
+msgstr ""
+"<i class=\"fa fa-check-circle text-success px-1\"></i> Este es el único "
+"escenario que cumple con el objetivo de mantener la temperatura media de la "
+"Tierra por  <strong>debajo de 2ºC</strong> sobre los <strong>niveles pre-"
+"industriales</strong>."
+
+#: climate/templates/climate/global_change.html:519
+msgid "RPC 4.5"
+msgstr "RPC 4.5"
+
+#: climate/templates/climate/global_change.html:527
+#, python-format
+msgid ""
+"Levels 50%% higher than the 2000 levels in 2050. Towards 2080 they stabilize "
+"at the levels of 2000. Concentration of 520 ppm in 2070, increasing slightly."
+msgstr ""
+"Niveles un 50%% más altos que los del 2000 hacia 2050. Hacia 2080 se "
+"estabilizan a los niveles del 2000. Concentración de 520 ppm en 2070, "
+"incrementándose levemente."
+
+#: climate/templates/climate/global_change.html:537
+msgid "Economic and demographic growth slightly lower than that of RPC 2.6."
+msgstr ""
+"Crecimiento económico y demográfico ligeramente inferior al de RPC 2.6."
+
+#: climate/templates/climate/global_change.html:545
+msgid ""
+"Consumption of oil practically constant until 2100. Nuclear and renewable "
+"energies as secondary sources."
+msgstr ""
+"Consumo de petróleo prácticamente constante hasta 2100. Energías nuclear y "
+"renovable como secundarias."
+
+#: climate/templates/climate/global_change.html:557
+msgid "RPC 6.0"
+msgstr "RPC 6.0"
+
+#: climate/templates/climate/global_change.html:565
+#, python-format
+msgid ""
+"Emissions 100%% higher than 2000 levels in 2060, with ever increasing "
+"concentrations -reducing the pace at the end of the century-, reaching 620 "
+"ppm in 2100."
+msgstr ""
+"Emisiones un 100%% superiores en 2060, con concentraciones siempre "
+"crecientes –reduciendo el ritmo a final de siglo–, alcanzando 620 ppm en "
+"2100."
+
+#: climate/templates/climate/global_change.html:575
+msgid "Growth up to 10,000 million inhabitants, with low GDP."
+msgstr "Crecimiento hasta los 10.000 millones de habitantes, con bajos PIB."
+
+#: climate/templates/climate/global_change.html:583
+msgid ""
+"Peak energy by 2060, reaching the level of RPC 2.6 in 2100. Consumptions "
+"similar to RPC 4.5 with minor importance secondary energies."
+msgstr ""
+"Pico energético hacia 2060, llegando al nivel de RPC 2.6 en 2100. Consumos "
+"similares a RPC 4.5 con menor importancia de las energías secundarias."
+
+#: climate/templates/climate/global_change.html:595
+msgid "RPC 8.5"
+msgstr "RPC 8.5"
+
+#: climate/templates/climate/global_change.html:603
+#, python-format
+msgid ""
+"Emissions 375%% higher than the current levels in 2100. Concentration of 950 "
+"ppm in 2100 and rising during minimum, 100 more years."
+msgstr ""
+"Emisiones un 375%% superiores a las actuales en RPC 2100. Concentración de "
+"950 ppm en 2100 y subiendo durante, mínimo, 100 años más."
+
+#: climate/templates/climate/global_change.html:612
+msgid "High population growth, up to 12,000 in 2100. Social inequality."
+msgstr ""
+"Crecimiento alto de población, hasta los 12.000 en 2100. Desigualdad social."
+
+#: climate/templates/climate/global_change.html:620
+msgid ""
+"Increased energy consumption throughout the century, three times higher than "
+"the 2000 levels. Use of oil until 2070 and coal until 2100."
+msgstr ""
+"Consumo energético creciente durante todo el siglo, multiplicándose por tres "
+"respecto al consumo del año 2000. Uso del petróleo hasta 2070 y carbón hasta "
+"2100."
+
+#: climate/templates/climate/global_change.html:631
+msgid "Consequences"
+msgstr "Consecuencias"
+
+#: climate/templates/climate/global_change.html:633
+msgid ""
+"<p> To meet the objective of keeping the global temperature <strong>below "
+"2°C</strong> above <strong>pre-industrial levels</strong>, it is necessary "
+"to limit the emissions to a maximum of 3650 GtCO₂ (giga-tons of CO₂), half "
+"of which were <strong>already emitted</strong> towards 2011. The <strong>RPC "
+"2.6</strong> is the only scenario that <strong>ensures the fullfillment</"
+"strong> of this objective. </p> <p> Therefore, of the <strong>RPC 2.6</"
+"strong> scenario is not met, the consequences will be negative at multiple "
+"levels: </p> <ul class=\"fa-ul pl-3\"> <li><i class=\"fa-li fa fa-warning "
+"text-danger\"></i> The Arctic is likely to be <strong>entirely disappeared</"
+"strong> before 2100. </li> <li><i class=\"fa-li fa fa-warning text-danger"
+"\"></i> The climate will become <strong>more extreme</strong> in all "
+"regions. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></i> "
+"<strong>Heat waves</strong> will occur more frequently. </li> <li><i class="
+"\"fa-li fa fa-warning text-danger\"></i> A considerable percentage of "
+"terrestrial and marine species will be unable to adapt and will increase "
+"their <strong>risk of extinction</strong>. </li> <li><i class=\"fa-li fa fa-"
+"warning text-danger\"></i> The risk of flooding and erosion of "
+"<strong>coastal areas</strong> will be increased. </li> <li><i class=\"fa-li "
+"fa fa-warning text-danger\"></i> The quantity and quality of "
+"<strong>drinking water</strong> will be reduced; above all, in tropical and "
+"subtropical regions. </li> <li><i class=\"fa-li fa fa-warning text-danger"
+"\"></i> The spread of <strong>diseases</strong> by vectors, water and food "
+"is likely to be increased. </li> </ul>"
+msgstr ""
+"<p> Para cumplir el objetivo de mantener la temperatura del planeta "
+"<strong>por debajo de 2°C</strong> sobre los <strong>niveles pre-"
+"industriales</strong>, es necesario limitar las emisiones a un máximo de "
+"3650 GtCO₂ (giga-toneladas de CO₂), la mitad de las cuales <strong>ya se "
+"habían emitido</strong> hacia 2011. <strong>RPC 2.6</strong> es el único "
+"escenario que <strong>asegura el cumplimiento</strong> de este objetivo.</p> "
+"<p> Por lo tanto, si el escenario <strong>RPC 2.6</strong> no se cumple, las "
+"consecuencias serán negativas a múltiples niveles: </p> <ul class=\"fa-ul "
+"pl-3\"> <li><i class=\"fa-li fa fa-warning text-danger\"></i> Es probable "
+"que el Ártico haya <strong>desaparecido completamente</strong> antes de "
+"2100. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></i> El clima "
+"se volverá más <strong>más extremo</strong> en todas las regiones. </li> "
+"<li><i class=\"fa-li fa fa-warning text-danger\"></i> <strong>Las olas de "
+"calor</strong> sucederán con mayor frecuencia. </li> <li><i class=\"fa-li fa "
+"fa-warning text-danger\"></i> Un porcentaje considerable de especies marinas "
+"y terrestres no serán capaces de adaptarse, y aumentará su <strong>riesgo de "
+"extinción</strong>. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></"
+"i> Aumentará el riesgo de inundaciones y erosión de las <strong>regiones "
+"costeras</strong>. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></"
+"i> Tanto la cantidad como la calidad del <strong>agua potable</strong> se "
+"verá reducida; sobre todo, en las regiones tropicales y subtropicales. </li> "
+"<li><i class=\"fa-li fa fa-warning text-danger\"></i> La propagación de "
+"<strong>enfermedades</strong> por vectores, agua y alimentos puede que se "
+"vea aumentada. </li> </ul>"
+
+#: climate/templates/climate/global_change.html:679
+msgid ""
+"<strong>Credit: </strong>IPCC. The full report is available <a href="
+"\"https://www.ipcc.ch/pdf/assessment-report/ar5/syr/"
+"SYR_AR5_FINAL_full_wcover.pdf\" target=\"_blank\">here</a>."
+msgstr ""
+"<strong>Reconocimiento: </strong>IPCC. El informe completo está disponible "
+"<a href=\"https://www.ipcc.ch/pdf/assessment-report/ar5/syr/"
+"SYR_AR5_FINAL_full_wcover.pdf\" target=\"_blank\">aquí</a>."
+
+#: climate/templates/climate/global_change.html:724
+msgid "Sea level rise (mm)"
+msgstr "Aumento del nivel del mar (mm)"
+
+#: climate/templates/climate/global_change.html:787
+msgid "Ice mass loss, Arctic (Gt)"
+msgstr "Pérdida de masa de hielo, Ártico (Gt)"
+
+#: climate/templates/climate/global_change.html:809
+msgid "Ice mass loss, Antarctica (Gt)"
+msgstr "Pérdida de masa de hielo, Antártida (Gt)"
+
+#: climate/templates/climate/global_change.html:869
+msgid "ppm"
+msgstr "ppm"
+
+#: climate/templates/climate/index.html:37
+msgid "You have been successfully logged out."
+msgstr "La sesión se ha cerrado correctamente."
+
+#: climate/templates/climate/index.html:45
+msgid "An error occurred while logging you out."
+msgstr "Ha ocurrido un error al cerrar la sesión."
+
+#: climate/templates/climate/index.html:55
+msgid "Facts about Climate Change"
+msgstr "Hechos sobre el Cambio Climático"
+
+#: climate/templates/climate/index.html:59
+msgid "Polluted popsicles"
+msgstr "Helados contaminados"
+
+#: climate/templates/climate/index.html:63
+msgid ""
+"As a consequence of Climate Change, the quantity and quality of "
+"<strong>drinking water</strong> will be reduced."
+msgstr ""
+"Como consecuencia del Cambio Climático, la cantidad y calidad del "
+"<strong>agua potable</strong> se verá reducida."
+
+#: climate/templates/climate/index.html:71
+msgid ""
+"Credit (image): The <a href=\"https://www.facebook.com/"
+"PollutedWaterPopsicles/\" target=\"_blank\">Polluted Water Popsicles</a> "
+"project."
+msgstr ""
+"Atribuciones (imagen): Al proyecto <a href=\"https://www.facebook.com/"
+"PollutedWaterPopsicles/\" target=\"_blank\">Polluted Water Popsicles</a>."
+
+#: climate/templates/climate/index.html:83
+msgid ""
+"The climate was <strong>key</strong> to the fall of the Western Roman "
+"Empire. From the year 400 A.D., the winters were becoming increasingly cold, "
+"displacing the barbarian peoples to southern Europe. These, more and more "
+"numerous, were making a dent in the Empire; causing its fall in the year 476 "
+"A.D."
+msgstr ""
+"El clima fue <strong>clave</strong> en la caída del Imperio Romano de "
+"Occidente. Desde el año 400 d.C., los inviernos se fueron haciendo cada vez "
+"más fríos, desplazando a los pueblos bárbaros al sur de Europa. Éstos, más y "
+"más numerosos, fueron haciendo mella en el Imperio; causando su caída en el "
+"año 476 d.C."
+
+#: climate/templates/climate/index.html:92
+msgid "J. M. Viñas Rubio, <cite>Physicist and scientific communicator</cite>."
+msgstr "J. M. Viñas Rubio, <cite>Físico y divulgador científico</cite>."
+
+#: climate/templates/climate/index.html:102
+msgid ""
+"Climate Change is not among the <strong>15 biggest concerns</strong> of the "
+"population."
+msgstr ""
+"El Cambio Climático no se encuentra entre las <strong>15 mayores "
+"preocupaciones</strong> de la población."
+
+#: climate/templates/climate/index.html:108
+msgid ""
+"Poll data are available <a href=\"http://data.myworld2015.org/\" target="
+"\"_blank\"><cite>here</cite></a>."
+msgstr ""
+"Los datos de la encuesta están disponibles <a href=\"http://data.myworld2015."
+"org/\" target=\"_blank\"><cite>aquí</cite></a>."
+
+#: climate/templates/climate/index.html:118
+msgid "Warning!"
+msgstr "¡Atención!"
+
+#: climate/templates/climate/index.html:122
+msgid ""
+"To meet the objective of keeping the global temperature <strong>below 2°C</"
+"strong> above <strong>pre-industrial levels</strong>, it is necessary to "
+"limit the emissions to a maximum of 3650 GtCO₂ (giga-tons of CO₂), half of "
+"which were <strong>already emitted</strong> towards 2011."
+msgstr ""
+"Para cumplir el objetivo de mantener la temperatura global por "
+"<strong>debajo de 2°C</strong> de los <strong>niveles pre-industriales</"
+"strong>, es necesario limitar las emisiones a un máximo de 3650 GtCO₂ (giga-"
+"toneladas de CO₂), la mitad de cuales fueron <strong>ya emitidas</strong> "
+"hacia 2011."
+
+#: climate/templates/climate/index.html:135
+#, python-format
+msgid ""
+"97%% of the scientific community affirms that climate change <strong>is "
+"real</strong>, and is caused mainly by humans."
+msgstr ""
+"El 97%% de la comunidad científica afirma que el cambio climático <strong>es "
+"real</strong>, y éste es causado mayoritariamente por el ser humano."
+
+#: climate/templates/climate/index.html:152
+msgid ""
+"The Arctic is likely to be <strong>entirely disappeared</strong> before 2100."
+msgstr ""
+"El Ártico puede que haya <strong>desaparecido completamente</strong> antes "
+"de 2100."
+
+#: climate/templates/climate/index.html:161
+msgid ""
+"Experts say that global warming caused by <strong>CO₂</strong> emissions is "
+"irreversible for <strong>several centuries</strong>."
+msgstr ""
+"Los expertos aseguran que el calentamiento global causado por emisiones de "
+"<strong>CO₂</strong> es irreversible por <strong>varios siglos</strong>."
+
+#: climate/templates/climate/index.html:169
+msgid "Polar bear"
+msgstr "Oso polar"
+
+#: climate/templates/climate/index.html:173
+msgid ""
+"Numerous marine and terrestrial species will be unable to adapt, and will "
+"increase their <strong>risk of extinction</strong>."
+msgstr ""
+"Numerosas especies marinas y terrestres no podrán adaptarse, y aumentará su "
+"<strong>riesgo de extinción</strong>."
+
+#: climate/templates/climate/index.html:181
+msgid ""
+"Credit (image): Arturo de Frias Marques, from <a href=\"https://commons."
+"wikimedia.org/wiki/File:Polar_Bear_AdF.jpg\" target=\"_blank\">Wikimedia "
+"Commons</a>."
+msgstr ""
+"Atribuciones (imagen): Arturo de Frias Marques, de <a href=\"https://commons."
+"wikimedia.org/wiki/File:Polar_Bear_AdF.jpg\" target=\"_blank\">Wikimedia "
+"Commons</a>."
+
+#: climate/templates/climate/index.html:193
+msgid ""
+"The Earth has reached <strong>CO₂ levels</strong> higher than ever on "
+"history."
+msgstr ""
+"La Tierra ha alcanzado <strong>niveles de CO₂</strong> más altos que nunca "
+"en la Historia."
+
+#: climate/templates/climate/locations.html:77
+#, python-format
+msgid "(showing only the first %(size)s results)"
+msgstr "(mostrando solo los primeros %(size)s resultados)"
+
+#: climate/templates/climate/locations.html:91
+msgid "Such location does not exist, or there is no data available for it."
+msgstr "Esa localización no existe, o no existen datos disponibles sobre ella."
+
+#: climate/templates/climate/locations.html:97
+msgid ""
+"Geolocation is disabled. <br/> <strong>Tip:</strong> Search for locations "
+"using the <strong>Search bar</strong>, or enable <strong>Geolocation</"
+"strong> by clicking on the <kbd><i class=\"fa fa-location-arrow\"></i></kbd> "
+"button."
+msgstr ""
+"La geolocalización está desactivada. <br/> <strong>Consejo:</strong> Busque "
+"localizaciones usando la <strong>Barra de búsqueda</strong>, o active la "
+"<strong>geolocalización</strong> presionando el botón <kbd><i class=\"fa fa-"
+"location-arrow\"></i></kbd> ."
+
+#: climate/templates/climate/locations.html:115
+msgid "View nearest location"
+msgstr "Visualice la localización más cercana"
+
+#: climate/templates/climate/locations.html:122
+msgid "View all locations"
+msgstr "Visualice todas las localizaciones"
+
+#: climate/templates/climate/locations.html:155
+msgid "Anytown"
+msgstr "Cualquier Lugar"
+
+#: climate/templates/climate/locations.html:178
+msgid "<span><strong>Google Maps</strong> is unavailable.</span>"
+msgstr "<span><strong>Google Maps</strong> no está disponible.</span>"
+
+#: climate/templates/climate/locations.html:198
+msgid ""
+"This location has both information about air pollution and weather "
+"conditions (real time and historical data)."
+msgstr ""
+"Esta localización posee tanto información sobre la contaminación de aire "
+"como de las condiciones meteorológicas (en tiempo real y datos históricos)."
+
+#: climate/templates/climate/locations.html:214
+#, python-format
+msgid ""
+"<strong>%(loc_name)s</strong> is the capital city of <strong>"
+"%(country_name)s</strong>"
+msgstr ""
+"<strong>%(loc_name)s</strong> es la capital de <strong>%(country_name)s</"
+"strong>"
+
+#: climate/templates/climate/locations.html:240
+msgid "Once you have selected a location, more info will appear here."
+msgstr ""
+"Una vez haya seleccionado una localización, aquí aparecerá más información."
+
+#: climate/templates/climate/locations.html:359
+msgid "Your current position"
+msgstr "Tu posición actual"
+
+#: climate/templates/climate/locations_list.html:5
+msgid "Locations (list)"
+msgstr "Localizaciones (lista)"
+
+#: climate/templates/climate/locations_list.html:33
+#: includes/country_info.html:31
+msgid "Monitored locations"
+msgstr "Localizaciones monitorizadas"
+
+#: climate/templates/climate/locations_list.html:49
+msgid "No locations are available."
+msgstr "No hay localizaciones disponibles."
+
+#: climate/templates/climate/messages.html:5
+msgid "Admin zone - Messages"
+msgstr "Administración - Mensajes"
+
+#: climate/templates/climate/messages.html:47
+msgid "An error occurred while deleting the message."
+msgstr "Ha ocurrido un error al borrar el mensaje."
+
+#: climate/templates/climate/messages.html:52
+msgid "Such message does not exist."
+msgstr "Tal mensaje no existe."
+
+#: climate/templates/climate/messages.html:57
+msgid "Message successfully deleted."
+msgstr "Mensaje borrado correctamente."
+
+#: climate/templates/climate/messages.html:65
+msgid "An error occurred while processing the request."
+msgstr "Ha ocurrido un error al procesar la petición."
+
+#: climate/templates/climate/messages.html:80
+msgid "Message filters"
+msgstr "Filtros de mensajes"
+
+#: climate/templates/climate/messages.html:82
+msgctxt "multiple msgs"
+msgid "Replied"
+msgstr "Contestados"
+
+#: climate/templates/climate/messages.html:84
+msgctxt "multiple msgs"
+msgid "Dismissed"
+msgstr "Rechazados"
+
+#: climate/templates/climate/messages.html:91
+#: climate/templates/climate/messages.html:192
+msgid "Message pagination arrows"
+msgstr "Flechas de paginación de mensajes"
+
+#: climate/templates/climate/messages.html:127
+msgid "Move message to inbox"
+msgstr "Mover mensaje a la bandeja de entrada"
+
+#: climate/templates/climate/messages.html:133
+msgid "Permanently delete message"
+msgstr "Borrar mensaje de forma permanente"
+
+#: climate/templates/climate/messages.html:142
+msgid "Mark message as replied"
+msgstr "Marcar mensaje como respondido"
+
+#: climate/templates/climate/messages.html:148
+msgid "Dismiss message"
+msgstr "Rechazar mensaje"
+
+#: climate/templates/climate/messages.html:154
+msgid "Reply by email"
+msgstr "Responder por correo electrónico"
+
+#: climate/templates/climate/messages.html:163
+msgctxt "single msg"
+msgid "Replied"
+msgstr "Contestado"
+
+#: climate/templates/climate/messages.html:169
+msgctxt "single msg"
+msgid "Dismissed"
+msgstr "Rechazado"
+
+#: climate/templates/climate/messages.html:174
+msgid "New"
+msgstr "Nuevo"
+
+#: climate/templates/climate/messages.html:217
+#, python-format
+msgid ""
+"Showing page <strong>%(page)s</strong> out of <strong>%(total_pages)s</"
+"strong>."
+msgstr ""
+"Mostrando página <strong>%(page)s</strong> de <strong>%(total_pages)s</"
+"strong>."
+
+#: climate/templates/climate/messages.html:228
+msgid "There are no available messages."
+msgstr "No existen mensajes."
+
+#: climate/templates/climate/profile.html:5
+msgid "Admin zone - Manage profile"
+msgstr "Administración - Gestionar perfil"
+
+#: climate/templates/climate/profile.html:10
+msgid "Manage your profile"
+msgstr "Gestione su perfil"
+
+#: climate/templates/climate/profile.html:14
+msgid "This functionality is not implemented yet."
+msgstr "Esta funcionalidad aún no está implementada."
+
+#: includes/air_pollution.html:19
+msgid "Air Quality"
+msgstr "Calidad del Aire"
+
+#: includes/air_pollution.html:22
+msgid ""
+"Check the air quality in real-time, and discover aggregated statistics from "
+"historical data."
+msgstr ""
+"Compruebe la calidad del aire en tiempo real, y descubra estadísticas "
+"agregadas procedentes de datos históricos."
+
+#: includes/air_pollution.html:39
+msgid ""
+"All values are measured using the AQI index. This index represents how clean "
+"or polluted the air is, and who is likely to be affected by it."
+msgstr ""
+"Todos los valores se miden usando el índice AQI. Éste representa cómo de "
+"limpio o contaminado está el aire, y quiénes susceptible de verse afectado "
+"por ello."
+
+#: includes/air_pollution.html:44
+msgid ""
+"<h4 class=\"alert-heading\">Warning!</h4> <p> Air pollution is "
+"<strong>hazardous</strong> at these levels. <br/> You should limit your "
+"exposure by <strong>staying indoors</strong> and reducing your "
+"<strong>activity levels</strong> in order to decrement the amount of "
+"particle pollution you breathe into your lungs. </p> <hr> <p class=\"mb-0\"> "
+"Click <a class=\"alert-link\" target=\"_blank\" href=\"https://www.airnow."
+"gov/index.cfm?action=aqibasics.pmhilevels\">here</a> to see more information "
+"about how you can reduce your exposure to PM2.5 and PM10 hazardous levels. </"
+"p>"
+msgstr ""
+"<h4 class=\"alert-heading\">Alerta!</h4> <p> La contaminación del aire es "
+"<strong>peligrosa</strong> a estos niveles. <br/> Usted debería limitar "
+"suexposición <strong>resguardándose dentro</strong> de algún edificio, y "
+"reduciendo sus <strong>niveles de actividad</strong> para decrementar la "
+"cantidad de partículas contaminantes que entran en sus pulmones. </p> <hr> "
+"<p class=\"mb-0\"> Haga click <a class=\"alert-link\" target=\"_blank\" href="
+"\"https://www.airnow.gov/index.cfm?action=aqibasics.pmhilevels\">en este "
+"enlace</a> para ver más información sobre cómo puede reducir su exposición a "
+"niveles peligrosos de PM2.5 y PM10 (en inglés). </p>"
+
+#: includes/air_pollution.html:65
+msgid "Measures"
+msgstr "Medidas"
+
+#: includes/air_pollution.html:80
+msgid "Dominant pollutant"
+msgstr "Contaminante dominante"
+
+#: includes/air_pollution.html:88 includes/country_info.html:43
+#: includes/location_info.html:71 includes/location_info.html:170
+msgid "Last updated:"
+msgstr "Última actualización:"
+
+#: includes/air_pollution.html:95
+msgid ""
+"Click <a class=\"alert-link\" href=\"#\" aria-controls="
+"\"airPollutionExplanationTable\" onclick="
+"\"$('#airPollutionExplanationTable').toggleClass('d-none'); return false"
+"\">here</a> to know more about the <strong>AQI</strong> index and what do "
+"these numbers mean."
+msgstr ""
+"Haga click <a class=\"alert-link\" href=\"#\" aria-controls="
+"\"airPollutionExplanationTable\" onclick="
+"\"$('#airPollutionExplanationTable').toggleClass('d-none'); return false"
+"\">aquí</a> para conocer más sobre el índice <strong>AQI</strong> y qué "
+"significan estos números."
+
+#: includes/air_pollution.html:110
+msgid ""
+"Source: <a href=\"http://aqicn.org/scale/\" target=\"_blank\"> The World Air "
+"Quality Index Project</a>."
+msgstr ""
+"Fuente: <a href=\"http://aqicn.org/scale/\" target=\"_blank\"> The World Air "
+"Quality Index Project</a>."
+
+#: includes/air_pollution.html:117
+msgid "AQI"
+msgstr "AQI"
+
+#: includes/air_pollution.html:118
+msgid "Description"
+msgstr "Descripción"
+
+#: includes/air_pollution.html:128
+msgid "(Good)"
+msgstr "(Buena)"
+
+#: includes/air_pollution.html:131
+msgid ""
+"Air quality is considered satisfactory, and air pollution poses little or no "
+"risk."
+msgstr ""
+"La calidad del aire se considera satisfactoria, y la contaminación del aire "
+"posee poco o ningún riesgo."
+
+#: includes/air_pollution.html:140
+msgid "(Moderate)"
+msgstr "(Moderada)"
+
+#: includes/air_pollution.html:143
+msgid ""
+"Air quality is acceptable; however, for some pollutants there may be a "
+"moderate health concern for a very small number of people who are unusually "
+"sensitive to air pollution."
+msgstr ""
+"La calidad del aire es aceptable; no obstante, para algunos contaminantes "
+"podría haber un riesgo moderado para la salud para un número muy reducido de "
+"personas que son inusualmente sensibles a la contaminación del aire."
+
+#: includes/air_pollution.html:152
+msgid "(Unhealthy for Sensitive Groups)"
+msgstr "(Insalubre para Grupos Sensibles)"
+
+#: includes/air_pollution.html:155
+msgid ""
+"Members of sensitive groups may experience health effects. The general "
+"public is not likely to be affected."
+msgstr ""
+"Miembros de grupos sensibles podrían experimentar efectos en la salud. El "
+"público general no es probable que se vea afectado."
+
+#: includes/air_pollution.html:165
+msgid "(Unhealthy)"
+msgstr "(Insalubre)"
+
+#: includes/air_pollution.html:168
+msgid ""
+"Everyone may begin to experience health effects; members of sensitive groups "
+"may experience more serious health effects."
+msgstr ""
+"Todos podrían experimentar efectos en la salud; siendo estos más graves en "
+"los grupos sensibles."
+
+#: includes/air_pollution.html:178
+msgid "(Very Unhealthy)"
+msgstr "(Muy Insalubre)"
+
+#: includes/air_pollution.html:181
+msgid ""
+"Health warnings of emergency conditions. The entire population is more "
+"likely to be affected."
+msgstr ""
+"Avisos de alerta en condiciones de emergencia. Toda la población es "
+"susceptible de verse afectada."
+
+#: includes/air_pollution.html:191
+msgid "(Hazardous)"
+msgstr "(Peligroso)"
+
+#: includes/air_pollution.html:194
+msgid "Health alert: everyone may experience serious health effects."
+msgstr ""
+"Alerta para la salud: Todo el mundo podría experimentar graves efectos para "
+"su salud."
+
+#: includes/air_pollution.html:209
+msgid "Historical Air Quality data"
+msgstr "Datos históricos de la Calidad del Aire"
+
+#: includes/air_pollution.html:212
+msgid ""
+"Search for historical data by selecting a date range. Information will be "
+"displayed using charts and tables."
+msgstr ""
+" Busque datos históricos seleccionando un rango de fechas. La información se "
+"mostrará en forma de gráficos y tablas."
+
+#: includes/air_pollution.html:217
+msgid ""
+"<strong>Attention:</strong> We're experiencing <strong>problems</strong> "
+"with this API. <br> As a result, data will only be available from "
+"<strong>January 2018</strong> to <strong>April 2018</strong>."
+msgstr ""
+"<strong>Atención:</strong> Estamos experimentando <strong>problemas</strong> "
+"con esta API. <br> Como resultado, solo existen datos disponibles desde "
+"<strong>enero de 2018</strong> hasta <strong>abril de 2018</strong>."
+
+#: includes/air_pollution.html:238
+msgid "From - To"
+msgstr "Desde - Hasta"
+
+#: includes/air_pollution.html:245 includes/country_energy.html:24
+#: includes/country_energy.html:39 includes/country_environment.html:29
+#: includes/country_environment.html:44 includes/historical_weather.html:45
+#: includes/historical_weather.html:60
+msgid "Invalid field"
+msgstr "Campo inválido"
+
+#: includes/air_pollution.html:253 includes/historical_weather.html:73
+msgid "Plot all data"
+msgstr "Representar todos los datos"
+
+#: includes/air_pollution.html:258
+msgid ""
+"<strong>Warning:</strong> Plotting all data can consume a significant amount "
+"of resources when the date range is broad."
+msgstr ""
+"<strong>Advertencia:</strong> Representar todos los datos puede consumir una "
+"cantidad considerable de recursos cuando el rango de fechas es amplio."
+
+#: includes/air_pollution.html:270
+msgid ""
+"Select a <strong>date range</strong> by clicking on the <kbd><i class=\"fa "
+"fa-calendar\"></i></kbd> button. <br/> Once done, press the <kbd><i class="
+"\"fa fa-search\"></i></kbd> button, and a <strong>line chart</strong> with "
+"historical air pollution data will appear here."
+msgstr ""
+"Seleccione un <strong>rango de fechas</strong> haciendo click en el botón "
+"<kbd><i class=\"fa fa-calendar\"></i></kbd> . <br/> Una vez hecho, haga "
+"click en el botón <kbd><i class=\"fa fa-search\"></i></kbd> , y un "
+"<strong>gráfico de líneas</strong> con datos históricos de la calidad del "
+"aire aparecerá aquí."
+
+#: includes/air_pollution.html:296 includes/country_energy.html:154
+#: includes/historical_weather.html:191
+msgid ""
+"<strong>Tip:</strong> Click on the legend items (coloured circles) to "
+"<strong>hide</strong> or <strong>display</strong> its series."
+msgstr ""
+"<strong>Consejo:</strong> Haga click en los ítems de la leyenda (círculos a "
+"color) para <strong>mostrar</strong> u <strong>ocultar</strong> las series "
+"del gráfico."
+
+#: includes/air_pollution.html:312
+msgid ""
+"Evolution of pollutants from <span id=\"airPollutionFrom\" class=\"font-"
+"weight-bold\"></span> to <span id=\"airPollutionTo\" class=\"font-weight-bold"
+"\"></span>"
+msgstr ""
+"Evolución de los contaminantes desde el <span id=\"airPollutionFrom\" class="
+"\"font-weight-bold\"></span> hasta el <span id=\"airPollutionTo\" class="
+"\"font-weight-bold\"></span>"
+
+#: includes/air_pollution.html:325
+msgid ""
+"<strong>Tip:</strong> The bottom chart allows you to expand the top chart. "
+"To do this, <strong>click</strong> on the bottom chart and <strong>drag</"
+"strong> to select a fraction of its area. <br/>Automatically, the top chart "
+"will be <strong>rescaled</strong> over the selected area."
+msgstr ""
+"<strong>Consejo:</strong> El gráfico inferior le permite aumentar el gráfico "
+"superior. Para ello, haga <strong>click</strong> sobre el gráfico inferior, "
+"y <strong>arrastre</strong> para seleccionar una fracción de su área. <br/"
+">Automáticamente, el gráfico superior se <strong>reescalará</strong> sobre "
+"el área seleccionada."
+
+#: includes/air_pollution.html:345
+msgid "Dominant pollutant throughout the period"
+msgstr "Contaminante dominante a lo largo del período"
+
+#: includes/air_pollution.html:348
+msgid "Number of measures with non-null dominant pollutant"
+msgstr "Número de mediciones con contaminante dominante no nulo"
+
+#: includes/air_pollution.html:356
+msgid "Pollutant"
+msgstr "Contamin."
+
+#: includes/air_pollution.html:357
+msgid "Max"
+msgstr "Máx."
+
+#: includes/air_pollution.html:358
+msgid "Min"
+msgstr "Mín."
+
+#: includes/air_pollution.html:359
+msgid "Average"
+msgstr "Media"
+
+#: includes/air_pollution.html:366
+msgid "Average, max and min values for all pollutants"
+msgstr "Valores medio, máximo y mínimo para todos los contaminantes"
+
+#: includes/air_pollution.html:369
+msgid "Table values are computed using plotted data"
+msgstr "Los valores de la tabla se calculan usando los datos representados."
+
+#: includes/air_pollution.html:374
+msgid ""
+"This table uses the <strong>AQI</strong> index's colors to reflect air "
+"quality:"
+msgstr ""
+"Esta tabla emplea los colores del índice <strong>AQI</strong> para "
+"representar la calidad del aire:"
+
+#: includes/air_pollution.html:382
+msgid ""
+"To see a detailed explanation about <strong>AQI levels</strong>, click <a "
+"class=\"alert-link\" href=\"#\" onclick="
+"\"showElement('airPollutionExplanationTable', 20, 180); return false\"> "
+"here</a>."
+msgstr ""
+"Para ver una explicación detallada sobre los <strong>niveles AQI</strong>, "
+"haga click <a class=\"alert-link\" href=\"#\" onclick="
+"\"showElement('airPollutionExplanationTable', 20, 180); return false\"> "
+"aquí</a>."
+
+#: includes/air_pollution.html:401
+#, python-format
+msgid ""
+"Air Pollution data for <strong>%(loc_name)s</strong> is available courtesy "
+"of <a href=\"http://aqicn.org/sources/\" target=\"_blank\">The World Air "
+"Quality Index Project</a> and:"
+msgstr ""
+"Los datos de la Calidad del Aire para <strong>%(loc_name)s</strong> están "
+"disponibles por cortesía de <a href=\"http://aqicn.org/sources/\" target="
+"\"_blank\">The World Air Quality Index Project</a> y:"
+
+#: includes/air_pollution.html:411
+#, python-format
+msgid ""
+"Air Pollution data attributions are not available for <strong>%(loc_name)s</"
+"strong>."
+msgstr ""
+"Las atribuciones de los datos de Calidad del Aire no están disponibles para "
+"<strong>%(loc_name)s</strong>."
+
+#: includes/air_pollution.html:420
+#, python-format
+msgid "Air pollution info is not available for <strong>%(loc_name)s</strong>."
+msgstr ""
+"La información de la Calidad del Aire no está disponible para <strong>"
+"%(loc_name)s</strong>."
+
+#: includes/air_pollution.html:459
+msgid "Last 24 hours"
+msgstr "Últimas 24 horas"
+
+#: includes/air_pollution.html:460
+msgid "Last 7 days"
+msgstr "Últimos 7 días"
+
+#: includes/air_pollution.html:461
+msgid "Last 30 days"
+msgstr "Últimos 30 días"
+
+#: includes/air_pollution.html:462
+msgid "Last 365 days"
+msgstr "Últimos 365 días"
+
+#: includes/air_pollution.html:463
+msgid "This year"
+msgstr "Este año"
+
+#: includes/air_pollution.html:468 includes/country_energy.html:341
+#: includes/country_environment.html:371 includes/historical_weather.html:483
+msgid "Clear"
+msgstr "Borrar"
+
+#: includes/air_pollution.html:469
+msgid "Custom Range"
+msgstr "Rango Personalizado"
+
+#: includes/air_pollution.html:470
+msgid "[\"Mo\", \"Tu\", \"We\", \"Th\", \"Fr\", \"Sa\", \"Su\"]"
+msgstr "[\"Lu\", \"Ma\", \"Mi\", \"Ju\", \"Vi\", \"Sa\", \"Do\"]"
+
+#: includes/air_pollution.html:471
+msgid ""
+"[\"January\", \"February\", \"March\", \"April\", \"May\", \"June\", \"July"
+"\", \"August\", \"September\", \"October\", \"November\", \"December\"]"
+msgstr ""
+"[\"Enero\", \"Febrero\", \"Marzo\", \"Abril\", \"Mayo\", \"Junio\", \"Julio"
+"\", \"Agosto\", \"Septiembre\", \"Octubre\", \"Noviembre\", \"Diciembre\"]"
+
+#: includes/country_energy.html:5
+msgid "Energy production and CO₂ emissions"
+msgstr "Producción energética y emisiones de CO₂"
+
+#: includes/country_energy.html:21 includes/country_environment.html:26
+#: includes/historical_weather.html:42
+msgid "Min."
+msgstr "Mín."
+
+#: includes/country_energy.html:36 includes/country_environment.html:41
+#: includes/historical_weather.html:57
+msgid "Max."
+msgstr "Máx."
+
+#: includes/country_energy.html:46 includes/country_environment.html:51
+#: includes/historical_weather.html:67
+msgid "Search"
+msgstr "Buscar"
+
+#: includes/country_energy.html:54
+msgid ""
+"Select a <strong>year range</strong> by clicking on the <kbd><i class=\"fa "
+"fa-calendar\"></i></kbd> buttons. <br/> Once done, press the search button, "
+"and an <strong>area chart</strong> with historical CO₂ data will appear here."
+msgstr ""
+"Seleccione un <strong>rango de años</strong> haciendo click en el botón "
+"<kbd><i class=\"fa fa-calendar\"></i></kbd> . <br/> Una vez hecho, haga "
+"click en el botón de búsqueda, y un "
+"<strong>gráfico</strong> con datos históricos de emisiones de CO₂ aparecerá "
+"aquí."
+
+#: includes/country_energy.html:75
+msgid "CO₂ emissions"
+msgstr "Emisiones de CO₂"
+
+#: includes/country_energy.html:83
+msgid ""
+"<span>Annual CO₂ emissions between</span> <span class=\"font-weight-bold "
+"countryPollutionFrom\"></span> and <span class=\"font-weight-bold "
+"countryPollutionTo\"></span>"
+msgstr ""
+"<span>Emisiones anuales de CO₂ entre </span> <span class=\"font-weight-bold "
+"countryPollutionFrom\"></span> y <span class=\"font-weight-bold "
+"countryPollutionTo\"></span>"
+
+#: includes/country_energy.html:91 includes/country_energy.html:184
+#: includes/country_environment.html:103 includes/country_environment.html:136
+#: includes/country_environment.html:171 includes/country_environment.html:206
+msgid "Number of measures with non-null values"
+msgstr "Número de mediciones con valores no nulos"
+
+#: includes/country_energy.html:106
+msgid "of CO₂ in <span class=\"countryPollutionTo\"></span>"
+msgstr "de CO₂ en <span class=\"countryPollutionTo\"></span>"
+
+#: includes/country_energy.html:120
+msgid "of CO₂ emitted since <span class=\"countryPollutionFrom\"></span>"
+msgstr "de CO₂ emitidas desde <span class=\"countryPollutionFrom\"></span>"
+
+#: includes/country_energy.html:128
+msgid "Tt: tera-ton (1 Tt = 10¹² tons)"
+msgstr "Tt: tera-tonelada (1 Tt = 10¹² toneladas)"
+
+#: includes/country_energy.html:131
+msgid "Gt: giga-ton (1 Gt = 10⁹ tons)"
+msgstr "Gt: giga-tonelada (1 Gt = 10⁹ toneladas)"
+
+#: includes/country_energy.html:134
+msgid "Mt: mega-ton (1 Mt = 10⁶ tons)"
+msgstr "Mt: mega-tonelada (1 Mt = 10⁶ toneladas)"
+
+#: includes/country_energy.html:137
+msgid "kt: kilo-ton (1 kt = 10³ tons)"
+msgstr "kt: kilo-tonelada (1 kt = 10³ toneladas)"
+
+#: includes/country_energy.html:140
+msgid "1 ton = 1000 kg"
+msgstr "(10⁹ toneladas; 1 tonelada = 1000 kg)"
+
+#: includes/country_energy.html:151
+msgid "Energy production"
+msgstr "Producción energética"
+
+#: includes/country_energy.html:159
+msgid "Hover over the chart series in order to display their values."
+msgstr "Pase por encima de las series del gráfico para visualizar sus valores."
+
+#: includes/country_energy.html:176
+msgid ""
+"<span>Annual energy production between</span> <span class=\"font-weight-bold "
+"countryEnergyFrom\"></span> and <span class=\"font-weight-bold "
+"countryEnergyTo\"></span>"
+msgstr ""
+"<span>Producción energética anual entre </span> <span class=\"font-weight-"
+"bold countryEnergyFrom\"></span> y <span class=\"font-weight-bold "
+"countryEnergyTo\"></span>"
+
+#: includes/country_energy.html:195
+msgid ""
+"Energy production details for <strong class=\"countryEnergyTo\"></strong> "
+"are not available yet."
+msgstr ""
+"Los detalles sobre la producción energética para <strong class="
+"\"countryEnergyTo\"></strong> todavía no están disponibles."
+
+#: includes/country_energy.html:207
+msgid ""
+"Energy production details for <strong class=\"countryEnergyTo\"></strong>"
+msgstr ""
+"Detalles sobre la producción energética en <strong class=\"countryEnergyTo"
+"\"></strong>"
+
+#: includes/country_energy.html:223 includes/country_environment.html:240
+#: includes/country_info.html:110
+msgid ""
+"<strong>Credit: </strong><a href=\"https://data.worldbank.org/\" target="
+"\"_blank\">World Bank</a>."
+msgstr ""
+"<strong>Atribuciones: </strong><a href=\"https://data.worldbank.org/\" "
+"target=\"_blank\">World Bank</a>."
+
+#: includes/country_energy.html:287 includes/country_energy.html:292
+msgid "Coal"
+msgstr "Carbón"
+
+#: includes/country_energy.html:287 includes/country_energy.html:292
+msgid "Hydroelectric"
+msgstr "Hidroeléctrica"
+
+#: includes/country_energy.html:288 includes/country_energy.html:293
+msgid "Natural gas"
+msgstr "Gas natural"
+
+#: includes/country_energy.html:288 includes/country_energy.html:293
+msgid "Nuclear"
+msgstr "Nuclear"
+
+#: includes/country_energy.html:288 includes/country_energy.html:293
+msgid "Oil"
+msgstr "Petróleo"
+
+#: includes/country_energy.html:289
+msgid "Renewable"
+msgstr "Renovable"
+
+#: includes/country_energy.html:294
+msgid "Other"
+msgstr "Otros"
+
+#: includes/country_energy.html:296
+msgid "CO₂ (kt)"
+msgstr "CO₂ (kt)"
+
+#: includes/country_environment.html:6
+msgid "Environment data"
+msgstr "Datos medioambientales"
+
+#: includes/country_environment.html:9
+msgid "Discover multiple country indicators related to Climate Change."
+msgstr "Descubra múltiples indicadores relacionados con el Cambio Climático."
+
+#: includes/country_environment.html:59
+msgid ""
+"Select a <strong>year range</strong> by clicking on the <kbd><i class=\"fa "
+"fa-calendar\"></i></kbd> buttons. <br/> Once done, press the search button, "
+"and multiple <strong>bar charts</strong> with environment data will appear "
+"here."
+msgstr ""
+"Seleccione un <strong>rango de años</strong> haciendo click en el botón "
+"<kbd><i class=\"fa fa-calendar\"></i></kbd> . <br/> Una vez hecho, haga "
+"click en el botón de búsqueda, y varios "
+"<strong>gráficos de barras</strong> con datos medioambientales aparecerán "
+"aquí."
+
+#: includes/country_environment.html:83
+msgid ""
+"<strong>Tip:</strong> Hover over the chart series in order to display their "
+"values."
+msgstr ""
+"<strong>Consejo:</strong> Pase por encima de las series del gráfico para "
+"visualizar sus valores."
+
+#: includes/country_environment.html:100
+msgid "Percentage of urban land below 5 meters"
+msgstr "Porcentaje de áreas urbanas por debajo de 5 metros"
+
+#: includes/country_environment.html:114
+msgid ""
+"of urban land below 5 meters in <strong id=\"lastYearUrbanAreaLand\"></"
+"strong>"
+msgstr ""
+"de áreas urbanas por debajo de 5 metros en <strong id=\"lastYearUrbanAreaLand"
+"\"></strong>"
+
+#: includes/country_environment.html:120
+msgid ""
+"The higher this value, the greater the risk that these places will suffer "
+"the effects of <strong>sea level rise</strong>."
+msgstr ""
+"Cuanto más alto sea este valor, mayor será el riesgo de que estos lugares "
+"padezcan los efectos de la <strong>subida del nivel del mar</strong>."
+
+#: includes/country_environment.html:133
+msgid "Percentage of forest area extension relative to the country area"
+msgstr "Porcentaje de áreas boscosas relativas al área del país"
+
+#: includes/country_environment.html:147
+msgid "of forest area in <strong id=\"lastYearForestArea\"></strong>"
+msgstr "de áreas boscosas en <strong id=\"lastYearForestArea\"></strong>"
+
+#: includes/country_environment.html:153
+msgid ""
+"Trees and plants transform <strong>CO₂</strong> into <strong>oxygen</"
+"strong>, contributing to lower CO₂ levels. <br> The higher this value, the "
+"richer the <strong>air quality</strong> levels will be."
+msgstr ""
+"Los árboles y plantas transforman el <strong>CO₂</strong> en "
+"<strong>oxígeno</strong>, contribuyendo a reducir los niveles de CO₂. <br> "
+"Cuanto más alto sea este valor, más ricos serán los niveles de "
+"<strong>calidad del aire</strong>."
+
+#: includes/country_environment.html:168
+msgid ""
+"Percentage of terrestrial and marine protected areas relative to the country "
+"area"
+msgstr ""
+"Porcentaje de áreas protegidas (marinas y terrestres) relativas al área del "
+"país"
+
+#: includes/country_environment.html:182
+msgid ""
+"of terrestrial and marine protected areas in <strong id="
+"\"lastYearProtectedAreas\"></strong>"
+msgstr ""
+"de áreas protegidas (marinas y terrestres) en <strong id="
+"\"lastYearProtectedAreas\"></strong>"
+
+#: includes/country_environment.html:188
+msgid ""
+"These areas are habitat for <strong>protected</strong> and/or endangered "
+"species. <br> The conservation of these areas helps to prevent the "
+"<strong>loss of biodiversity</strong>."
+msgstr ""
+"Estas áreas son el hábitat de especies <strong>protegidas</strong> y/o en "
+"peligro de extinción.<br> La conservación de estas áreas ayuda a prevenir la "
+"<strong>pérdida de biodiversidad</strong>."
+
+#: includes/country_environment.html:203
+msgid "Percentage of population with access to improved drinking water sources"
+msgstr "Porcentaje de población con acceso a fuentes de agua mejoradas."
+
+#: includes/country_environment.html:217
+msgid ""
+"of population with access to improved drinking water sources in <strong id="
+"\"lastYearImprovedWater\"></strong>"
+msgstr ""
+"de población con acceso a fuentes de agua mejoradas en <strong id="
+"\"lastYearImprovedWater\"></strong>"
+
+#: includes/country_environment.html:223
+msgid ""
+"Drinking water is a <strong>vital necessity</strong> for all living beings. "
+"<br> Improved water sources include: piped water, public taps or standpipes, "
+"tube wells or boreholes, protected dug wells, protected springs, and "
+"rainwater collection."
+msgstr ""
+"Beber agua es una <strong>necesidad vital</strong> para todos los seres "
+"vivos. <br> Entre las fuentes de agua mejoradas, se encuentran: el agua que "
+"circula por tuberías, grifos públicos or fuentes, pozos, manantiales "
+"protegidos y la recolección del agua de lluvia."
+
+#: includes/country_environment.html:299
+#, python-format
+msgid "Population with access to improved drinking water source (%%)"
+msgstr "Población con acceso a fuentes de agua mejoradas (%%)"
+
+#: includes/country_environment.html:305
+#, python-format
+msgid "Urban land below 5 meters (%%)"
+msgstr "Áreas urbanas por debajo de 5 metros (%%)"
+
+#: includes/country_environment.html:316
+#, python-format
+msgid "Forest land (%%)"
+msgstr "Áreas boscosas (%%)"
+
+#: includes/country_environment.html:328
+#, python-format
+msgid "Protected areas (%%)"
+msgstr "Áreas protegidas (%%)"
+
+#: includes/country_environment.html:340
+#, python-format
+msgid "Improved drinking water source (%%)"
+msgstr "Fuentes de agua mejoradas (%%)"
+
+#: includes/country_info.html:9
+msgid "ISO codes"
+msgstr "Códigos ISO"
+
+#: includes/country_info.html:11
+msgid "2-letter code"
+msgstr "Código de 2 letras"
+
+#: includes/country_info.html:15
+msgid "3-letter code"
+msgstr "Código de 3 letras"
+
+#: includes/country_info.html:21 includes/location_info.html:46
+msgid "Region"
+msgstr "Región"
+
+#: includes/country_info.html:27 includes/location_info.html:50
+msgid "Income level"
+msgstr "Nivel de renta"
+
+#: includes/country_info.html:38
+msgid "Show data"
+msgstr "Mostrar datos"
+
+#: includes/country_info.html:61
+#, python-format
+msgid "people in %(year)s"
+msgstr "de personas en %(year)s"
+
+#: includes/country_info.html:81
+#, python-format
+msgid "since %(year)s"
+msgstr "desde %(year)s"
+
+#: includes/country_info.html:89
+msgid "<strong>K:</strong> thousands;&nbsp; <strong>M:</strong> millions."
+msgstr "<strong>K:</strong> miles;&nbsp; <strong>M:</strong> millones."
+
+#: includes/country_info.html:99
+#, python-format
+msgid "Population data are not available for <strong>%(name)s</strong>."
+msgstr ""
+"Los datos sobre población aún no están disponibles para <strong>%(name)s</"
+"strong>."
+
+#: includes/historical_weather.html:13
+msgid "Historical weather data"
+msgstr "Datos históricos de meteorología"
+
+#: includes/historical_weather.html:16
+msgid "Contemplate the evolution of multiple weather phenomena over the years."
+msgstr ""
+"Contemple la evolución de múltiples fenómenos meteorológicos a lo largo de "
+"los años."
+
+#: includes/historical_weather.html:28
+msgid "Choose a phenomenom"
+msgstr "Escoja un fenómeno"
+
+#: includes/historical_weather.html:29
+msgid "Temperature (max)"
+msgstr "Temperatura (máxima)"
+
+#: includes/historical_weather.html:30
+msgid "Temperature (min)"
+msgstr "Temperatura (mínima)"
+
+#: includes/historical_weather.html:31
+msgid "Temperature (avg)"
+msgstr "Temperatura (media)"
+
+#: includes/historical_weather.html:79
+msgid ""
+"<strong>Warning:</strong> Plotting all data can consume a significant amount "
+"of resources when the year range is broad."
+msgstr ""
+"<strong>Advertencia:</strong> Representar todos los datos puede consumir una "
+"cantidad considerable de recursos cuando el rango de años es amplio."
+
+#: includes/historical_weather.html:90
+msgid ""
+"Select a <strong>year range</strong> by clicking on the <kbd><i class=\"fa "
+"fa-calendar\"></i></kbd> button. <br/> Once done, press the <kbd><i class="
+"\"fa fa-search\"></i></kbd> button, and a <strong>calendar chart</strong> "
+"with historical weather data will appear here."
+msgstr ""
+"Seleccione un <strong>rango de años</strong> haciendo click en el botón "
+"<kbd><i class=\"fa fa-calendar\"></i></kbd> . <br/> Una vez hecho, haga "
+"click en el botón <kbd><i class=\"fa fa-search\"></i></kbd> , y un "
+"<strong>gráfico</strong> con datos históricos de temperaturas aparecerá aquí."
+
+#: includes/historical_weather.html:112
+msgid "Temperatures"
+msgstr "Temperaturas"
+
+#: includes/historical_weather.html:116
+msgid ""
+"<strong>Note: </strong> The heatmap uses a color scale in order to represent "
+"temperatures. <br/> The scale is bounded between <strong>-40°C</strong> and "
+"<strong>40°C</strong>, and every color describes an interval of <strong>5°C</"
+"strong>. <strong>Bluish</strong>  colors depict colder temperatures, while "
+"<strong>reddish</strong>  colors depict warmer ones. <br> For example: <br>"
+msgstr ""
+"<strong>Nota: </strong> El gráfico emplea una escala de colores para "
+"representar temperaturas. <br/> La escala está acotada entre <strong>-40°C</"
+"strong> y <strong>40°C</strong>, y cada color describe un intervalo de "
+"<strong>5°C</strong>. Colores <strong>azulados</strong> representan "
+"temperaturas frías, mientras que colores <strong>rojizos</strong> "
+"representan temperaturas cálidas. <br> Por ejemplo: <br>"
+
+#: includes/historical_weather.html:127
+msgid "represents tempreatures below -40°C."
+msgstr "representa temperaturas inferiores a -40°C."
+
+#: includes/historical_weather.html:131
+msgid "represents temperatures between 0°C and 5°C."
+msgstr "representa temperaturas entre 0°C y 5°C."
+
+#: includes/historical_weather.html:135
+msgid "represents tempreatures above 40°C."
+msgstr "representa temperaturas superiores a 40°C."
+
+#: includes/historical_weather.html:139
+msgid "represents that measurements have not been taken on that day."
+msgstr "representa que en ese día no se han recogido mediciones."
+
+#: includes/historical_weather.html:142
+msgid "<strong>Important</strong>: Each square describes a day of the year."
+msgstr "<strong>Importante</strong>: Cada cuadrado describe un día del año."
+
+#: includes/historical_weather.html:154
+msgid ""
+"<span id=\"historicalWeatherHeatmapVariable\"></span> between <span class="
+"\"font-weight-bold historicalWeatherFrom\"></span> and <span class=\"font-"
+"weight-bold historicalWeatherTo\"></span>"
+msgstr ""
+"<span id=\"historicalWeatherHeatmapVariable\"></span> entre <span class="
+"\"font-weight-bold historicalWeatherFrom\"></span> y <span class=\"font-"
+"weight-bold historicalWeatherTo\"></span>"
+
+#: includes/historical_weather.html:163
+msgid "Number of days with non-null values"
+msgstr "Número de días con valores no nulos"
+
+#: includes/historical_weather.html:170
+msgid ""
+"When no year range is specified, only <strong>statistics</strong> are "
+"retrieved. If you want to display all data, you must <strong>manually</"
+"strong> specify a year range. <br> <strong>Note: </strong>This is "
+"automatically done to reduce the consumption of resources."
+msgstr ""
+"Cuando no se especifica un rango de años, solamente se obtienen "
+"<strong>estadísticas</strong>. Si quiere visualizar todos los datos, debe "
+"especificar un rango de años <strong>manualmente</strong>. <br> "
+"<strong>Nota: </strong>Esto se hace automáticamente para reducir el consumo "
+"de recursos. "
+
+#: includes/historical_weather.html:186
+msgid "Statistics"
+msgstr "Estadísticas"
+
+#: includes/historical_weather.html:195 includes/historical_weather.html:244
+msgid ""
+"(This applies to both the <strong>bar</strong> chart and the <strong>line</"
+"strong> chart)."
+msgstr ""
+"(Esto aplica tanto para el gráfico de <strong>barras</strong> como para el "
+"gráfico de <strong>líneas</strong>)."
+
+#: includes/historical_weather.html:212
+msgid ""
+"<span>Annual temperature evolution between</span> <span class=\"font-weight-"
+"bold historicalWeatherFrom\"></span> and <span class=\"font-weight-bold "
+"historicalWeatherTo\"></span>"
+msgstr ""
+"<span>Evolución anual de las temperaturas entre </span> <span class=\"font-"
+"weight-bold historicalWeatherFrom\"></span> y <span class=\"font-weight-bold "
+"historicalWeatherTo\"></span>"
+
+#: includes/historical_weather.html:227
+msgid ""
+"<span>Annual count of meteorological phenomena between</span> <span class="
+"\"font-weight-bold historicalWeatherFrom\"></span> and <span class=\"font-"
+"weight-bold historicalWeatherTo\"></span>"
+msgstr ""
+"<span>Recuento anual de fenómenos meteorológicos entre</span> <span class="
+"\"font-weight-bold historicalWeatherFrom\"></span> y <span class=\"font-"
+"weight-bold historicalWeatherTo\"></span>"
+
+#: includes/historical_weather.html:239
+msgid ""
+"<strong>Note: </strong> Statistics for the current year will not be accurate "
+"until the year has finished."
+msgstr ""
+"<strong>Nota: </strong> Las estadísticas del año actual no serán acertadas "
+"hasta que el año haya terminado."
+
+#: includes/historical_weather.html:258
+msgid "Credit: Wunderground"
+msgstr "Atribuciones: Wunderground"
+
+#: includes/historical_weather.html:267
+#, python-format
+msgid ""
+"<span> Historical weather data are not available for <strong>%(loc_name)s</"
+"strong>. </span>"
+msgstr ""
+"<strong>%(loc_name)s</strong> no posee información meteorológica histórica."
+
+#: includes/historical_weather.html:369
+#, python-brace-format
+msgid "Less than {min} {name}"
+msgstr "Menos que {min} {name}"
+
+#: includes/historical_weather.html:370
+#, python-brace-format
+msgid "Between {down} and {up} {name}"
+msgstr "Entre {down} y {up} {name}"
+
+#: includes/historical_weather.html:371
+#, python-brace-format
+msgid "More than {max} {name}"
+msgstr "Más de {max} {name}"
+
+#: includes/historical_weather.html:374
+#, python-brace-format
+msgid "No value for {date}"
+msgstr "Sin datos para el {date}"
+
+#: includes/historical_weather.html:375
+#, python-brace-format
+msgid "{count} {name} on {date}"
+msgstr "{count} {name} el {date}"
+
+#: includes/historical_weather.html:387
+msgid "Highest annual temperature"
+msgstr "Temperatura anual más alta"
+
+#: includes/historical_weather.html:388
+msgid "Lowest max. annual temperature"
+msgstr "Temperatura anual máxima más baja"
+
+#: includes/historical_weather.html:389
+msgid "Highest min. annual temperature"
+msgstr "Temperatura anual mínima más alta"
+
+#: includes/historical_weather.html:390
+msgid "Lowest annual temperature"
+msgstr "Temperatura anual más baja"
+
+#: includes/historical_weather.html:391
+msgid "Average annual temperature"
+msgstr "Temperatura media anual"
+
+#: includes/historical_weather.html:392
+msgid "Fog"
+msgstr "Niebla"
+
+#: includes/historical_weather.html:392
+msgid "Hail"
+msgstr "Granizo"
+
+#: includes/historical_weather.html:392
+msgid "Thunder"
+msgstr "Tormenta"
+
+#: includes/historical_weather.html:393
+msgid "Tornado"
+msgstr "Tornado"
+
+#: includes/historical_weather.html:393
+msgid "Rain"
+msgstr "Lluvia"
+
+#: includes/historical_weather.html:393
+msgid "Snow"
+msgstr "Nieve"
+
+#: includes/historical_weather.html:394
+msgid "day"
+msgstr "día"
+
+#: includes/historical_weather.html:394
+msgid "days"
+msgstr "días"
+
+#: includes/location_info.html:9
+msgid "Coordinates"
+msgstr "Coordenadas"
+
+#: includes/location_info.html:11
+msgid "Latitude"
+msgstr "Latitud"
+
+#: includes/location_info.html:15
+msgid "Longitude"
+msgstr "Longitud"
+
+#: includes/location_info.html:20
+msgid "Population"
+msgstr "Población"
+
+#: includes/location_info.html:24
+msgid "Elevation"
+msgstr "Elevación"
+
+#: includes/location_info.html:35
+msgid "Timezone"
+msgstr "Zona horaria"
+
+#: includes/location_info.html:41
+msgid "ISO code"
+msgstr "Código ISO"
+
+#: includes/location_info.html:55
+msgid "Climate zone"
+msgstr "Zona climática"
+
+#: includes/location_info.html:63
+msgid ""
+"Click <a href=\"http://koeppen-geiger.vu-wien.ac.at/\" target=\"_blank"
+"\">here</a> to know more about climate zones and its classification."
+msgstr ""
+"Haga click <a href=\"http://koeppen-geiger.vu-wien.ac.at/\" target=\"_blank"
+"\">aquí</a> para saber más acerca de las zonas climáticas y su clasificación."
+
+#: includes/location_info.html:83
+msgid "Current"
+msgstr "Actual"
+
+#: includes/location_info.html:86
+msgid "Forecast"
+msgstr "Previsión"
+
+#: includes/location_info.html:111
+msgid "Pressure"
+msgstr "Presión"
+
+#: includes/location_info.html:122
+msgid "Humidity"
+msgstr "Humedad"
+
+#: includes/location_info.html:133
+msgid "Wind"
+msgstr "Viento"
+
+#: includes/location_info.html:135
+msgid "Speed"
+msgstr "Velocidad"
+
+#: includes/location_info.html:146
+msgid "Degrees"
+msgstr "Grados"
+
+#: includes/location_info.html:157
+msgid "Direction"
+msgstr "Dirección"
+
+#: includes/location_info.html:179
+#, python-format
+msgid ""
+"Current weather conditions are not available for <strong>%(loc_name)s</"
+"strong>."
+msgstr ""
+"La información sobre las condiciones meteorológicas actuales no está "
+"disponible para <strong>%(loc_name)s</strong>."
+
+#: includes/location_info.html:194
+msgid "Swipe right to see more data"
+msgstr "Deslice a la derecha para ver más datos"
+
+#: includes/location_info.html:222
+#, python-format
+msgid "Weather forecast is not available for <strong>%(loc_name)s</strong>."
+msgstr ""
+"La información sobre la previsión meteorológica no está disponible para "
+"<strong>%(loc_name)s</strong>."
+
+#: includes/location_info.html:238
+#, python-format
+msgid "Weather information is not available for <strong>%(loc_name)s</strong>."
+msgstr ""
+"La información meteorológica no está disponible para <strong>%(loc_name)s</"
+"strong>."
+
+#: includes/location_info.html:247
+msgid "<strong>Credit:</strong>"
+msgstr "<strong>Reconocimiento: </strong>"
+
+#: includes/location_info.html:252
+msgid ""
+"Coordinates, population, elevation and timezone info: <a href=\"http://www."
+"geonames.org/\" target=\"_blank\">GeoNames.org</a>."
+msgstr ""
+"Información de coordenadas, población, elevación y zonas horarias: <a href="
+"\"http://www.geonames.org/\" target=\"_blank\">GeoNames.org</a>."
+
+#: includes/location_info.html:258
+msgid ""
+"Country info: <a href=\"https://data.worldbank.org/\" target=\"_blank"
+"\">World Bank</a>."
+msgstr ""
+"Información de países: <a href=\"https://data.worldbank.org/\" target="
+"\"_blank\">World Bank</a>."
+
+#: includes/location_info.html:264
+msgid ""
+"Current conditions and weather forecast: <a href=\"https://openweathermap."
+"org/\" target=\"_blank\">OpenWeatherMap</a>."
+msgstr ""
+"Condiciones actuales y previsión meteorológica: <a href=\"https://"
+"openweathermap.org/\" target=\"_blank\">OpenWeatherMap</a>."
+
+#: web/settings.py:104
+msgid "English"
+msgstr "Inglés"
+
+#: web/settings.py:105
+msgid "Spanish"
+msgstr "Español"
+
+msgid ""
+"<p class=\"mb-2\"> <strong>Disciplined</strong> and <strong>hard-working</"
+"strong>. I always try to make <strong>quality</strong> part of the DNA of "
+"the product. </p> <p class=\"mb-2\"> I can design <strong>web pages</"
+"strong> as well as implement the <strong>core of a system</strong> (as "
+"long as there is a cup of hot coffee by my side!). </p> <p class="
+"\"mb-2\"> In my spare time, I enjoy <strong>mountain biking</strong> and "
+"<strong>martial arts</strong>. </p>"
+msgstr ""
+"<p class=\"mb-2\"> <strong>Disciplinado</strong> y <strong>trabajador</"
+"strong>. Siempre intento conseguir que la <strong>calidad</strong> sea "
+"parte del ADN del producto. </p> <p class=\"mb-2\"> Puedo diseñar "
+"<strong>páginas web</strong> como implementar el <strong>núcleo de un "
+"sistema</strong> (siempre que haya una taza de café caliente a mi lado!). "
+"</p> <p class=\"mb-2\"> En mi tiempo libre, disfruto practicando "
+"<strong>mountain bike</strong> y <strong>artes marciales</strong>. </p>"
+
+msgid "From"
+msgstr "Desde"
+
+msgid "To"
+msgstr "Hasta"
+
+msgid "Urban land data is not available."
+msgstr "Los datos sobre áreas urbanas no están disponibles."
+
+msgid "Forest area data is not available."
+msgstr "Los datos sobre áreas boscosas no están disponibles."
+
+msgid "Protected areas data is not available."
+msgstr "Datos sobre las áreas protegidas no están disponibles."
+
+msgid "Improved water data is not available."
+msgstr "Los datos sobre fuentes de agua mejoradas no están disponibles."
+
+msgid "Sources"
+msgstr "Fuentes"
+
+msgid "Admin login"
+msgstr "Administración - Iniciar sesión"
+
+msgid "Organisation:"
+msgstr "Organización:"
+
+msgid "ACME, Inc."
+msgstr "ACME, S.A."
+
+msgid "This field is not required."
+msgstr "Este campo no es requerido."
+
+msgid ""
+"If this field is included, its length must be %(min_org)s-%(max_org)s "
+"characters long."
+msgstr ""
+"Si este campo se incluye, su longitud debe ser de %(min_org)s-%(max_org)s "
+"caracteres."
+
+msgid "East Asia & Pacific (excluding high income)"
+msgstr "Asia oriental y el Pacífico (excluyendo niveles altos de renta)"
+
+msgid "IDA total, excluding Sub-Saharan Africa"
+msgstr "Países IDA, excluyendo África Subsahariana"
+
+msgid ""
+"IDA countries classified as fragile situations, excluding Sub-Saharan "
+"Africa"
+msgstr ""
+"Países IDA clasificados como en situaciones frágiles, excluyendo África "
+"Subsahariana"
+
+msgid "Non-resource rich Sub-Saharan Africa countries, of which landlocked"
+msgstr "Países del África subsahariana sin recursos, sin salida al mar"
+
+msgid ""
+"IDA countries not classified as fragile situations, excluding Sub-Saharan "
+"Africa"
+msgstr ""
+"Países IDA no clasificados como en situaciones frágiles, excluyendo "
+"África Subsahariana"
+
+msgid "Non-resource rich Sub-Saharan Africa countries"
+msgstr "Países del África Subsahariana pobres en recursos"
+
+msgid "Europe & Central Asia (excluding high income)"
+msgstr "Europa y Asia Central (excluyendo niveles altos de renta)"
+
+msgid "Sub-Saharan Africa excluding South Africa"
+msgstr "África Subsahariana excluyendo Sudáfrica"
+
+msgid "Sub-Saharan Africa excluding South Africa and Nigeria"
+msgstr "África Subsahariana excluyendo Sudáfrica y Nigeria"
+
+msgid "Andorra"
+msgstr "Andorra"
+
+msgid "United Arab Emirates"
+msgstr "Emiratos Árabes Unidos"
+
+msgid "Afghanistan"
+msgstr "Afganistán"
+
+msgid "Antigua and Barbuda"
+msgstr "Antigua y Barbuda"
+
+msgid "Albania"
+msgstr "Albania"
+
+msgid "Armenia"
+msgstr "Armenia"
+
+msgid "Angola"
+msgstr "Angola"
+
+msgid "Argentina"
+msgstr "Argentina"
+
+msgid "American Samoa"
+msgstr "Samoa Americana"
+
+msgid "Austria"
+msgstr "Austria"
+
+msgid "Australia"
+msgstr "Australia"
+
+msgid "Aruba"
+msgstr "Aruba"
+
+msgid "Azerbaijan"
+msgstr "Azerbaiyán"
+
+msgid "IBRD countries classified as high income"
+msgstr "Países IBRD clasificados como en nivel alto de renta"
+
+msgid "Latin America & the Caribbean (IBRD-only countries)"
+msgstr "América Latina y Caribe (países IBRD)"
+
+msgid "Middle East & North Africa (IBRD-only countries)"
+msgstr "Norte de África y Medio Este (países IBRD)"
+
+msgid "East Asia & Pacific (IBRD-only countries)"
+msgstr "Asia oriental y Pacífico (países IBRD)"
+
+msgid "Sub-Saharan Africa (IBRD-only countries)"
+msgstr "África Subsahariana (países IBRD)"
+
+msgid "Europe & Central Asia (IBRD-only countries)"
+msgstr "Europa y Asia Central (países IBRD)"
+
+msgid "Central Europe and the Baltics"
+msgstr "Europa Central y Países Bálticos"
+
+msgid "Bosnia and Herzegovina"
+msgstr "Bosnia y Herzegovina"
+
+msgid "Barbados"
+msgstr "Barbados"
+
+msgid "Bangladesh"
+msgstr "Bangladesh"
+
+msgid "Belgium"
+msgstr "Bélgica"
+
+msgid "Burkina Faso"
+msgstr "Burkina Faso"
+
+msgid "Bulgaria"
+msgstr "Bulgaria"
+
+msgid "Bahrain"
+msgstr "Bahréin"
+
+msgid "Burundi"
+msgstr "Burundi"
+
+msgid "Benin"
+msgstr "Benin"
+
+msgid "Bermuda"
+msgstr "Bermuda"
+
+msgid "Brunei Darussalam"
+msgstr "Brunei"
+
+msgid "Bolivia"
+msgstr "Bolivia"
+
+msgid "Brazil"
+msgstr "Brasil"
+
+msgid "Bahamas, The"
+msgstr "Bahamas, Las"
+
+msgid "Bhutan"
+msgstr "Bhutan"
+
+msgid "Botswana"
+msgstr "Botswana"
+
+msgid "Belarus"
+msgstr "Bielorrusia"
+
+msgid "Belize"
+msgstr "Belice"
+
+msgid "East Asia and the Pacific (IFC classification)"
+msgstr "Asia oriental y Pacífico (clasificación IFC)"
+
+msgid "Europe and Central Asia (IFC classification)"
+msgstr "Europa y Asia Central (clasificación IFC)"
+
+msgid "Latin America and the Caribbean (IFC classification)"
+msgstr "América Latina y Caribe (clasificación IFC)"
+
+msgid "Middle East and North Africa (IFC classification)"
+msgstr "Asia oriental y África del Norte (clasificación IFC)"
+
+msgid "South Asia (IFC classification)"
+msgstr "Sur de Asia (clasificación IFC)"
+
+msgid "Sub-Saharan Africa (IFC classification)"
+msgstr "África subsahariana (clasificación IFC)"
+
+msgid "Canada"
+msgstr "Canadá"
+
+msgid "Congo, Dem. Rep."
+msgstr "Congo, República Democrática del"
+
+msgid "Central African Republic"
+msgstr "República Centroafricana"
+
+msgid "Congo, Rep."
+msgstr "Congo, República"
+
+msgid "Switzerland"
+msgstr "Suiza"
+
+msgid "Cote d'Ivoire"
+msgstr "Costa de Marfil"
+
+msgid "Chile"
+msgstr "Chile"
+
+msgid "Cameroon"
+msgstr "Camerún"
+
+msgid "China"
+msgstr "China"
+
+msgid "Colombia"
+msgstr "Colombia"
+
+msgid "Costa Rica"
+msgstr "Costa Rica"
+
+msgid "Cuba"
+msgstr "Cuba"
+
+msgid "Cabo Verde"
+msgstr "Cabo Verde"
+
+msgid "Curacao"
+msgstr "Curaçao"
+
+msgid "Cyprus"
+msgstr "Chipre"
+
+msgid "Czech Republic"
+msgstr "República Checa"
+
+msgid "Latin America & the Caribbean (IDA-eligible countries)"
+msgstr "América Latina y Caribe (países elegibles para IDA)"
+
+msgid "Middle East & North Africa (IDA-eligible countries)"
+msgstr "Norte de África y Medio Este (países elegibles para IDA)"
+
+msgid "East Asia & Pacific (IDA-eligible countries)"
+msgstr "Asia oriental y Pacífico (países elegibles para IDA)"
+
+msgid "South Asia (IDA-eligible countries)"
+msgstr "Sur de Asia (países elegibles para IDA)"
+
+msgid "Sub-Saharan Africa (IDA-eligible countries)"
+msgstr "África subsahariana (países elegibles para IDA)"
+
+msgid "Europe & Central Asia (IDA-eligible countries)"
+msgstr "Europa y Asia Central (países elegibles para IDA)"
+
+msgid "IDA countries classified as Fragile Situations"
+msgstr "Países IDA clasificados como en Situación Frágil"
+
+msgid "IDA countries not classified as Fragile Situations"
+msgstr "Países IDA no clasificados como en Situación Frágil"
+
+msgid "Germany"
+msgstr "Alemania"
+
+msgid "Djibouti"
+msgstr "Djibouti"
+
+msgid "Denmark"
+msgstr "Dinamarca"
+
+msgid "Dominica"
+msgstr "Dominica"
+
+msgid "Dominican Republic"
+msgstr "República Dominicana"
+
+msgid "Algeria"
+msgstr "Algeria"
+
+msgid "Ecuador"
+msgstr "Ecuador"
+
+msgid "Estonia"
+msgstr "Estonia"
+
+msgid "Egypt, Arab Rep."
+msgstr "Egipto"
+
+msgid "Eritrea"
+msgstr "Eritrea"
+
+msgid "Spain"
+msgstr "España"
+
+msgid "Ethiopia"
+msgstr "Etiopía"
+
+msgid "Fragile and conflict affected situations"
+msgstr "Situaciones frágiles y/o afectadas por conflictos"
+
+msgid "IDA countries in Sub-Saharan Africa classified as fragile situations"
+msgstr ""
+"Países IDA en África subsahariana clasificados como en situación frágil"
+
+msgid "Finland"
+msgstr "Finlandia"
+
+msgid "Fiji"
+msgstr "Fiyi"
+
+msgid "Micronesia, Fed. Sts."
+msgstr "Micronesia, Estados Federados de"
+
+msgid "Faroe Islands"
+msgstr "Islas Faroe"
+
+msgid "France"
+msgstr "Francia"
+
+msgid "Gabon"
+msgstr "Gabón"
+
+msgid "United Kingdom"
+msgstr "Reino Unido"
+
+msgid "Grenada"
+msgstr "Granada"
+
+msgid "Georgia"
+msgstr "Georgia"
+
+msgid "Ghana"
+msgstr "Ghana"
+
+msgid "Gibraltar"
+msgstr "Gibraltar"
+
+msgid "Greenland"
+msgstr "Groenlandia"
+
+msgid "Gambia, The"
+msgstr "Gambia"
+
+msgid "Guinea"
+msgstr "Guinea"
+
+msgid "Equatorial Guinea"
+msgstr "Guinea Ecuatorial"
+
+msgid "Greece"
+msgstr "Grecia"
+
+msgid "Guatemala"
+msgstr "Guatemala"
+
+msgid "Guam"
+msgstr "Guam"
+
+msgid "Guinea-Bissau"
+msgstr "Ginea-Bissau"
+
+msgid "Guyana"
+msgstr "Guayana"
+
+msgid "Hong Kong SAR, China"
+msgstr "Hong Kong, Región Administrativa Especial, China"
+
+msgid "Honduras"
+msgstr "Honduras"
+
+msgid "Croatia"
+msgstr "Croacia"
+
+msgid "Haiti"
+msgstr "Haití"
+
+msgid "Hungary"
+msgstr "Hungría"
+
+msgid "Indonesia"
+msgstr "Indonesia"
+
+msgid "Ireland"
+msgstr "Irlanda"
+
+msgid "Israel"
+msgstr "Israel"
+
+msgid "Isle of Man"
+msgstr "Isla de Man"
+
+msgid "India"
+msgstr "India"
+
+msgid "Iraq"
+msgstr "Iraq"
+
+msgid "Iran, Islamic Rep."
+msgstr "Irán, República Islámica de"
+
+msgid "Iceland"
+msgstr "Islandia"
+
+msgid "Italy"
+msgstr "Italia"
+
+msgid "Channel Islands"
+msgstr "Islas del Canal"
+
+msgid "Jamaica"
+msgstr "Jamaica"
+
+msgid "Jordan"
+msgstr "Jordania"
+
+msgid "Japan"
+msgstr "Japón"
+
+msgid "Kenya"
+msgstr "Kenia"
+
+msgid "Kyrgyz Republic"
+msgstr "Kirguiza, República"
+
+msgid "Cambodia"
+msgstr "Camboya"
+
+msgid "Kiribati"
+msgstr "Kiribati"
+
+msgid "Comoros"
+msgstr "Comores"
+
+msgid "St. Kitts and Nevis"
+msgstr "Saint Kitts y Nevis"
+
+msgid "Korea, Dem. People’s Rep."
+msgstr "Corea del Norte"
+
+msgid "Korea, Rep."
+msgstr "Corea del Sur"
+
+msgid "Kuwait"
+msgstr "Kuwait"
+
+msgid "Cayman Islands"
+msgstr "Islas Caimán"
+
+msgid "Kazakhstan"
+msgstr "Kazajistán"
+
+msgid "Latin America and the Caribbean"
+msgstr "América Latina y Caribe"
+
+msgid "Andean Region"
+msgstr "Región Andina"
+
+msgid "Southern Cone"
+msgstr "Cono Sur"
+
+msgid "Lao PDR"
+msgstr "Lao, República Democrática Popular"
+
+msgid "Lebanon"
+msgstr "Líbano"
+
+msgid "St. Lucia"
+msgstr "Santa Lucía"
+
+msgid "Liechtenstein"
+msgstr "Liechtenstein"
+
+msgid "Sri Lanka"
+msgstr "Sri Lanka"
+
+msgid "Liberia"
+msgstr "Liberia"
+
+msgid "Lesotho"
+msgstr "Lesotho"
+
+msgid "Lithuania"
+msgstr "Lituania"
+
+msgid "Luxembourg"
+msgstr "Luxemburgo"
+
+msgid "Latvia"
+msgstr "Letonia"
+
+msgid "Libya"
+msgstr "Libia"
+
+msgid "Middle East (developing only)"
+msgstr "Medio Este (en desarrollo)"
+
+msgid "North Africa"
+msgstr "África del Norte"
+
+msgid "Morocco"
+msgstr "Marruecos"
+
+msgid "Monaco"
+msgstr "Mónaco"
+
+msgid "Moldova"
+msgstr "Moldavia"
+
+msgid "Montenegro"
+msgstr "Montenegro"
+
+msgid "St. Martin (French part)"
+msgstr "San Martín (Francia)"
+
+msgid "Madagascar"
+msgstr "Madagascar"
+
+msgid "Marshall Islands"
+msgstr "Islas Marshall"
+
+msgid "Macedonia, FYR"
+msgstr "Macedonia, Ex República Yugoslava de"
+
+msgid "Mali"
+msgstr "Mali"
+
+msgid "Myanmar"
+msgstr "Myanmar"
+
+msgid "Mongolia"
+msgstr "Mongolia"
+
+msgid "Macao SAR, China"
+msgstr "Macao, Región Administrativa Especial, China"
+
+msgid "Northern Mariana Islands"
+msgstr "Islas Marianas del Norte"
+
+msgid "Mauritania"
+msgstr "Mauritania"
+
+msgid "Malta"
+msgstr "Malta"
+
+msgid "Mauritius"
+msgstr "Mauricio"
+
+msgid "Maldives"
+msgstr "Maldivas"
+
+msgid "Malawi"
+msgstr "Malawi"
+
+msgid "Mexico"
+msgstr "Méjico"
+
+msgid "Malaysia"
+msgstr "Malasia"
+
+msgid "Mozambique"
+msgstr "Mozambique"
+
+msgid ""
+"IDA countries in Sub-Saharan Africa not classified as fragile situations"
+msgstr ""
+"Países IDA en África Subsahariana no clasificados como en situación frágil"
+
+msgid "Namibia"
+msgstr "Namibia"
+
+msgid "New Caledonia"
+msgstr "Nueva Caledonia"
+
+msgid "Niger"
+msgstr "Níger"
+
+msgid "Nigeria"
+msgstr "Nigeria"
+
+msgid "Nicaragua"
+msgstr "Nicaragua"
+
+msgid "Netherlands"
+msgstr "Países Bajos"
+
+msgid "Norway"
+msgstr "Noruega"
+
+msgid "Nepal"
+msgstr "Nepal"
+
+msgid "Nauru"
+msgstr "Nauru"
+
+msgid "New Zealand"
+msgstr "Nueva Zelanda"
+
+msgid "Resource rich Sub-Saharan Africa countries, of which oil exporters"
+msgstr ""
+"Países de África Subsahariana ricos en recursos, exportadores de petróleo"
+
+msgid "OECD members"
+msgstr "Miembros del OECD"
+
+msgid "Oman"
+msgstr "Omán"
+
+msgid "Panama"
+msgstr "Panamá"
+
+msgid "Peru"
+msgstr "Perú"
+
+msgid "French Polynesia"
+msgstr "Polinesia Francesa"
+
+msgid "Papua New Guinea"
+msgstr "Papúa Nueva Guinea"
+
+msgid "Philippines"
+msgstr "Filipinas"
+
+msgid "Pakistan"
+msgstr "Pakistán"
+
+msgid "Poland"
+msgstr "Polonia"
+
+msgid "Puerto Rico"
+msgstr "Puerto Rico"
+
+msgid "West Bank and Gaza"
+msgstr "Cisjordania y Gaza"
+
+msgid "Portugal"
+msgstr "Portugal"
+
+msgid "Palau"
+msgstr "Palau"
+
+msgid "Paraguay"
+msgstr "Paraguay"
+
+msgid "Qatar"
+msgstr "Qatar"
+
+msgid "Resource rich Sub-Saharan Africa countries"
+msgstr "Países de África Subsahariana ricos en recursos"
+
+msgid "Romania"
+msgstr "Rumanía"
+
+msgid "Serbia"
+msgstr "Serbia"
+
+msgid "Russian Federation"
+msgstr "Rusia"
+
+msgid "Rwanda"
+msgstr "Ruanda"
+
+msgid "Small states"
+msgstr "Estados pequeños"
+
+msgid "Pacific island small states"
+msgstr "Estados pequeños (Islas del Pacífico)"
+
+msgid "Caribbean small states"
+msgstr "Estados pequeños (Caribe)"
+
+msgid "Other small states"
+msgstr "Otros Estados pequeños"
+
+msgid "Saudi Arabia"
+msgstr "Arabia Saudí"
+
+msgid "Solomon Islands"
+msgstr "Islas Salomón"
+
+msgid "Seychelles"
+msgstr "Seychelles"
+
+msgid "Sudan"
+msgstr "Sudán"
+
+msgid "Sweden"
+msgstr "Suecia"
+
+msgid "Singapore"
+msgstr "Singapur"
+
+msgid "Slovenia"
+msgstr "Eslovenia"
+
+msgid "Slovak Republic"
+msgstr "Eslovaquia"
+
+msgid "Sierra Leone"
+msgstr "Sierra Leona"
+
+msgid "San Marino"
+msgstr "San Marino"
+
+msgid "Senegal"
+msgstr "Senegal"
+
+msgid "Somalia"
+msgstr "Somalia"
+
+msgid "Suriname"
+msgstr "Suriname"
+
+msgid "South Sudan"
+msgstr "Sudán del Sur"
+
+msgid "Sao Tome and Principe"
+msgstr "Santo Tomé y Príncipe"
+
+msgid "El Salvador"
+msgstr "El Salvador"
+
+msgid "Sint Maarten (Dutch part)"
+msgstr "San Martín (Alemania)"
+
+msgid "Syrian Arab Republic"
+msgstr "Siria"
+
+msgid "Swaziland"
+msgstr "Swazilandia"
+
+msgid "Latin America & the Caribbean (IDA & IBRD countries)"
+msgstr "América Latina y Caribe (países IDA y IBRD)"
+
+msgid "Middle East & North Africa (IDA & IBRD countries)"
+msgstr "Norte de África y Medio Este (países IDA y IBRD)"
+
+msgid "East Asia & Pacific (IDA & IBRD countries)"
+msgstr "Asia oriental y Pacífico (países IDA y IBRD)"
+
+msgid "South Asia (IDA & IBRD)"
+msgstr "Sur de Asia (países IDA y IBRD)"
+
+msgid "Sub-Saharan Africa (IDA & IBRD countries)"
+msgstr "África Subsahariana (países IDA y IBRD)"
+
+msgid "Europe & Central Asia (IDA & IBRD countries)"
+msgstr "Europa y Asia Central (países IDA y IBRD)"
+
+msgid "Turks and Caicos Islands"
+msgstr "Islas Turcas y Caicos"
+
+msgid "Chad"
+msgstr "Chad"
+
+msgid "Togo"
+msgstr "Togo"
+
+msgid "Thailand"
+msgstr "Tailandia"
+
+msgid "Tajikistan"
+msgstr "Tayikistán"
+
+msgid "Timor-Leste"
+msgstr "Timor Oriental"
+
+msgid "Turkmenistan"
+msgstr "Turkmenistán"
+
+msgid "Tunisia"
+msgstr "Túnez"
+
+msgid "Tonga"
+msgstr "Tonga"
+
+msgid "Turkey"
+msgstr "Turquía"
+
+msgid "Trinidad and Tobago"
+msgstr "Trinidad y Tobago"
+
+msgid "Tuvalu"
+msgstr "Tuvalu"
+
+msgid "Taiwan, China"
+msgstr "Taiwán"
+
+msgid "Tanzania"
+msgstr "Tanzania"
+
+msgid "Ukraine"
+msgstr "Ucrania"
+
+msgid "Uganda"
+msgstr "Uganda"
+
+msgid "United States"
+msgstr "Estados Unidos"
+
+msgid "Uruguay"
+msgstr "Uruguay"
+
+msgid "Uzbekistan"
+msgstr "Ubezkistan"
+
+msgid "Pre-demographic dividend"
+msgstr "Dividendo pre-demográfico"
+
+msgid "Early-demographic dividend"
+msgstr "Dividendo demográfico temprano"
+
+msgid "Late-demographic dividend"
+msgstr "Dividendo demográfico tardío"
+
+msgid "Post-demographic dividend"
+msgstr "Dividendo post-demográfico"
+
+msgid "St. Vincent and the Grenadines"
+msgstr "San Vicente y las Granadina"
+
+msgid "Venezuela, RB"
+msgstr "Venezuela"
+
+msgid "British Virgin Islands"
+msgstr "Islas Vírgenes (Reino Unido)"
+
+msgid "Virgin Islands (U.S.)"
+msgstr "Islas Vírgenes (Estados Unidos)"
+
+msgid "Vietnam"
+msgstr "Vietman"
+
+msgid "Vanuatu"
+msgstr "Vanuatu"
+
+msgid "Samoa"
+msgstr "Samoa"
+
+msgid "Heavily indebted poor countries (HIPC)"
+msgstr "Países pobres altamente endeudados"
+
+msgid "IBRD only"
+msgstr "IRBD"
+
+msgid "IDA total"
+msgstr "IDA (total)"
+
+msgid "IDA blend"
+msgstr "IDA (mezcla)"
+
+msgid "IDA only"
+msgstr "IDA"
+
+msgid "Latin America & Caribbean (excluding high income)"
+msgstr "América Latina y Caribe (excluyendo niveles altos de renta)"
+
+msgid "Kosovo"
+msgstr "Kosovo"
+
+msgid "Least developed countries: UN classification"
+msgstr "Países menos desarrollados: clasificación UN"
+
+msgid "Middle East & North Africa (excluding high income)"
+msgstr "Norte de África y Medio Este (excluyendo niveles altos de renta)"
+
+msgid "Not classified"
+msgstr "Sin clasificar"
+
+msgid "Yemen, Rep."
+msgstr "Yemen"
+
+msgid "South Africa"
+msgstr "Sudáfrica"
+
+msgid "IBRD, including blend"
+msgstr "IRBD (sin mezclar)"
+
+msgid "Sub-Saharan Africa (excluding high income)"
+msgstr "África subsahariana (excluyendo niveles altos de renta)"
+
+msgid "Zambia"
+msgstr "Zambia"
+
+msgid "IDA & IBRD total"
+msgstr "IDA y IBRD (total)"
+
+msgid "Zimbabwe"
+msgstr "Zimbabue"
+
+# Income levels
+msgid "Aggregates"
+msgstr "Agregaciones"
+
+# Weather types
+msgid "Clear sky"
+msgstr "Despejado"
+
+msgid "Scattered clouds"
+msgstr "Nubes dispersas"
+
+msgid "Heavy intensity drizzle"
+msgstr "Llovizna de alta intensidad"
+
+msgid "Windy"
+msgstr "Viento"
+
+msgid "Heavy shower snow"
+msgstr "Fuertes nevadas"
+
+msgid "Thunderstom with light rain"
+msgstr "Tormenta con lluvia ligera"
+
+msgid "Severe gale"
+msgstr "Vendaval severo"
+
+msgid "Drizzle"
+msgstr "Llovizna"
+
+msgid "Light rain and snow"
+msgstr "Lluvia ligera y nieve"
+
+msgid "Light intensity shower rain"
+msgstr "Aguacero ligero"
+
+msgid "Light intensity drizzle"
+msgstr "Llovizna ligera"
+
+msgid "Thunderstom with rain"
+msgstr "Tormenta con lluvia"
+
+msgid "Light snow"
+msgstr "Nieve ligera"
+
+msgid "Shower rain"
+msgstr "Aguacero"
+
+msgid "Light intensity drizzle rail"
+msgstr "Llovizna ligera"
+
+msgid "Light breeze"
+msgstr "Brisa ligera"
+
+msgid "Overcast clouds"
+msgstr "Cubierto"
+
+msgid "Thunderstorm with light drizzle"
+msgstr "Tormenta con llovizna ligera"
+
+msgid "Dust"
+msgstr "Polvo"
+
+msgid "Hot"
+msgstr "Bochorno"
+
+msgid "Freezing rain"
+msgstr "Lluvia helada"
+
+msgid "Gentle breeze"
+msgstr "Brisa generosa"
+
+msgid "Cold"
+msgstr "Frío"
+
+msgid "Heavy thunderstorm"
+msgstr "Fuerte tormenta"
+
+msgid "Rain and snow"
+msgstr "Lluvia y nieve"
+
+msgid "Heavy intensity drizzle rain"
+msgstr "Llovizna intensa"
+
+msgid "Very heavy rain"
+msgstr "Aguacero"
+
+msgid "Tropical storm"
+msgstr "Tormenta tropical"
+
+msgid "Sleet"
+msgstr "Aguanieve"
+
+msgid "Heavy intensity rain"
+msgstr "Aguacero"
+
+msgid "Light thunderstorm"
+msgstr "Tormenta ligera"
+
+msgid "Fresh breeze"
+msgstr "Brisa fresca"
+
+msgid "Drizzle rain"
+msgstr "Llovizna"
+
+msgid "Hurricane"
+msgstr "Huracán"
+
+msgid "Few clouds"
+msgstr "Prácticamente despejado"
+
+msgid "Heavy shower rain and drizzle"
+msgstr "Aguacero"
+
+msgid "Ragged shower rain"
+msgstr "Lluvia a intervalos"
+
+msgid "Moderate rain"
+msgstr "Lluvia moderada"
+
+msgid "Shower rain and drizzle"
+msgstr "Aguacero"
+
+msgid "Gale"
+msgstr "Vendaval"
+
+msgid "Strong breeze"
+msgstr "Brisa fuerte"
+
+msgid "Haze"
+msgstr "Neblina"
+
+msgid "Moderate breeze"
+msgstr "Brisa moderada"
+
+msgid "High wind, near gale"
+msgstr "Viento fuerte, casi vendaval"
+
+msgid "Calm"
+msgstr "Calmado"
+
+msgid "Thunderstom with heavy rain"
+msgstr "Tormenta con aguacero"
+
+msgid "Storm"
+msgstr "Tormenta"
+
+msgid "Mist"
+msgstr "Niebla"
+
+msgid "Shower snow"
+msgstr "Nieve"
+
+msgid "Broken clouds"
+msgstr "Nubes rotas"
+
+msgid "Thunderstorm with drizzle"
+msgstr "Tormenta con llovizna"
+
+msgid "Ragged thunderstorm"
+msgstr "Tormenta a intervalos"
+
+msgid "Light rain"
+msgstr "Lluvia ligera"
+
+msgid "Volcanic ash"
+msgstr "Ceniza volcánica"
+
+msgid "Sand"
+msgstr "Arena"
+
+msgid "Sand, dust whirls"
+msgstr "Arena, remolinos de polvo"
+
+msgid "Thunderstorm with heavy drizzle"
+msgstr "Tormenta con llovizna intensa"
+
+msgid "Heavy intensity shower rain"
+msgstr "Aguacero"
+
+msgid "Squalls"
+msgstr "Chubascos"
+
+msgid "Heavy snow"
+msgstr "Nieve intensa"
+
+msgid "Violent storm"
+msgstr "Tormenta violenta"
+
+msgid "Shower sleet"
+msgstr "Aguanieve"
+
+msgid "Light shower snow"
+msgstr "Nieve ligera"
+
+msgid "Extreme rain"
+msgstr "Lluvia extrema"
+
+msgid "Shower drizzle"
+msgstr "Llovizna"
+
+msgid "Smoke"
+msgstr "Humo"
+
+# Locations
+msgid "Dubai"
+msgstr "Dubai"
+
+msgid "Kabul"
+msgstr "Kabul"
+
+msgid "Buenos Aires"
+msgstr "Buenos Aires"
+
+msgid "Vienna"
+msgstr "Viena"
+
+msgid "Perth"
+msgstr "Perth"
+
+msgid "Brussels"
+msgstr "Bruselas"
+
+msgid "Brasília"
+msgstr "Brasília"
+
+msgid "Fortaleza"
+msgstr "Fortaleza"
+
+msgid "Rio de Janeiro"
+msgstr "Río de Janeiro"
+
+msgid "Vancouver"
+msgstr "Vancouver"
+
+msgid "Mbandaka"
+msgstr "Mbandaka"
+
+msgid "Santiago"
+msgstr "Santiago"
+
+msgid "Beijing"
+msgstr "Beijing"
+
+msgid "Bogotá"
+msgstr "Bogotá"
+
+msgid "Praia"
+msgstr "Praia"
+
+msgid "Berlin"
+msgstr "Berlín"
+
+msgid "Copenhagen"
+msgstr "Copenhague"
+
+msgid "Cairo"
+msgstr "El Cairo"
+
+msgid "A Coruña"
+msgstr "A Coruña"
+
+msgid "Barcelona"
+msgstr "Barcelona"
+
+msgid "Madrid"
+msgstr "Madrid"
+
+msgid "Sevilla"
+msgstr "Sevilla"
+
+msgid "Addis Ababa"
+msgstr "Addis Abeba"
+
+msgid "Helsinki"
+msgstr "Helsinki"
+
+msgid "Paris"
+msgstr "París"
+
+msgid "London"
+msgstr "Londres"
+
+msgid "Athens"
+msgstr "Atenas"
+
+msgid "Guatemala City"
+msgstr "Guatemala"
+
+msgid "Budapest"
+msgstr "Budapest"
+
+msgid "Dublin"
+msgstr "Dublín"
+
+msgid "Delhi"
+msgstr "Delhi"
+
+msgid "Indore"
+msgstr "Indore"
+
+msgid "Tehran"
+msgstr "Teherán"
+
+msgid "Rome"
+msgstr "Roma"
+
+msgid "Tokyo"
+msgstr "Tokyo"
+
+msgid "Nairobi"
+msgstr "Nairobi"
+
+msgid "Bishkek"
+msgstr "Bishkek"
+
+msgid "Pyongyang"
+msgstr "Pyongyang"
+
+msgid "Seoul"
+msgstr "Seoul"
+
+msgid "Astana"
+msgstr "Astaná"
+
+msgid "Oral"
+msgstr "Oral"
+
+msgid "Beirut"
+msgstr "Beirut"
+
+msgid "Marrakesh"
+msgstr "Marrakech"
+
+msgid "Antananarivo"
+msgstr "Antananarivo"
+
+msgid "Ulan Bator"
+msgstr "Ulan Bátor"
+
+msgid "Mexico City"
+msgstr "Ciudad de Méjico"
+
+msgid "Lagos"
+msgstr "Lagos"
+
+msgid "Amsterdam"
+msgstr "Ámsterdam"
+
+msgid "Oslo"
+msgstr "Oslo"
+
+msgid "Kathmandu"
+msgstr "Kathmandú"
+
+msgid "Wellington"
+msgstr "Wellington"
+
+msgid "Panamá"
+msgstr "Panamá"
+
+msgid "Cusco"
+msgstr "Cuzco"
+
+msgid "Port Moresby"
+msgstr "Port Moresby"
+
+msgid "Warsaw"
+msgstr "Varsovia"
+
+msgid "Bucharest"
+msgstr "Bucarest"
+
+msgid "Moscow"
+msgstr "Moscú"
+
+msgid "Vladivostok"
+msgstr "Vladivostok"
+
+msgid "Yakutsk"
+msgstr "Yakutsk"
+
+msgid "Stockholm"
+msgstr "Estocolmo"
+
+msgid "Singapur"
+msgstr "Singapur"
+
+msgid "Bratislava"
+msgstr "Bratislava"
+
+msgid "Mogadishu"
+msgstr "Mogadiscio"
+
+msgid "Bangkok"
+msgstr "Bangkok"
+
+msgid "Tunis"
+msgstr "Túnez"
+
+msgid "Ankara"
+msgstr "Ankara"
+
+msgid "Muş"
+msgstr "Muş"
+
+msgid "Taipei"
+msgstr "Taipei"
+
+msgid "Kyiv"
+msgstr "Kiev"
+
+msgid "Anchorage"
+msgstr "Anchorage"
+
+msgid "Atlanta"
+msgstr "Atlanta"
+
+msgid "Chicago"
+msgstr "Chicago"
+
+msgid "Denver"
+msgstr "Denver"
+
+msgid "El Paso"
+msgstr "El Paso"
+
+msgid "Homer"
+msgstr "Homer"
+
+msgid "Honolulu"
+msgstr "Honolulu"
+
+msgid "Houston"
+msgstr "Houston"
+
+msgid "Los Angeles"
+msgstr "Los Ángeles"
+
+msgid "Miami"
+msgstr "Miami"
+
+msgid "Minneapolis"
+msgstr "Minneapolis"
+
+msgid "New York City"
+msgstr "Nueva York"
+
+msgid "Phoenix"
+msgstr "Phoenix"
+
+msgid "San Francisco"
+msgstr "San Francisco"
+
+msgid "Seattle"
+msgstr "Seattle"
+
+msgid "West Palm Beach"
+msgstr "West Palm Beach"
+
+msgid "Montevideo"
+msgstr "Montevideo"
+
+msgid "Hanoi"
+msgstr "Hanoi"
+
+msgid "Cape Town"
+msgstr "Ciudad del Cabo"
+
+msgid "Johannesburg"
+msgstr "Johannesburgo"
+
+msgid "Pretoria"
+msgstr "Pretoria"

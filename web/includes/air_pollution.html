@@ -1,0 +1,570 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<style>
+    .dot {
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    g.nv-wrap.nv-lineWithFocusChart .nv-x text {
+        display: none;
+    }
+</style>
+
+<!-- Real-time and Historical info -->
+<div class="d-flex align-items-center justify-content-center mb-4 lead">
+    <h3 class="mb-1">{% trans "Air Quality" %}</h3>
+    <button class="btn btn-link undecorated fa fa-info-circle fa-lg"
+            data-toggle="tooltip" data-placement="bottom" data-trigger="focus"
+            title="{% trans "Check the air quality in real-time, and discover aggregated statistics from historical data." %}">
+    </button>
+</div>
+<div class="card-text mt-lg-0 mt-xl-0">
+    {% if current_location.location.air_pollution_data and current_location.air_pollution.last_measure %}
+        <!-- Latest info -->
+        <div id="airPollutionDataWrapper">
+            <div class="d-flex offset-2 offset-sm-0 justify-content-center align-items-center">
+                <div class="text-center rounded my-3 px-2"
+                     style="background-color: {{ current_location.air_pollution.last_measure.dominant_pollutant.color }};
+                             color: {{ current_location.air_pollution.last_measure.dominant_pollutant.text_color }}">
+                    <h4 class="display-4 mb-0 font-weight-light">
+                        {{ current_location.air_pollution.last_measure.dominant_pollutant.value }}
+                    </h4>
+                </div>
+                <button class="btn btn-link undecorated fa fa-info-circle fa-lg"
+                        data-toggle="tooltip" data-placement="bottom" data-trigger="focus"
+                        title="{% trans "All values are measured using the AQI index. This index represents how clean or polluted the air is, and who is likely to be affected by it." %}">
+                </button>
+            </div>
+            {% if current_location.air_pollution.last_measure.health_issue %}
+                <div class="alert alert-danger alert-sized mx-auto my-3" role="alert">
+                    {% blocktrans trimmed %}
+                        <h4 class="alert-heading">Warning!</h4>
+                        <p>
+                            Air pollution is <strong>hazardous</strong> at these levels. <br/>
+                            You should limit your exposure by <strong>staying indoors</strong> and reducing your
+                            <strong>activity levels</strong> in order to decrement the amount of particle pollution you
+                            breathe into your lungs.
+                        </p>
+                        <hr>
+                        <p class="mb-0">
+                            Click <a class="alert-link" target="_blank"
+                                     href="https://www.airnow.gov/index.cfm?action=aqibasics.pmhilevels">here</a>
+                            to see more information about how you can reduce your exposure to PM2.5 and PM10 hazardous
+                            levels.
+                        </p>
+                    {% endblocktrans %}
+                </div>
+            {% endif %}
+
+            <div class="offset-1 offset-sm-2 offset-md-3 offset-lg-4">
+                <div class="mb-2 text-left">
+                    <span class="lead text-muted ">{% trans "Measures" %}</span>
+                    {% for m in current_location.air_pollution.last_measure.measures %}
+                        <div class="row align-items-center">
+                            <span class="col offset-1">{{ m.name }}</span>
+                            <span class="col-6 col-md-7 col-lg-8 font-weight-bold">
+                        {% if m.value is None %}
+                            ?
+                        {% else %}
+                            {{ m.value }}
+                        {% endif %}
+                    </span>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="row my-2 align-items-center">
+                    <span class="col text-muted lead">{% trans "Dominant pollutant" %}</span>
+                    <div class="col-6 col-md-7 col-lg-8">
+                        <h5>
+                            <span class="badge badge-secondary">{{ current_location.air_pollution.last_measure.dominant_pollutant.code }}</span>
+                        </h5>
+                    </div>
+                </div>
+                <div class="my-3 text-muted">
+                    <span class="d-inline-flex">{% trans "Last updated:" %} </span>
+                    <span class="d-inline-flex">{{ current_location.air_pollution.last_measure.last_modified }}</span>
+                </div>
+            </div>
+            <div class="d-flex flex-column mx-auto align-items-center justify-content-center">
+                <div class="d-flex mt-4 alert alert-info alert-sized">
+                    <span>
+                        {% blocktrans trimmed %}
+                            Click
+                            <a class="alert-link" href="#" aria-controls="airPollutionExplanationTable"
+                               onclick="$('#airPollutionExplanationTable').toggleClass('d-none'); return false">here</a>
+                            to know more about the <strong>AQI</strong> index and what do these numbers mean.
+                        {% endblocktrans %}
+                    </span>
+                    <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                            aria-label="Close" onclick="$('#airPollutionExplanationTable').addClass('d-none')">
+                        <span aria-hidden="true"> &times;</span>
+                    </button>
+                </div>
+                <div class="d-none alert-sized" id="airPollutionExplanationTable">
+                    <table class="table table-hover table-responsive text-center">
+                        <caption>
+                            {% blocktrans trimmed %}
+                                Source: <a href="http://aqicn.org/scale/" target="_blank">
+                                The World Air Quality Index Project</a>.
+                            {% endblocktrans %}
+                        </caption>
+                        <thead>
+                        <tr>
+                            <th scope="col">{% trans "AQI" %}</th>
+                            <th scope="col">{% trans "Description" %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="align-middle" scope="row">
+                                <h5 class="mb-1">
+                                        <span class="badge" style="background-color: {{ AQI_colors.0.color }};
+                                                color: {{ AQI_colors.0.text_color }}">0-50</span>
+                                </h5>
+                                <span>{% trans "(Good)" %}</span>
+                            </td>
+                            <td class="text-left align-middle">
+                                {% trans "Air quality is considered satisfactory, and air pollution poses little or no risk." %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="align-middle" scope="row">
+                                <h5 class="mb-1">
+                                        <span class="badge" style="background-color: {{ AQI_colors.1.color }};
+                                                color: {{ AQI_colors.1.text_color }}">51-100</span>
+                                </h5>
+                                <span>{% trans "(Moderate)" %}</span>
+                            </td>
+                            <td class="text-left align-middle">
+                                {% trans "Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution." %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="align-middle" scope="row">
+                                <h5 class="mb-1">
+                                        <span class="badge" style="background-color: {{ AQI_colors.2.color }};
+                                                color: {{ AQI_colors.2.text_color }}">101-150</span>
+                                </h5>
+                                <span>{% trans "(Unhealthy for Sensitive Groups)" %}</span>
+                            </td>
+                            <td class="text-left align-middle">
+                                {% trans "Members of sensitive groups may experience health effects. The general public is not likely to be affected." %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="align-middle" scope="row">
+                                <h5 class="mb-1">
+                                        <span class="badge"
+                                              style="background-color: {{ AQI_colors.3.color }};
+                                                      color: {{ AQI_colors.3.text_color }}">151-200</span>
+                                </h5>
+                                <span>{% trans "(Unhealthy)" %}</span>
+                            </td>
+                            <td class="text-left align-middle">
+                                {% trans "Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects." %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="align-left" scope="row">
+                                <h5 class="mb-1">
+                                        <span class="badge"
+                                              style="background-color: {{ AQI_colors.4.color }};
+                                                      color: {{ AQI_colors.4.text_color }}">201-300</span>
+                                </h5>
+                                <span>{% trans "(Very Unhealthy)" %}</span>
+                            </td>
+                            <td class="text-left align-middle">
+                                {% trans "Health warnings of emergency conditions. The entire population is more likely to be affected." %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="align-middle" scope="row">
+                                <h5 class="mb-1">
+                                        <span class="badge"
+                                              style="background-color: {{ AQI_colors.5.color }};
+                                                      color: {{ AQI_colors.5.text_color }}">+300</span>
+                                </h5>
+                                <span>{% trans "(Hazardous)" %}</span>
+                            </td>
+                            <td class="text-left align-middle">
+                                {% trans "Health alert: everyone may experience serious health effects." %}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="w-100 d-flex mr-3 pt-3 align-self-bottom text-muted justify-content-end">
+                <a href="#"
+                   onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+            </div>
+        </div> <!-- end Real-time info -->
+        <hr>
+        <!-- Historical info -->
+        <div class="d-flex align-items-center justify-content-center my-4 lead">
+            <h4 class="mb-1">{% trans "Historical Air Quality data" %}</h4>
+            <button class="btn btn-link undecorated fa fa-info-circle"
+                    data-toggle="tooltip" data-placement="bottom" data-trigger="focus"
+                    title="{% trans "Search for historical data by selecting a date range. Information will be displayed using charts and tables." %}">
+            </button>
+        </div>
+        <div class="my-4 d-flex align-items-center justify-content-center">
+            <div class="mx-auto align-items-center alert alert-warning alert-sized">
+                {% blocktrans trimmed %}
+                    <strong>Attention:</strong> We're experiencing <strong>problems</strong> with this API. <br>
+                    As a result, data will only be available from <strong>January 2018</strong> to
+                    <strong>April 2018</strong>.
+                {% endblocktrans %}
+            </div>
+        </div>
+        <div id="airPollutionChartWrapper" class="my-4 mt-lg-0">
+            <div class="offset-sm-2 offset-md-4 offset-lg-6 offset-xl-7 row">
+                <form id="airPollutionForm" class="col search">
+                    <input type="text" name="location_id" value="{{ current_location.location.id }}" class="d-none"/>
+                    <input type="text" name="start_date" value="moment().subtract(1, 'days')" class="d-none"/>
+                    <input type="text" name="end_date" class="d-none"/>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <button type="button" class="btn btn-outline-primary" onclick="openDatePicker('daterange')">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                        <input id="airPollutionDateRangeInput" type="text" name="daterange"
+                               class="form-control border-primary bg-white" required
+                               placeholder="{% trans "From - To" %}" readonly aria-readonly="true">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary" style="border-radius: 0 0.25rem 0.25rem 0;">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            {% trans "Invalid field" %}
+                        </div>
+                        <div class="valid-feedback">{% trans "Good!" %}</div>
+                    </div>
+                    <div class="form-check my-3">
+                        <input class="form-check-input" type="checkbox" id="displayAllDataCheckbox" name="plot_values"
+                               onclick="displayBroadDateRangeAlert()" checked aria-checked="true">
+                        <label class="form-check-label" for="displayAllDataCheckbox">
+                            {% trans "Plot all data" %}
+                        </label>
+                    </div>
+                    <div id="broadDateRangeSelected" class="d-none mx-auto mt-4 mb-1 alert alert-warning alert-sized">
+                        <span>
+                            {% blocktrans trimmed %}
+                                <strong>Warning:</strong> Plotting all data can consume a significant amount of
+                                resources when the date range is broad.
+                            {% endblocktrans %}
+                        </span>
+                    </div>
+                    {% csrf_token %}
+                </form>
+            </div>
+            <div id="airPollutionAlertsDiv" class="d-flex mt-1 mt-lg-0 align-items-center" style="min-height: 200px;">
+                <div id="dateRangeNotChosen" class="mx-auto alert alert-primary alert-sized" role="alert">
+                    <span>
+                        {% blocktrans trimmed %}
+                            Select a <strong>date range</strong> by clicking on the <kbd><i
+                                class="fa fa-calendar"></i></kbd> button.
+                            <br/>
+                            Once done, press the <kbd><i
+                                class="fa fa-search"></i></kbd> button, and a <strong>line chart</strong>
+                            with historical air pollution data will appear here.
+                        {% endblocktrans %}
+                    </span>
+                </div>
+                <div id="airPollutionNoHistoricalData" class="mx-auto alert alert-primary alert-sized d-none"
+                     role="alert">
+                    <span class="text-justify">{% trans "Your search returned 0 results." %}</span>
+                </div>
+                <div id="airPollutionDataError" class="mx-auto alert alert-danger alert-sized d-none" role="alert">
+                    {% trans "Data could not be retrieved." %}
+                </div>
+                <div id="airPollutionDataLoader" class="d-none mx-auto">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                </div>
+            </div>
+
+            <div id="airPollutionChartsDiv" class="row d-none h-100 mx-0">
+                <div id="airPollutionLineChartWrapper" class="col-12 d-flex flex-column px-0">
+                    <div class="d-flex mx-auto mt-4 mb-1 alert alert-info alert-sized">
+                        <span>
+                            {% blocktrans trimmed %}
+                                <strong>Tip:</strong> Click on the legend items (coloured circles) to
+                                <strong>hide</strong> or <strong>display</strong> its series.
+                            {% endblocktrans %}
+                        </span>
+                        <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                                aria-label="Close">
+                            <span aria-hidden="true"> &times;</span>
+                        </button>
+                    </div>
+                    <div id="airPollutionLineChart" class="mt-3 mb-2 h-100 w-100 with-3d-shadow with-transitions"
+                         style="min-height: 400px; max-height: 400px">
+                        <svg></svg>
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center text-center">
+                        <p class="mb-0 text-muted">
+                            {% blocktrans trimmed %}
+                                Evolution of pollutants from
+                                <span id="airPollutionFrom" class="font-weight-bold"></span>
+                                to
+                                <span id="airPollutionTo" class="font-weight-bold"></span>
+                            {% endblocktrans %}
+                        </p>
+                        <span id="airPollutionValueCount" class="ml-3 badge badge-pill badge-primary"
+                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              title="{% trans "Number of plotted values" %}"></span>
+                    </div>
+                    <div class="d-flex mx-auto mt-3 mb-1 alert alert-info alert-sized">
+                        <span>
+                            {% blocktrans trimmed %}
+                                <strong>Tip:</strong> The bottom chart allows you to expand the top chart. To do this,
+                                <strong>click</strong> on the bottom chart and <strong>drag</strong> to select a
+                                fraction of its area. <br/>Automatically, the top chart will be
+                                <strong>rescaled</strong> over the selected area.
+                            {% endblocktrans %}
+                        </span>
+                        <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                                aria-label="Close">
+                            <span aria-hidden="true"> &times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="col- mt-4 pt-3 h-100 w-100">
+                    <div class="row">
+                        <div class="col-12 my-auto col-md-6 mt-3">
+                            <div id="airPollutionPieChart" class="w-100 with-3d-shadow with-transitions">
+                                <svg class="h-100 w-100" style="min-height: 300px; max-height: 300px"></svg>
+                            </div>
+                            <div class="d-flex justify-content-center align-items-center text-center">
+                                <p class="text-muted">{% trans "Dominant pollutant throughout the period" %}
+                                    <span id="airPollutionDomCount" class="ml-2 badge badge-pill badge-primary"
+                                          data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                          title="{% trans "Number of measures with non-null dominant pollutant" %}"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 my-auto col-12 col-md-6 mt-3">
+                            <table class="table table-sm text-center">
+                                <thead>
+                                <tr>
+                                    <th scope="col">{% trans "Pollutant" %}</th>
+                                    <th scope="col">{% trans "Max" %}</th>
+                                    <th scope="col">{% trans "Min" %}</th>
+                                    <th scope="col">{% trans "Average" %}</th>
+                                </tr>
+                                </thead>
+                                <tbody id="airPollutionTableBody">
+                                </tbody>
+                            </table>
+                            <div class="d-flex justify-content-center align-items-center text-center">
+                                <p class="text-muted">{% trans "Average, max and min values for all pollutants" %}
+                                    <span id="airPollutionStatsCount" class="ml-2 badge badge-pill badge-primary"
+                                          data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                          title="{% trans "Table values are computed using plotted data" %}"></span>
+                                </p>
+                            </div>
+                            <div class="d-flex mx-auto mt-3 mb-1 alert alert-info alert-sized">
+                                <span class="mb-0">
+                                    {% blocktrans trimmed %}
+                                        This table uses the <strong>AQI</strong> index's colors to reflect air quality:
+                                    {% endblocktrans %}
+                                    <div class="pt-1">
+                                        {% for color in AQI_colors %}
+                                            <span class="dot mx-1" style="background-color: {{ color.color }}"></span>
+                                        {% endfor %}
+                                    </div>
+                                    {% blocktrans trimmed %}
+                                        To see a detailed explanation about <strong>AQI levels</strong>, click
+                                        <a class="alert-link" href="#"
+                                           onclick="showElement('airPollutionExplanationTable', 20, 180); return false">
+                                            here</a>.
+                                    {% endblocktrans %}
+                                </span>
+                                <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                                        aria-label="Close">
+                                    <span aria-hidden="true"> &times;</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- end Historical info -->
+        <div class="mt-4 mx-3 mb-2 text-muted">
+            {% if current_location.location.air_pollution_attributions %}
+                {% blocktrans trimmed with loc_name=current_location.location.name %}
+                    Air Pollution data for <strong>{{ loc_name }}</strong> is available courtesy
+                    of <a href="http://aqicn.org/sources/" target="_blank">The World Air Quality Index Project</a> and:
+                {% endblocktrans %}
+                <ul>
+                    {% for attribution in current_location.location.air_pollution_attributions %}
+                        <li><a href="{{ attribution.url }}" target="_blank">{{ attribution.name }}</a>.</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                {% blocktrans trimmed with loc_name=current_location.location.name %}
+                    Air Pollution data attributions are not available for <strong>{{ loc_name }}</strong>.
+                {% endblocktrans %}
+            {% endif %}
+        </div> <!-- end Credit -->
+    {% else %}
+        <div class="col d-flex justify-content-center">
+            <div class="align-self-center alert alert-primary alert-sized" role="alert">
+                <span>
+                    {% blocktrans trimmed with loc_name=current_location.location.name %}
+                        Air pollution info is not available for <strong>{{ loc_name }}</strong>.
+                    {% endblocktrans %}
+                </span>
+            </div>
+        </div> <!-- end no info -->
+    {% endif %}
+    <div class="w-100 d-flex mr-3 pt-3 align-self-bottom text-muted justify-content-end">
+        <a href="#"
+           onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+    </div>
+</div>
+
+{% if current_location.location.air_pollution_data and current_location.air_pollution.last_measure %}
+    {% load static %}
+    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css"
+          type="text/css"/>
+    <link rel="stylesheet" href="{% static 'css/calendar-style.min.css' %}">
+    <script async type="text/javascript" src="{% static 'js/line-chart-zoom.js' %}"></script>
+    <script async type="text/javascript" src="{% static 'js/pie-chart.js' %}"></script>
+    <script async type="text/javascript" src="{% static 'js/air-pollution-table.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            moment.locale('{{ LANGUAGE_CODE }}');
+            var daterange = $('input[name="daterange"]');
+            var startDateInput = $('input[name="start_date"]');
+            var endDateInput = $('input[name="end_date"]');
+            var startDate = moment().subtract(1, 'days');
+            var endDate = moment();
+            daterange.daterangepicker({
+                autoApply: true,
+                linkedCalendars: true,
+                showCustomRangeLabel: true,
+                startDate: startDate,
+                endDate: endDate,
+                maxDate: moment(),
+                ranges: {
+                    "{% trans "Last 24 hours" %}": [moment().subtract(1, 'days'), moment()],
+                    "{% trans "Last 7 days" %}": [moment().subtract(6, 'days'), moment()],
+                    "{% trans "Last 30 days" %}": [moment().subtract(29, 'days'), moment()],
+                    "{% trans "Last 365 days" %}": [moment().subtract(364, 'days'), moment()],
+                    "{% trans "This year" %}": [moment().startOf('year'), moment()]
+                },
+                opens: "left",
+                applyClass: "d-none",
+                locale: {
+                    cancelLabel: "{% trans "Clear" %}",
+                    customRangeLabel: "{% trans "Custom Range" %}",
+                    daysOfWeek: {% trans '["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]' %},
+                    monthNames: {% trans '["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]' %}
+                },
+                forceUpdate: true
+            });
+            daterange.on('apply.daterangepicker', function (ev, picker) {
+                var d1 = picker.startDate.toDate().getTime();
+                var d2 = picker.endDate.toDate().getTime();
+                startDateInput.val(d1);
+                endDateInput.val(d2);
+                displayBroadDateRangeAlert(d1, d2);
+            });
+            daterange.on('cancel.daterangepicker', function (ev, picker) {
+                $(this).val('');
+            });
+            startDateInput.val(startDate.toDate().getTime());
+            endDateInput.val(endDate.toDate().getTime());
+        });
+
+        function openDatePicker(pickerName) {
+            $('input[name=' + pickerName + ']').click()
+        }
+
+        function displayBroadDateRangeAlert(d1, d2) {
+            MAX_DAYS_WITHOUT_SHOWING_BROAD_RANGE_ALERT = {{ air_pollution_max_days }};  // half a year
+
+            var display = $('#displayAllDataCheckbox').is(":checked");
+
+            if (!d1 || !d2) {
+                d1 = parseInt($('input[name="start_date"]').val());
+                d2 = parseInt($('input[name="end_date"]').val());
+            }
+
+            if (((d2 - d1) > MAX_DAYS_WITHOUT_SHOWING_BROAD_RANGE_ALERT) && display) {
+                $('#broadDateRangeSelected').removeClass('d-none').addClass('d-flex')
+            } else {
+                $('#broadDateRangeSelected').removeClass('d-flex').addClass('d-none')
+            }
+        }
+
+        $("#airPollutionForm").submit(function (e) {
+
+            var url = "/locations/air-pollution-data";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $("#airPollutionForm").serialize(),
+                beforeSend: function () {
+                    $("#airPollutionAlertsDiv").addClass('d-flex').removeClass('d-none');
+                    $("#dateRangeNotChosen").addClass('d-none');
+                    $("#airPollutionNoHistoricalData").addClass('d-none');
+                    $("#airPollutionDataError").addClass('d-none');
+                    $("#airPollutionDataLoader").removeClass('d-none');
+                    $("#airPollutionChartsDiv").addClass('d-none');
+                    $('#airPollutionDateRangeInput').removeClass('is-invalid').removeClass('is-valid').addClass('border-primary');
+                },
+                complete: function () {
+                    $("#airPollutionDataLoader").addClass('d-none');
+                },
+                success: function (data) {
+                    if (data.validation_error === true) {
+                        $('#airPollutionDateRangeInput').removeClass('border-primary').addClass('is-invalid');
+                        showElement('historicalWeatherTo', -40, 180);
+                    } else {
+                        $('#airPollutionDateRangeInput').removeClass('border-primary').addClass('is-valid')
+                    }
+                    if (data.total_data > 0) {
+                        if (data.plot_values) {
+                            $('#airPollutionLineChartWrapper').addClass('d-flex').removeClass('d-none');
+                            displayLineChartZoom(data.columns, data.data, 'AQI',
+                                ["#3366cc", "#DC3912", "#ff9900", "#109618", "#990099"],
+                                "{{ LANGUAGE_CODE }}", 'airPollutionLineChart');
+                        } else {
+                            $('#airPollutionLineChartWrapper').removeClass('d-flex').addClass('d-none');
+                        }
+                        displayPieChartWithFormattedData(data.dom, '%',
+                            ["#3366CC", "#DC3912", "#FF9900", "#109618", "#990099", "#3B3EAC"],
+                            '{{ LANGUAGE_CODE }}', 'airPollutionPieChart');
+                        displayAirPollutionStatsTable(data.columns, data.stats, "{{ LANGUAGE_CODE }}",
+                            'airPollutionTableBody');
+                        $("#airPollutionAlertsDiv").removeClass('d-flex').addClass('d-none');
+                        $("#airPollutionFrom").html(new Date(data.start).toLocaleDateString("{{ LANGUAGE_CODE }}"));
+                        $("#airPollutionTo").html(new Date(data.end).toLocaleDateString("{{ LANGUAGE_CODE }}"));
+                        $('#airPollutionDomCount').html(data.total_dom);
+                        $('#airPollutionValueCount').html(data.total_data);
+                        $('#airPollutionStatsCount').html(data.total_data);
+                        $("#airPollutionChartsDiv").removeClass('d-none');
+                    }
+                    else {
+                        $("#airPollutionChartsDiv").addClass('d-none');
+                        $("#airPollutionNoHistoricalData").removeClass('d-none');
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#airPollutionDataError").removeClass('d-none');
+                }
+            });
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+        });
+    </script>
+{% endif %}

@@ -1,0 +1,490 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<style>
+    .square {
+        height: 12px;
+        width: 12px;
+        display: inline-block;
+    }
+</style>
+
+<div class="d-flex align-items-center justify-content-center mb-4 lead">
+    <h3 class="mb-1">{% trans "Historical weather data" %}</h3>
+    <button class="btn btn-link undecorated fa fa-info-circle fa-lg"
+            data-toggle="tooltip" data-placement="bottom" data-trigger="focus"
+            title="{% trans "Contemplate the evolution of multiple weather phenomena over the years." %}">
+    </button>
+</div>
+<div class="card-text mt-lg-0 mt-xl-0">
+
+    {% if current_location.location.wunderground_data %}
+        <div class="my-4 mt-md-3">
+            <form id="historicalWeatherForm" class="search mb-4 mb-md-0">
+                <div class="offset-lg-1 row justify-content-end align-items-top">
+                    <input type="text" name="location_id" value="{{ current_location.location.id }}" class="d-none"/>
+                    <select id="historicalWeatherSelect" class="col order-1 mx-3 ml-3 form-control border-primary"
+                            required name="phenomenon">
+                        <option value="" selected hidden>{% trans "Choose a phenomenom" %}</option>
+                        <option value="max_temp">{% trans "Temperature (max)" %}</option>
+                        <option value="min_temp">{% trans "Temperature (min)" %}</option>
+                        <option value="mean_temp">{% trans "Temperature (avg)" %}</option>
+                    </select>
+                    <div class="col- order-2 col-md my-2 my-md-0 d-inline-flex">
+                        <div class="mr-1 input-group date mb-auto" data-provide="historicalWeatherFrom">
+                            <div class="input-group-prepend">
+                                <button type="button" class="btn btn-outline-primary"
+                                        onclick="$('#historicalWeatherFrom').datepicker().data('datepicker').show()">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                            <input id="historicalWeatherFrom" type="text" name="start_year" data-date-format="yyyy"
+                                   class="form-control border-primary bg-white" placeholder="{% trans "Min." %}"
+                                   readonly required aria-readonly="true" style="border-radius: 0 0.25rem 0.25rem 0;">
+                            <div class="invalid-feedback">
+                                {% trans "Invalid field" %}
+                            </div>
+                            <div class="valid-feedback">{% trans "Good!" %}</div>
+                        </div>
+                        <div class="ml-1 input-group date mb-auto" data-provide="historicalWeatherTo">
+                            <div class="input-group-prepend">
+                                <button type="button" class="btn btn-outline-primary"
+                                        onclick="$('#historicalWeatherTo').datepicker().data('datepicker').show()">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                            <input id="historicalWeatherTo" type="text" name="end_year"
+                                   class="form-control border-primary bg-white" placeholder="{% trans "Max." %}"
+                                   readonly required aria-readonly="true" style="border-radius: 0 0.25rem 0.25rem 0;">
+                            <div class="invalid-feedback">
+                                {% trans "Invalid field" %}
+                            </div>
+                            <div class="valid-feedback">{% trans "Good!" %}</div>
+                        </div>
+                    </div>
+                    {% csrf_token %}
+                    <div class="col-auto order-4 order-md-3">
+                        <button type="submit" class="btn btn-primary">{% trans "Search" %}</button>
+                    </div>
+                    <div class="col-12 order-3 order-md-4 form-check mt-3 mb-3 mb-sm-0 pl-5">
+                        <input class="form-check-input" type="checkbox" id="displayAllWeatherDataCheckbox"
+                               name="plot_values" onclick="displayBroadYearRangeAlert()" checked aria-checked="true">
+                        <label class="form-check-label" for="displayAllWeatherDataCheckbox">
+                            {% trans "Plot all data" %}
+                        </label>
+                    </div>
+                </div>
+                <div id="broadYearRangeSelected" class="d-none mx-auto mt-4 mb-1 alert alert-primary alert-sized">
+                    <span>
+                        {% blocktrans trimmed %}
+                            <strong>Warning:</strong> Plotting all data can consume a significant amount of
+                            resources when the year range is broad.
+                        {% endblocktrans %}
+                    </span>
+                </div>
+            </form>
+            <div id="historicalWeatherAlertsDiv" class="d-flex mt-1 mt-lg-0 align-items-center"
+                 style="min-height: 200px;">
+                <div id="yearRangeNotChosen" class="mx-auto alert alert-primary alert-sized" role="alert">
+                    <span>
+                        {% blocktrans trimmed %}
+                            Select a <strong>year range</strong> by clicking on the <kbd><i
+                                class="fa fa-calendar"></i></kbd> button.
+                            <br/>
+                            Once done, press the <kbd><i
+                                class="fa fa-search"></i></kbd> button, and a <strong>calendar chart</strong>
+                            with historical weather data will appear here.
+                        {% endblocktrans %}
+                    </span>
+                </div>
+                <div id="noHistoricalData" class="mx-auto alert alert-primary alert-sized d-none" role="alert">
+                    <span class="text-justify">{% trans "Your search returned 0 results." %}</span>
+                </div>
+                <div id="historicalWeatherDataError" class="mx-auto alert alert-danger alert-sized d-none" role="alert">
+                    {% trans "Data could not be retrieved." %}
+                </div>
+                <div id="historicalWeatherDataLoader" class="d-none mx-auto">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                </div>
+            </div>
+            <div id="historicalWeatherChartsDiv" class="row d-none h-100 mx-0">
+                <div id="historicalWeatherCalendarChartWrapper" class="w-100">
+                    <h4 class="w-100 mt-2 mt-md-5 mb-0 text-muted">{% trans "Temperatures" %}</h4>
+                    <div class="col-12 d-flex flex-column mt-2 px-0">
+                        <div class="d-flex mx-auto mt-3 mb-1 alert alert-info alert-sized">
+                        <span>
+                            {% blocktrans trimmed %}
+                                <strong>Note: </strong> The heatmap uses a color scale in order to represent
+                                temperatures. <br/>
+                                The scale is bounded between <strong>-40°C</strong> and <strong>40°C</strong>, and every
+                                color describes an interval of <strong>5°C</strong>. <strong>Bluish</strong>  colors
+                                depict colder temperatures, while <strong>reddish</strong>  colors depict warmer ones.
+                                <br> For example: <br>
+                            {% endblocktrans %}
+                            <ul>
+                                <li>
+                                    <span class="square mr-1" style="background-color: #40ffd8"></span>
+                                    {% trans "represents tempreatures below -40°C." %}
+                                </li>
+                                <li>
+                                    <span class="square mr-1" style="background-color: #a0a209"></span>
+                                    {% trans "represents temperatures between 0°C and 5°C." %}
+                                </li>
+                                <li>
+                                    <span class="square mr-1" style="background-color: #f20013"></span>
+                                    {% trans "represents tempreatures above 40°C." %}
+                                </li>
+                                <li>
+                                    <span class="square mr-1" style="background-color: #a9a9a9"></span>
+                                    {% trans "represents that measurements have not been taken on that day." %}
+                                </li>
+                            </ul>
+                            {% blocktrans trimmed %}
+                                <strong>Important</strong>: Each square describes a day of the year.
+                            {% endblocktrans %}
+                        </span>
+                            <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                                    aria-label="Close">
+                                <span aria-hidden="true"> &times;</span>
+                            </button>
+                        </div>
+                        <div id="historicalWeatherCalHeatmap" class="mt-3"></div>
+                        <div class="d-flex justify-content-center align-items-center text-center">
+                            <p class="mb-0 text-muted">
+                                {% blocktrans trimmed %}
+                                    <span id="historicalWeatherHeatmapVariable"></span> between
+                                    <span class="font-weight-bold historicalWeatherFrom"></span>
+                                    and
+                                    <span class="font-weight-bold historicalWeatherTo"></span>
+                                {% endblocktrans %}
+                            </p>
+                            <span id="historicalWeatherValueCount" class="ml-3 badge badge-pill badge-primary"
+                                  data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                  title="{% trans "Number of days with non-null values" %}"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="noYearRangeSelectedAlert" class="d-none mx-auto align-items-center justify-content-center">
+                    <div class="alert alert-primary alert-sized mt-4" role="alert">
+                    <span class="text-justify">
+                        {% blocktrans trimmed %}
+                            When no year range is specified, only <strong>statistics</strong> are retrieved.
+                            If you want to display all data, you must <strong>manually</strong> specify a year range.
+                            <br>
+                            <strong>Note: </strong>This is automatically done to reduce the consumption of
+                            resources.
+                        {% endblocktrans %}
+                    </span>
+                    </div>
+                </div>
+                <div class="w-100 d-flex mr-3 pt-3 align-self-bottom text-muted justify-content-end">
+                    <a href="#"
+                       onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+                </div>
+                <div class="my-2 w-100">
+                    <hr>
+                    <h4 class="w-100 mt-2 mb-0 text-muted">{% trans "Statistics" %}</h4>
+                </div>
+                <div class="col- h-100 w-100">
+                    <div class="d-flex my-4 mx-auto mb-1 alert alert-info alert-sized">
+                        <span>
+                            {% blocktrans trimmed %}
+                                <strong>Tip:</strong> Click on the legend items (coloured circles) to
+                                <strong>hide</strong> or <strong>display</strong> its series.
+                            {% endblocktrans %}
+                            {% blocktrans trimmed %}
+                                (This applies to both the <strong>bar</strong> chart and the <strong>line</strong>
+                                chart).
+                            {% endblocktrans %}
+                        </span>
+                        <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                                aria-label="Close">
+                            <span aria-hidden="true"> &times;</span>
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-lg-6 mt-3">
+                            <div id="historicalWeatherLineChart" class="w-100 with-3d-shadow with-transitions">
+                                <svg class="h-100 w-100" style="min-height: 400px; max-height: 400px"></svg>
+                            </div>
+                            <div class="d-flex mt-4 justify-content-center align-items-center text-center">
+                                <p class="text-muted">
+                                    {% blocktrans trimmed %}
+                                        <span>Annual temperature evolution between</span>
+                                        <span class="font-weight-bold historicalWeatherFrom"></span>
+                                        and
+                                        <span class="font-weight-bold historicalWeatherTo"></span>
+                                    {% endblocktrans %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 col-12 col-lg-6 mt-3">
+                            <div id="historicalWeatherBarChart" class="w-100 with-3d-shadow with-transitions">
+                                <svg class="h-100 w-100" style="min-height: 400px; max-height: 400px"></svg>
+                            </div>
+                            <div class="d-flex mt-3 justify-content-center align-items-center text-center">
+                                <p class="text-muted">
+                                    {% blocktrans trimmed %}
+                                        <span>Annual count of meteorological phenomena between</span>
+                                        <span class="font-weight-bold historicalWeatherFrom"></span>
+                                        and
+                                        <span class="font-weight-bold historicalWeatherTo"></span>
+                                    {% endblocktrans %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex my-4 mx-auto mb-1 alert alert-primary alert-sized">
+                        <p class="mb-0">
+                            {% blocktrans trimmed %}
+                                <strong>Note: </strong> Statistics for the current year will not be accurate
+                                until the year has finished.
+                            {% endblocktrans %}
+                            <br>
+                            {% blocktrans trimmed %}
+                                (This applies to both the <strong>bar</strong> chart and the
+                                <strong>line</strong>
+                                chart).
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-end">
+                <div class="pt-3 mr-auto">
+                    {% load static %}
+                    <a href="https://www.wunderground.com/" target="_blank">
+                        <img src="{% static 'images/wunderground-logo.jpg' %}"
+                             alt={% trans "Credit: Wunderground" %}>
+                    </a>
+                </div>
+            </div>
+
+        </div> <!-- end Historical info -->
+    {% else %}
+        <div class="col d-flex justify-content-center">
+            <div class="align-self-center alert alert-primary alert-sized" role="alert">
+                {% blocktrans trimmed with loc_name=current_location.location.name %}
+                    <span>
+                        Historical weather data are not available for <strong>{{ loc_name }}</strong>.
+                    </span>
+                {% endblocktrans %}
+            </div>
+        </div> <!-- end no info -->
+    {% endif %}
+</div>
+<div class="d-flex ml-auto pt-3 align-self-bottom text-muted justify-content-end">
+    <a href="#"
+       onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+</div>
+
+{% if current_location.location.wunderground_data %}
+    {% load static %}
+    <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/cal-heatmap/3.6.2/cal-heatmap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cal-heatmap/3.6.2/cal-heatmap.css"/>
+    <script async type="text/javascript" src="{% static 'js/historical-weather-heatmap.js' %}"></script>
+    <script async type="text/javascript" src="{% static 'js/historical-weather-line-chart.js' %}"></script>
+    <script async type="text/javascript" src="{% static 'js/historical-weather-bar-chart.js' %}"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker3.min.css">
+
+    <script>
+        var cal = null;
+
+        $("#historicalWeatherForm").submit(function (e) {
+
+            var url = "/locations/historical-weather-data";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $("#historicalWeatherForm").serialize(),
+                beforeSend: function () {
+                    $("#historicalWeatherAlertsDiv").addClass('d-flex').removeClass('d-none');
+                    $("#yearRangeNotChosen").addClass('d-none');
+                    $("#noHistoricalData").addClass('d-none');
+                    $("#historicalWeatherDataError").addClass('d-none');
+                    $("#historicalWeatherDataLoader").removeClass('d-none');
+                    $("#historicalWeatherChartsDiv").addClass('d-none');
+                    $('#noYearRangeSelectedAlert').removeClass('d-flex').addClass('d-none');
+                    $('#historicalWeatherSelect').removeClass('is-invalid').removeClass('is-valid').addClass('border-primary');
+                    $('#historicalWeatherFrom').removeClass('is-invalid').removeClass('is-valid').addClass('border-primary');
+                    $('#historicalWeatherTo').removeClass('is-invalid').removeClass('is-valid').addClass('border-primary');
+                    if (cal !== null)
+                    // Destroying calendar. Avoiding memory leak.
+                        cal = cal.destroy();
+                },
+                complete: function () {
+                    $("#historicalWeatherDataLoader").addClass('d-none');
+                },
+                success: function (data) {
+                    console.log(data);
+
+                    function validate() {
+                        if (data.validation_error === true) {
+                            var index = data.invalid_data.indexOf('phenomenon');
+                            if (index > -1) {
+                                $('#historicalWeatherSelect').removeClass('border-primary').addClass('is-invalid');
+                                showElement('historicalWeatherSelect', -40, 140);
+                                data.invalid_data.splice(index, 1);
+                                if (data.invalid_data.length === 0)
+                                    return;
+                            } else {
+                                $('#historicalWeatherSelect').removeClass('border-primary').addClass('is-valid')
+                            }
+                            index = data.invalid_data.indexOf('start_year');
+                            if (index > -1) {
+                                $('#historicalWeatherFrom').removeClass('border-primary').addClass('is-invalid');
+                                showElement('historicalWeatherFrom', -40, 180);
+                                data.invalid_data.splice(index, 1);
+                                if (data.invalid_data.length === 0)
+                                    return;
+                            } else {
+                                $('#historicalWeatherFrom').removeClass('border-primary').addClass('is-valid')
+                            }
+                            index = data.invalid_data.indexOf('end_year');
+                            if (index > -1) {
+                                $('#historicalWeatherTo').removeClass('border-primary').addClass('is-invalid');
+                                showElement('historicalWeatherTo', -40, 180);
+                            } else {
+                                $('#historicalWeatherTo').removeClass('border-primary').addClass('is-valid')
+                            }
+                        } else {
+                            $('#historicalWeatherSelect').removeClass('border-primary').addClass('is-valid');
+                            $('#historicalWeatherFrom').removeClass('border-primary').addClass('is-valid');
+                            $('#historicalWeatherTo').removeClass('border-primary').addClass('is-valid');
+                        }
+                    }
+
+                    validate();
+                    if (data.data == null && data.stats == null) {
+                        $("#historicalWeatherChartsDiv").addClass('d-none');
+                        $("#noHistoricalData").removeClass('d-none');
+                    }
+                    else {
+                        if (data.data != null && data.plot_values === true) {
+                            legendTitleFormat = {
+                                lower: '{% trans "Less than {min} {name}" %}',
+                                inner: '{% trans "Between {down} and {up} {name}" %}',
+                                upper: '{% trans "More than {max} {name}" %}'
+                            };
+                            subDomainTitleFormat = {
+                                empty: '{% trans "No value for {date}" %}',
+                                filled: '{% trans "{count} {name} on {date}" %}'
+                            };
+                            $('#historicalWeatherCalendarChartWrapper').removeClass('d-none');
+                            cal = displayHistoricalWeatherHeatmap(data.start, data.end, data.data,
+                                'historicalWeatherCalHeatmap', "{{ LANGUAGE_CODE }}", legendTitleFormat,
+                                subDomainTitleFormat);
+                        } else {
+                            $('#historicalWeatherCalendarChartWrapper').addClass('d-none');
+                            if (data.no_year_range) {
+                                $('#noYearRangeSelectedAlert').addClass('d-flex').removeClass('d-none');
+                            }
+                        }
+                        columnsLineChart = ['{% trans "Highest annual temperature" %}',
+                            '{% trans "Lowest max. annual temperature" %}',
+                            '{% trans "Highest min. annual temperature" %}',
+                            '{% trans "Lowest annual temperature" %}',
+                            '{% trans "Average annual temperature" %}'];
+                        columnsBarChart = ['{% trans "Fog" %}', '{% trans "Hail" %}', '{% trans "Thunder" %}',
+                            '{% trans "Tornado" %}', '{% trans "Rain" %}', '{% trans "Snow" %}'];
+                        units = ['{% trans "day" %}', '{% trans "days" %}'];
+                        displayHistoricalWeatherLineChart(columnsLineChart, data.stats, '°C',
+                            '{{ LANGUAGE_CODE }}', 'historicalWeatherLineChart');
+                        displayHistoricalWeatherBarChart(columnsBarChart, data.stats, 'historicalWeatherBarChart', units);
+                        $("#historicalWeatherAlertsDiv").removeClass('d-flex').addClass('d-none');
+                        $(".historicalWeatherFrom").html(data.start_year);
+                        $(".historicalWeatherTo").html(data.end_year);
+                        $("#historicalWeatherHeatmapVariable").html($('#historicalWeatherSelect').find(
+                            'option:selected').text());
+                        $('#historicalWeatherValueCount').html(data.total_data);
+                        $("#historicalWeatherChartsDiv").removeClass('d-none');
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#historicalWeatherDataError").removeClass('d-none');
+                }
+            });
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+        });
+    </script>
+    <script>
+        function displayBroadYearRangeAlert(y1, y2) {
+            MAX_YEARS_WITHOUT_SHOWING_BROAD_RANGE_ALERT = {{ historical_weather_max_days }};
+
+            var display = $('#displayAllWeatherDataCheckbox').is(":checked");
+
+            if (!y1 || !y2) {
+                y1 = parseInt($('#historicalWeatherFrom').val());
+                y2 = parseInt($('#historicalWeatherTo').val());
+            }
+
+            if (((y2 - y1) > MAX_YEARS_WITHOUT_SHOWING_BROAD_RANGE_ALERT) && display) {
+                $('#broadYearRangeSelected').removeClass('d-none').addClass('d-flex')
+            } else {
+                $('#broadYearRangeSelected').removeClass('d-flex').addClass('d-none')
+            }
+        }
+
+        $(document).ready(function () {
+            $('#historicalWeatherFrom').datepicker({
+                format: "yyyy",
+                enableOnReadonly: true,
+                clearBtn: true,
+                endDate: new Date(),
+                startView: "years",
+                minViewMode: "years",
+                maxViewMode: "years",
+                autoclose: true,
+                orientation: 'top',
+                language: "{{ LANGUAGE_CODE }}"
+            }).on('changeDate', function (selected) {
+                var to = $('#historicalWeatherTo');
+                startDate = $("#historicalWeatherFrom").val();
+                if (startDate > to.val()) {
+                    to.val('')
+                }
+                to.datepicker('setStartDate', startDate);
+                displayBroadYearRangeAlert(startDate, to.val())
+            });
+
+            $('#historicalWeatherTo').datepicker({
+                format: "yyyy",
+                enableOnReadonly: true,
+                clearBtn: true,
+                endDate: new Date(),
+                startView: "years",
+                minViewMode: "years",
+                maxViewMode: "years",
+                autoclose: true,
+                orientation: 'top',
+                language: "{{ LANGUAGE_CODE }}"
+            }).on('changeDate', function (selected) {
+                var to = $('#historicalWeatherTo');
+                startDate = $("#historicalWeatherFrom").val();
+                if (startDate > to.val()) {
+                    to.val('')
+                }
+                to.datepicker('setStartDate', startDate);
+                displayBroadYearRangeAlert(startDate, to.val())
+            });
+
+            $.fn.datepicker.dates['{{ LANGUAGE_CODE }}'] = {
+                // All settings but "clear" won't have effect, since this calendar only shows numbers.
+                days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+                daysMin: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+                months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                monthsShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                today: "Today",
+                clear: "{% trans "Clear" %}",
+                format: "mm/dd/yyyy",
+                titleFormat: "MM yyyy", /* Leverages same syntax as 'format' */
+                weekStart: 0
+            };
+        });
+    </script>
+{% endif %}

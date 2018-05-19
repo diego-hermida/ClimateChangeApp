@@ -1,0 +1,417 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<!-- Real-time and Historical info -->
+<div class="d-flex align-items-center justify-content-center mb-4 lead">
+    <h3 class="mb-1">{% trans "Environment data" %}</h3>
+    <button class="btn btn-link undecorated fa fa-info-circle fa-lg"
+            data-toggle="tooltip" data-placement="bottom" data-trigger="focus"
+            title="{% trans "Discover multiple country indicators related to Climate Change." %}">
+    </button>
+</div>
+<div class="card-text mt-lg-0 mt-xl-0">
+    <div class="my-4 mt-md-3">
+        <form id="countryEnvironmentForm" class="search mb-4 mb-md-0">
+            <div class="offset-lg-1 row justify-content-end align-items-center">
+                <input type="text" name="country_id" value="{{ current_country.country.iso2_code }}" class="d-none"/>
+                <div class="col- col-md col-lg-6 my-2 my-md-0 d-inline-flex">
+                    <div class="mr-1 input-group date mb-auto" data-provide="countryEnvironmentFrom">
+                        <div class="input-group-prepend">
+                            <button type="button" class="btn btn-outline-primary"
+                                    onclick="$('#countryEnvironmentFrom').datepicker().data('datepicker').show()">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                        <input id="countryEnvironmentFrom" type="text" name="start_year" data-date-format="yyyy"
+                               class="form-control border-primary bg-white" placeholder="{% trans "Min." %}"
+                               required readonly aria-readonly="true" style="border-radius: 0 0.25rem 0.25rem 0;">
+                        <div class="invalid-feedback">
+                            {% trans "Invalid field" %}
+                        </div>
+                        <div class="valid-feedback">{% trans "Good!" %}</div>
+                    </div>
+                    <div class="ml-1 input-group date mb-auto" data-provide="countryEnvironmentTo">
+                        <div class="input-group-prepend">
+                            <button type="button" class="btn btn-outline-primary"
+                                    onclick="$('#countryEnvironmentTo').datepicker().data('datepicker').show()">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                        <input id="countryEnvironmentTo" type="text" name="end_year"
+                               class="form-control border-primary bg-white" placeholder="{% trans "Max." %}" required
+                               readonly aria-readonly="true" style="border-radius: 0 0.25rem 0.25rem 0;">
+                        <div class="invalid-feedback">
+                            {% trans "Invalid field" %}
+                        </div>
+                        <div class="valid-feedback">{% trans "Good!" %}</div>
+                    </div>
+                </div>
+                {% csrf_token %}
+                <div class="col-auto mt-2 mt-md-0">
+                    <button type="submit" class="btn btn-primary">{% trans "Search" %}</button>
+                </div>
+            </div>
+        </form>
+        <div id="countryEnvironmentAlertsDiv" class="d-flex mt-1 mt-lg-0 align-items-center"
+             style="min-height: 200px;">
+            <div id="countryEnvironmentYearRangeNotChosen" class="mx-auto alert alert-primary alert-sized" role="alert">
+                    <span>
+                        {% blocktrans trimmed %}
+                            Select a <strong>year range</strong> by clicking on the <kbd><i
+                                class="fa fa-calendar"></i></kbd> buttons.
+                            <br/>
+                            Once done, press the search button, and multiple <strong>bar charts</strong>
+                            with environment data will appear here.
+                        {% endblocktrans %}
+                    </span>
+            </div>
+            <div id="noEnvironmentData" class="mx-auto alert alert-primary alert-sized d-none" role="alert">
+                <span class="text-justify">{% trans "Your search returned 0 results." %}</span>
+            </div>
+            <div id="countryEnvironmentDataError" class="mx-auto alert alert-danger alert-sized d-none" role="alert">
+                {% trans "Data could not be retrieved." %}
+            </div>
+            <div id="countryEnvironmentDataLoader" class="d-none mx-auto">
+                <i class="fa fa-spinner fa-spin fa-3x"></i>
+            </div>
+        </div>
+        <div id="countryEnvironmentChartsDiv" class="row d-none h-100 mx-0">
+            <div class="col- mt-2 h-100 w-100">
+                <div class="d-flex mx-auto mb-1 align-items-center justify-content-center">
+                    <div class="mt-4 alert alert-info alert-sized">
+                        <span>
+                            {% blocktrans trimmed %}
+                                <strong>Tip:</strong> Hover over the chart series in order to display their values.
+                            {% endblocktrans %}
+                        </span>
+                        <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                                aria-label="Close">
+                            <span aria-hidden="true"> &times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="urbanAreaLandWrapper" class="col-12 col-md-6 mt-3">
+                        <div id="urbanAreaLandBarChart" class="w-100 with-3d-shadow with-transitions">
+                            <svg class="h-100 w-100" style="min-height: 350px; max-height: 350px"></svg>
+                        </div>
+                        <div class="d-flex mt-4 justify-content-center align-items-center text-center">
+                            <p class="text-muted">
+                                <span>{% trans "Percentage of urban land below 5 meters" %}</span>
+                                <span id="urbanAreaLandValueCount" class="ml-2 badge badge-pill badge-primary"
+                                      data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                      title="{% trans "Number of measures with non-null values" %}">
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mt-2 offset-1 offset-sm-2">
+                            <div class="d-flex align-items-end">
+                                <h1 class="mb-0 display-4">
+                                    <span id="lastYearUrbanAreaLandData" class="display-4"></span>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 pl-2 pr-2 pr-md-5">
+                                {% blocktrans trimmed %}
+                                    of urban land below 5 meters in
+                                    <strong id="lastYearUrbanAreaLand"></strong>
+                                {% endblocktrans %}
+                            </p>
+                            <p>
+                                {% blocktrans trimmed %}
+                                    The higher this value, the greater the risk that these places will suffer the
+                                    effects of <strong>sea level rise</strong>.
+                                {% endblocktrans %}
+                            </p>
+                        </div>
+                    </div>
+                    <div id="forestAreaWrapper" class="col-12 col-md-6 mt-3">
+                        <div id="forestAreaBarChart" class="w-100 with-3d-shadow with-transitions">
+                            <svg class="h-100 w-100" style="min-height: 350px; max-height: 350px"></svg>
+                        </div>
+                        <div class="d-flex mt-4 justify-content-center align-items-center text-center">
+                            <p class="text-muted">
+                                <span>{% trans "Percentage of forest area extension relative to the country area" %}</span>
+                                <span id="forestAreaValueCount" class="ml-2 badge badge-pill badge-primary"
+                                      data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                      title="{% trans "Number of measures with non-null values" %}">
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mt-2 offset-1 offset-sm-2">
+                            <div class="d-flex align-items-end">
+                                <h1 class="mb-0 display-4">
+                                    <span id="lastYearForestAreaData" class="display-4"></span>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 pl-2 pr-2 pr-md-5">
+                                {% blocktrans trimmed %}
+                                    of forest area in
+                                    <strong id="lastYearForestArea"></strong>
+                                {% endblocktrans %}
+                            </p>
+                            <p>
+                                {% blocktrans trimmed %}
+                                    Trees and plants transform <strong>CO₂</strong> into <strong>oxygen</strong>,
+                                    contributing to lower CO₂ levels. <br>
+                                    The higher this value, the richer the <strong>air quality</strong> levels will
+                                    be.
+                                {% endblocktrans %}
+                            </p>
+                        </div>
+                    </div>
+                    <div id="protectedAreasWrapper" class="col-12 col-md-6 mt-3">
+                        <div id="protectedAreasBarChart" class="w-100 with-3d-shadow with-transitions">
+                            <svg class="h-100 w-100" style="min-height: 350px; max-height: 350px"></svg>
+                        </div>
+                        <div class="d-flex mt-4 justify-content-center align-items-center text-center">
+                            <p class="text-muted">
+                                <span>{% trans "Percentage of terrestrial and marine protected areas relative to the country area" %}</span>
+                                <span id="protectedAreasValueCount" class="ml-2 badge badge-pill badge-primary"
+                                      data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                      title="{% trans "Number of measures with non-null values" %}">
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mt-2 offset-1 offset-sm-2">
+                            <div class="d-flex align-items-end">
+                                <h1 class="mb-0 display-4">
+                                    <span id="lastYearProtectedAreasData" class="display-4"></span>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 pl-2 pr-2 pr-md-5">
+                                {% blocktrans trimmed %}
+                                    of terrestrial and marine protected areas in
+                                    <strong id="lastYearProtectedAreas"></strong>
+                                {% endblocktrans %}
+                            </p>
+                            <p>
+                                {% blocktrans trimmed %}
+                                    These areas are habitat for <strong>protected</strong> and/or endangered
+                                    species. <br>
+                                    The conservation of these areas helps to prevent the
+                                    <strong>loss of biodiversity</strong>.
+                                {% endblocktrans %}
+                            </p>
+                        </div>
+                    </div>
+                    <div id="improvedWaterWrapper" class="col-12 col-md-6 mt-3">
+                        <div id="improvedWaterBarChart" class="w-100 with-3d-shadow with-transitions">
+                            <svg class="h-100 w-100" style="min-height: 350px; max-height: 350px"></svg>
+                        </div>
+                        <div class="d-flex mt-4 justify-content-center align-items-center text-center">
+                            <p class="text-muted">
+                                <span>{% trans "Percentage of population with access to improved drinking water sources" %}</span>
+                                <span id="improvedWaterValueCount" class="ml-2 badge badge-pill badge-primary"
+                                      data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                      title="{% trans "Number of measures with non-null values" %}">
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mt-2 offset-1 offset-sm-2">
+                            <div class="d-flex align-items-end">
+                                <h1 class="mb-0 display-4">
+                                    <span id="lastYearImprovedWaterData" class="display-4"></span>
+                                </h1>
+                            </div>
+                            <p class="lead offset-1 pl-2 pr-2 pr-md-5">
+                                {% blocktrans trimmed %}
+                                    of population with access to improved drinking water sources in
+                                    <strong id="lastYearImprovedWater"></strong>
+                                {% endblocktrans %}
+                            </p>
+                            <p>
+                                {% blocktrans trimmed %}
+                                    Drinking water is a <strong>vital necessity</strong> for all living beings. <br>
+                                    Improved water sources include: piped water, public taps or standpipes, tube
+                                    wells
+                                    or boreholes, protected dug wells, protected springs, and rainwater collection.
+                                {% endblocktrans %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row text-muted align-items-end">
+    <div class="col">
+        <p class="mb-0 pl-3">
+            {% blocktrans trimmed %}
+                <strong>Credit: </strong><a href="https://data.worldbank.org/" target="_blank">World Bank</a>.
+            {% endblocktrans %}
+        </p>
+    </div>
+    <div class="col-auto pt-3 pt-sm-0 ml-auto text-muted justify-content-end">
+        <a href="#"
+           onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+    </div>
+</div>
+<script>
+    $("#countryEnvironmentForm").submit(function (e) {
+        var url = "/countries/environment-data";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: $("#countryEnvironmentForm").serialize(),
+            beforeSend: function () {
+                $("#countryEnvironmentAlertsDiv").addClass('d-flex').removeClass('d-none');
+                $("#countryEnvironmentYearRangeNotChosen").addClass('d-none');
+                $("#noEnvironmentData").addClass('d-none');
+                $("#countryEnvironmentDataError").addClass('d-none');
+                $("#countryEnvironmentDataLoader").removeClass('d-none');
+                $("#countryEnvironmentChartsDiv").addClass('d-none');
+                $('#countryEnvironmentFrom').removeClass('is-invalid').removeClass('is-valid').addClass('border-primary');
+                $('#countryEnvironmentTo').removeClass('is-invalid').removeClass('is-valid').addClass('border-primary');
+            },
+            complete: function () {
+                $("#countryEnvironmentDataLoader").addClass('d-none');
+            },
+            success: function (data) {
+                function validate() {
+                    if (data.validation_error === true) {
+                        index = data.invalid_data.indexOf('start_year');
+                        if (index > -1) {
+                            $('#countryEnvironmentFrom').removeClass('border-primary').addClass('is-invalid');
+                            showElement('countryEnvironmentFrom', -40, 180);
+                            data.invalid_data.splice(index, 1);
+                            if (data.invalid_data.length === 0)
+                                return;
+                        } else {
+                            $('#countryEnvironmentFrom').removeClass('border-primary').addClass('is-valid')
+                        }
+                        index = data.invalid_data.indexOf('end_year');
+                        if (index > -1) {
+                            $('#countryEnvironmentTo').removeClass('border-primary').addClass('is-invalid');
+                            showElement('countryEnvironmentTo', -40, 180);
+                        } else {
+                            $('#countryEnvironmentTo').removeClass('border-primary').addClass('is-valid')
+                        }
+                    } else {
+                        $('#countryEnvironmentFrom').removeClass('border-primary').addClass('is-valid');
+                        $('#countryEnvironmentTo').removeClass('border-primary').addClass('is-valid');
+                    }
+                }
+
+                validate();
+                if (data.data !== null && data.total_data > 0) {
+                    lineChartSeries = [
+                        '{% trans "Population with access to improved drinking water source (%)" %}'
+                    ];
+                    if (data.data.urban_land.data == null) {
+                        $('#urbanAreaLandWrapper').addClass('d-none');
+                    } else {
+                        $('#urbanAreaLandWrapper').removeClass('d-none');
+                        displayCountryEnvironmentBarChart('{% trans "Urban land below 5 meters (%)" %}',
+                            data.data.urban_land.data, "#FF9900", "{{ LANGUAGE_CODE }}", 'urbanAreaLandBarChart');
+                        $('#noUrbanAreaLandData').addClass('d-none').removeClass('d-flex');
+                        $('#urbanAreaLandValueCount').html(data.data.urban_land.count);
+                        $('#lastYearUrbanAreaLandData').html(displayNumber(data.data.urban_land.end_year_data, '%', "{{ LANGUAGE_CODE }}"));
+                        $('#lastYearUrbanAreaLand').html(data.data.urban_land.end_year);
+                    }
+                    if (data.data.forest_area.data == null) {
+                        $('#forestAreaWrapper').addClass('d-none');
+                    } else {
+                        $('#forestAreaWrapper').removeClass('d-none');
+                        displayCountryEnvironmentBarChart('{% trans "Forest land (%)" %}',
+                            data.data.forest_area.data, "#109618", "{{ LANGUAGE_CODE }}", 'forestAreaBarChart');
+                        $('#noForestAreaData').addClass('d-none').removeClass('d-flex');
+                        $('#forestAreaValueCount').html(data.data.forest_area.count);
+                        $('#lastYearForestAreaData').html(displayNumber(data.data.forest_area.end_year_data, '%', "{{ LANGUAGE_CODE }}"));
+                        $('#lastYearForestArea').html(data.data.forest_area.end_year);
+                    }
+                    if (data.data.protected_areas.data == null) {
+                        $('#protectedAreasWrapper').addClass('d-none');
+                    } else {
+                        $('#protectedAreasWrapper').removeClass('d-none');
+                        displayCountryEnvironmentBarChart(
+                            '{% trans "Protected areas (%)" %}',
+                            data.data.protected_areas.data, "#DD4477", "{{ LANGUAGE_CODE }}", 'protectedAreasBarChart');
+                        $('#noProtectedAreasData').addClass('d-none').removeClass('d-flex');
+                        $('#protectedAreasValueCount').html(data.data.protected_areas.count);
+                        $('#lastYearProtectedAreasData').html(displayNumber(data.data.protected_areas.end_year_data, '%', "{{ LANGUAGE_CODE }}"));
+                        $('#lastYearProtectedAreas').html(data.data.protected_areas.end_year);
+                    }
+                    if (data.data.improved_water.data == null) {
+                        $('#improvedWaterWrapper').addClass('d-none');
+                    } else {
+                        $('#improvedWaterWrapper').removeClass('d-none');
+                        displayCountryEnvironmentBarChart(
+                            '{% trans "Improved drinking water source (%)" %}',
+                            data.data.improved_water.data, "#3366CC", "{{ LANGUAGE_CODE }}", 'improvedWaterBarChart');
+                        $('#noImprovedWaterData').addClass('d-none').removeClass('d-flex');
+                        $('#improvedWaterValueCount').html(data.data.improved_water.count);
+                        $('#lastYearImprovedWaterData').html(displayNumber(data.data.improved_water.end_year_data, '%', "{{ LANGUAGE_CODE }}"));
+                        $('#lastYearImprovedWater').html(data.data.improved_water.end_year);
+                    }
+                    $("#countryEnvironmentAlertsDiv").removeClass('d-flex').addClass('d-none');
+                    $("#countryEnvironmentChartsDiv").removeClass('d-none');
+                }
+                else {
+                    $("#countryEnvironmentChartsDiv").addClass('d-none');
+                    $("#noEnvironmentData").removeClass('d-none');
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                $("#countryEnvironmentDataError").removeClass('d-none');
+            }
+        });
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+    });
+
+    $(document).ready(function () {
+        $.fn.datepicker.dates['{{ LANGUAGE_CODE }}'] = {
+            // All settings but "clear" won't have effect, since this calendar only shows numbers.
+            days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+            daysMin: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+            months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+            monthsShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            today: "Today",
+            clear: "{% trans "Clear" %}",
+            format: "mm/dd/yyyy",
+            titleFormat: "MM yyyy", /* Leverages same syntax as 'format' */
+            weekStart: 0
+        };
+        $('#countryEnvironmentFrom').datepicker({
+            format: "yyyy",
+            clearBtn: true,
+            enableOnReadonly: true,
+            endDate: new Date(),
+            startView: "years",
+            minViewMode: "years",
+            maxViewMode: "decades",
+            autoclose: true,
+            orientation: 'top',
+            todayHighlight: true,
+            language: "{{ LANGUAGE_CODE }}"
+        }).on('changeDate', function (selected) {
+            var to = $('#countryEnvironmentTo');
+            startDate = $("#countryEnvironmentFrom").val();
+            if (startDate > to.val()) {
+                to.val('')
+            }
+            to.datepicker('setStartDate', startDate);
+        });
+        $('#countryEnvironmentTo').datepicker({
+            format: "yyyy",
+            clearBtn: true,
+            enableOnReadonly: true,
+            endDate: new Date(),
+            startView: "years",
+            minViewMode: "years",
+            maxViewMode: "decades",
+            autoclose: true,
+            orientation: 'top',
+            todayHighlight: true,
+            language: "{{ LANGUAGE_CODE }}"
+        }).on('changeDate', function (selected) {
+            var to = $('#countryEnvironmentTo');
+            startDate = $("#countryEnvironmentFrom").val();
+            if (startDate > to.val()) {
+                to.val('')
+            }
+            to.datepicker('setStartDate', startDate);
+        });
+    });
+</script>

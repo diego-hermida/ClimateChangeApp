@@ -1,0 +1,119 @@
+{% load i18n %}
+{% load filters %}
+
+<div class="row card-text mt-3 mt-lg-0 mt-xl-0">
+
+    <!-- Country info -->
+    <div class="col offset-sm-1 my-auto">
+        <div class="mb-2 text-left">
+            <span class="lead text-muted">{% trans "ISO codes" %}</span>
+            <div class="row align-items-center">
+                <span class="col offset-1">{% trans "2-letter code" %}</span>
+                <span class="col-6 font-weight-bold">{{ current_country.country.iso2_code }}</span>
+            </div>
+            <div class="row align-items-center">
+                <span class="col offset-1">{% trans "3-letter code" %}</span>
+                <span class="col-6 font-weight-bold">{{ current_country.country.iso3_code }}</span>
+            </div>
+        </div>
+        {% if current_country.country.region.iso3_code != 'NA' or current_country.country.income_level.iso3_code != 'NA' %}
+            <div class="row my-2 align-items-center">
+                <span class="col text-muted lead">{% trans "Region" %}</span>
+                <span class="col-6 font-weight-bold">
+                {{ current_country.country.region.name }}
+            </span>
+            </div>
+            <div class="row my-2 align-items-center">
+                <span class="col text-muted lead">{% trans "Income level" %}</span>
+                <span class="col-6 font-weight-bold">{{ current_country.country.income_level.name }}</span>
+            </div>
+            <div class="row my-3 align-items-center">
+                <span class="col text-muted lead">{% trans "Monitored locations" %}</span>
+                <div class="col d-inline-flex align-items-center py-1">
+                    <h5 class="mb-1">
+                        <span class="badge badge-secondary">{{ current_country.monitored_locations }}</span>
+                    </h5>
+                    {% if current_country.location_id %}
+                        <a class="ml-3 btn btn-sm btn-outline-secondary"
+                           href="/locations/{{ current_country.location_id }}">{% trans "Show data" %}</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="my-4 text-muted">
+                <span class="d-inline-flex">{% trans "Last updated:" %} </span>
+                <span class="d-inline-flex">{{ last_updated }}</span>
+            </div>
+        {% endif %}
+    </div> <!-- end Country info -->
+
+    <!-- Population info -->
+    {% if current_country.population %}
+        <div class="col-md-6 mt-4 mt-md-0 pl-5 pl-md-0 row justify-content-center align-items-between">
+            <div class="col-12 pb-3 py-md-0 d-flex align-items-center justify-content-center">
+                <div class="d-flex flex-column justify-content-end pr-4">
+                    <div class="d-inline-flex align-items-end">
+                        <span class="display-4">{{ current_country.population|round|floatformat }}</span>
+                        <h1 class="pl-3 font-weight-light mb-2">
+                            <span>{{ current_country.population|units }}</span>
+                        </h1>
+                    </div>
+                    <span class="lead text-right">
+                        {% blocktrans trimmed with year=current_country.population_year %}
+                            people in {{ year }}
+                        {% endblocktrans %}
+                </span>
+                </div>
+            </div>
+            <div class="col-12 pt-3 mb-4 d-flex flex-column align-items-center justify-content-center">
+                <div class="d-flex flex-column justify-content-end pr-4">
+                    <div class="d-inline-flex align-items-end">
+                        <h1 class="pl-3 font-weight-light mb-2">
+                            {% if current_country.percentage_difference > 0 %}
+                                +
+                            {% endif %}
+                        </h1>
+                        <span class="display-4">{{ current_country.percentage_difference|floatformat:-2 }}</span>
+                        <h1 class="pl-3 font-weight-light mb-2">
+                            <span>%</span>
+                        </h1>
+                    </div>
+                    <span class="lead text-right">
+                    {% blocktrans trimmed with year=current_country.population_year_previous %}
+                        since {{ year }}
+                    {% endblocktrans %}
+                </span>
+                </div>
+            </div>
+            <div class="w-100 pr-md-4 d-inline-flex justify-content-end text-muted">
+                <p class="mb-2">
+                    {% blocktrans trimmed %}
+                        <strong>K:</strong> thousands;&nbsp; <strong>M:</strong> millions.
+                    {% endblocktrans %}
+                </p>
+            </div>
+        </div> <!-- end Population info -->
+    {% else %}
+        <div class="col">
+            <div class="d-flex mx-auto m-2 justify-content-center align-items-center">
+                <div class="alert alert-primary alert-sized mx-3 mb-4" role="alert">
+                    {% blocktrans trimmed with name=current_country.country.name %}
+                        Population data are not available for <strong>{{ name }}</strong>.
+                    {% endblocktrans %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+<div class="row pt-4 pt-sm-3 text-muted align-items-end">
+    <div class="col">
+        <p class="mb-0 pl-3">
+            {% blocktrans trimmed %}
+                <strong>Credit: </strong><a href="https://data.worldbank.org/" target="_blank">World Bank</a>.
+            {% endblocktrans %}
+        </p>
+    </div>
+    <div class="col-auto pt-3 pt-sm-0 ml-auto text-muted justify-content-end">
+        <a href="#"
+           onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+    </div>
+</div>

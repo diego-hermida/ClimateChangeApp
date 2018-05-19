@@ -1,0 +1,275 @@
+{% load i18n %}
+
+<!-- Location and Weather info -->
+<div class="row card-text mt-3 mt-lg-0 mt-xl-0">
+
+    <!-- Location info -->
+    <div class="col offset-sm-1 offset-md-0 offset-lg-1">
+        <div class="mb-2 text-left">
+            <span class="lead text-muted">{% trans "Coordinates" %}</span>
+            <div class="row align-items-center">
+                <span class="col offset-1">{% trans "Latitude" %}</span>
+                <span class="col-6 font-weight-bold">{{ current_location.location.latitude }}</span>
+            </div>
+            <div class="row align-items-center">
+                <span class="col offset-1">{% trans "Longitude" %}</span>
+                <span class="col-6 font-weight-bold">{{ current_location.location.longitude }}</span>
+            </div>
+        </div>
+        <div class="row my-2 align-items-center">
+            <span class="col text-muted lead">{% trans "Population" %}</span>
+            <span class="col-6 font-weight-bold">{{ current_location.location.population }}</span>
+        </div>
+        <div class="row my-2 align-items-center">
+            <span class="col text-muted lead">{% trans "Elevation" %}</span>
+            <span class="col-6 font-weight-bold">
+                {% if current_location.location.elevation is None %}
+                    ?
+                {% else %}
+                    {{ current_location.location.elevation }}
+                    {{ current_location.location.get_elevation_units_display }}
+                {% endif %}
+            </span>
+        </div>
+        <div class="row my-2 align-items-center">
+            <span class="col text-muted lead">{% trans "Timezone" %}</span>
+            <span class="col-6 font-weight-bold">{{ current_location.location.timezone }}</span>
+        </div>
+        <div class="mb-2">
+            <span class="lead text-muted">{% trans "Country" %}</span>
+            <div class="row align-items-center">
+                <span class="col offset-1">{% trans "ISO code" %}</span>
+                <a class="col-6 font-weight-bold" href="/countries/{{ current_location.location.country.iso2_code }}">
+                    {{ current_location.location.country.iso2_code }}</a>
+            </div>
+            <div class="row align-items-center">
+                <span class="col offset-1">{% trans "Region" %}</span>
+                <span class="col-6 font-weight-bold">{{ current_location.location.country.region.name }}</span>
+            </div>
+            <div class="row align-items-center">
+                <span class="col offset-1">{% trans "Income level" %}</span>
+                <span class="col-6 font-weight-bold">{{ current_location.location.country.income_level.name }}</span>
+            </div>
+        </div>
+        <div class="row my-2 align-items-center">
+            <span class="col text-muted lead">{% trans "Climate zone" %}</span>
+            <div class="col-6 d-inline-flex align-items-center">
+                <h5 class="mb-1">
+                    <span class="badge badge-secondary">{{ current_location.location.climate_zone }}</span>
+                </h5>
+                <button class="btn btn-link undecorated fa fa-info-circle fa-lg"
+                        data-toggle="tooltip" data-placement="bottom" data-html="true" data-trigger="focus"
+                        title='
+                            {% blocktrans trimmed %}
+                                Click <a href="http://koeppen-geiger.vu-wien.ac.at/" target="_blank">here</a> to know
+                                more about climate zones and its classification.
+                            {% endblocktrans %}'>
+                </button>
+            </div>
+        </div>
+        <div class="my-4 text-muted">
+            <span class="d-inline-flex">{% trans "Last updated:" %} </span>
+            <span class="d-inline-flex">{{ current_location.location.last_modified }}</span>
+        </div>
+    </div> <!-- end Location info -->
+
+    <!-- Weather info -->
+    {% if current_location.current_conditions or current_location.weather_forecast %}
+        <div class="col-md-6 mt-4 mt-md-0">
+            <nav>
+                <div class="nav nav-tabs nav-fill" id="weatherTab" role="tablist">
+                    <a class="nav-item nav-link active" id="currentConditionsTab"
+                       data-toggle="tab" href="#currentConditionsNav" role="tab"
+                       aria-controls="currentConditions" aria-selected="true">{% trans "Current" %}</a>
+                    <a class="nav-item nav-link" id="weatherForecastTab" data-toggle="tab"
+                       href="#weatherForecastNav" role="tab" aria-controls="weatherForecast"
+                       aria-selected="false">{% trans "Forecast" %}</a>
+                </div>
+            </nav>
+            <div class="tab-content" id="weatherTabContent">
+                <div class="tab-pane fade show active" id="currentConditionsNav" role="tabpanel"
+                     aria-labelledby="currentConditionsTab">
+
+                    {% if current_location.current_conditions %}
+
+                        <div class="row mt-2 align-items-center">
+                            <div class="col text-center">
+                                <h3>
+                                    <span class="display-3 lead">{{ current_location.current_conditions.temperature }}</span>
+                                    <span class="font-weight-light">{{ current_location.current_conditions.get_temperature_units_display }}</span>
+                                </h3>
+                            </div>
+                            <div class="col-5 text-center">
+                                <h1>
+                                    <i class="wi {{ current_location.current_conditions.weather.icon_code }}"></i>
+                                </h1>
+                                <span class="text-muted">{{ current_location.current_conditions.weather.description }}</span>
+                            </div>
+                        </div>
+                        <div class="offset-1 offset-sm-2 offset-md-1 offset-lg-2 offset-xl-2 mt-3">
+                            <div class="row my-2 align-items-center">
+                                <span class="col text-muted lead">{% trans "Pressure" %}</span>
+                                <span class="col-6 font-weight-bold">
+                                    {% if current_location.current_conditions.pressure is None %}
+                                        ?
+                                    {% else %}
+                                        {{ current_location.current_conditions.pressure }}
+                                        {{ current_location.current_conditions.get_pressure_units_display }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="row my-2 align-items-center">
+                                <span class="col text-muted lead">{% trans "Humidity" %}</span>
+                                <span class="col-6 font-weight-bold">
+                                    {% if current_location.current_conditions.humidity is None %}
+                                        ?
+                                    {% else %}
+                                        {{ current_location.current_conditions.humidity }}
+                                        {{ current_location.current_conditions.get_humidity_units_display }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="mb-2 align-items-center">
+                                <span class="lead text-muted">{% trans "Wind" %}</span>
+                                <div class="row">
+                                    <span class="col offset-1">{% trans "Speed" %}</span>
+                                    <span class="col-6 font-weight-bold">
+                                        {% if current_location.current_conditions.wind_speed is None %}
+                                            ?
+                                        {% else %}
+                                            {{ current_location.current_conditions.wind_speed }}
+                                            {{ current_location.current_conditions.get_wind_speed_units_display }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="row align-items-center">
+                                    <span class="col offset-1">{% trans "Degrees" %}</span>
+                                    <span class="col-6 font-weight-bold">
+                                        {% if current_location.current_conditions.wind_degrees is None %}
+                                            ?
+                                        {% else %}
+                                            {{ current_location.current_conditions.wind_degrees }}
+                                            {{ current_location.current_conditions.get_wind_degrees_units_display }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="row align-items-center">
+                                    <span class="col offset-1">{% trans "Direction" %}</span>
+                                    {% if current_location.current_conditions.wind_direction is None %}
+                                        <span class="col-6 font-weight-bold">?</span>
+                                    {% else %}
+                                        <div class="col-6">
+                                            <h5>
+                                                <span class="badge badge-secondary">{{ current_location.current_conditions.wind_direction }}</span>
+                                            </h5>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="my-4 text-muted">
+                                <span class="d-inline-flex">{% trans "Last updated:" %} </span>
+                                <span class="d-inline-flex">{{ current_location.current_conditions.timestamp }}</span>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <div class="col-md mt-5 alert alert-primary alert-sized"
+                             role="alert">
+                            <span class="text-left">
+                                {% blocktrans trimmed with loc_name=current_location.location.name %}
+                                    Current weather conditions are not available for <strong>{{ loc_name }}</strong>.
+                                {% endblocktrans %}
+                            </span>
+                        </div>
+                    {% endif %}
+                </div> <!-- end Current Conditions -->
+
+                <div class="tab-pane fade mt-4" id="weatherForecastNav" role="tabpanel"
+                     aria-labelledby="weatherForecastTab">
+
+                    {% for val in current_location.weather_forecast %}
+                        <div class="table-responsive">
+                            <table class="table text-center">
+                                {% if forloop.last %}
+                                    <caption>{% trans "Swipe right to see more data" %}</caption>
+                                {% endif %}
+                                <tbody>
+                                <tr>
+                                    <td class="lead text-muted align-middle"
+                                        style="min-width: 80px">{{ val.date }}</td>
+                                    <td class="lead text-danger align-middle">{{ val.max_temp }}</td>
+                                    <td class="lead text-primary align-middle">{{ val.min_temp }}</td>
+                                    {% for record in val.forecast %}
+                                        <td class="align-middle">
+                                            <div class="align-items-center justify-content-center">
+                                                <h3>
+                                                    <i data-toggle="tooltip" data-placement="top"
+                                                       title="{{ record.description }}" data-trigger="hover"
+                                                       class="wi {{ record.icon }}"></i>
+                                                </h3>
+                                                <span class="text-muted">{{ record.hour }}</span>
+                                            </div>
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    {% empty %}
+                        <div class="col-md mt-5 alert alert-primary alert-sized"
+                             role="alert">
+                            <span class="text-left">
+                               {% blocktrans trimmed with loc_name=current_location.location.name %}
+                                   Weather forecast is not available for <strong>{{ loc_name }}</strong>.
+                               {% endblocktrans %}
+                            </span>
+                        </div>
+                    {% endfor %}
+
+                </div> <!-- end Weather Forecast -->
+            </div>
+        </div> <!-- end Weather info -->
+
+        <!-- Weather info is not available. Tab panel won't be displayed -->
+    {% else %}
+        <div class="col-md mt-4 mx-3 mt-md-0 align-self-center alert alert-primary alert-sized text-center"
+             role="alert">
+            <span>
+                {% blocktrans trimmed with loc_name=current_location.location.name %}
+                    Weather information is not available for <strong>{{ loc_name }}</strong>.
+                {% endblocktrans %}
+            </span>
+        </div>
+    {% endif %}
+</div>
+<div class="row pt-3 text-muted align-items-end">
+    <div class="col-12 col-md">
+        {% blocktrans trimmed %}
+            <strong>Credit:</strong>
+        {% endblocktrans %}
+        <ul>
+            <li>
+                {% blocktrans trimmed %}
+                    Coordinates, population, elevation and timezone info:
+                    <a href="http://www.geonames.org/" target="_blank">GeoNames.org</a>.
+                {% endblocktrans %}
+            </li>
+            <li class="mb-0">
+                {% blocktrans trimmed %}
+                    Country info:
+                    <a href="https://data.worldbank.org/" target="_blank">World Bank</a>.
+                {% endblocktrans %}
+            </li>
+            <li class="mb-0">
+                {% blocktrans trimmed %}
+                    Current conditions and weather forecast:
+                    <a href="https://openweathermap.org/" target="_blank">OpenWeatherMap</a>.
+                {% endblocktrans %}
+            </li>
+        </ul>
+    </div>
+    <div class="col-auto pt-3 pt-sm-0 ml-auto text-muted justify-content-end">
+        <a href="#"
+           onclick="showElement('topOfPage', -40, {% if user and user.is_authenticated %}110{% else %}80{% endif %}); return false;">{% trans "Go to top" %}</a>
+    </div>
+</div>
