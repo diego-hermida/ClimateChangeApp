@@ -1,0 +1,228 @@
+{% extends "climate/base.html" %}
+{% load i18n %}
+
+{% block page_title %}
+    {% trans "Contact" %}
+{% endblock page_title %}
+
+{% block body_content %}
+    <div class="offset-lg-2 offset-md-1 mt-4 alert-sized">
+        <h1 class="text-dark">{% trans "Contact" %}</h1>
+        <div class="mt-4 mb-4 mb-md-5">
+            <span>
+                {% trans "Do not hesitate to contact us if you:" %}
+            </span>
+            <ul class="fa-ul pt-2 pl-3">
+                <li><i class="fa fa-li fa-check-circle text-success"></i>
+                    {% blocktrans trimmed %}
+                        Have found a <strong>bug</strong>. If so, a detailed explanation would be ideal.
+                    {% endblocktrans %}
+                </li>
+                <li><i class="fa fa-li fa-check-circle text-success"></i>
+                    {% blocktrans trimmed %}
+                        Think some data showed in this application could be <strong>invalid</strong>.
+                    {% endblocktrans %}
+                </li>
+                <li><i class="fa fa-li fa-check-circle text-success"></i>
+                    {% blocktrans trimmed %}
+                        Want <strong>new</strong> content and/or data.
+                    {% endblocktrans %}
+                </li>
+                <li><i class="fa fa-li fa-check-circle text-success"></i>
+                    {% blocktrans trimmed %}
+                        Want to <strong>translate</strong> the application to a new language and/or make another
+                        <strong>contribution</strong>.
+                    {% endblocktrans %}
+                </li>
+            </ul>
+            <span>
+                {% trans "However, if you pretend to:" %}
+            </span>
+            <ul class="fa-ul pt-2 pl-3">
+                <li><i class="fa fa-li fa-times-circle text-danger"></i>
+                    {% blocktrans trimmed %}
+                        Say you <cite>like</cite> this app: You can use the
+                        <i class="px-1 fa fa-thumbs-up fa-lg text-info"></i> button at the bottom of this page!
+                    {% endblocktrans %}
+                </li>
+                <li><i class="fa fa-li fa-times-circle text-danger"></i>
+                    {% blocktrans trimmed %}
+                        Contact the <strong>developing team</strong>, you can do it <a href="/about">here</a>.
+                    {% endblocktrans %}
+                </li>
+            </ul>
+        </div>
+    </div>
+    <form id="contactForm" class="offset-lg-2 offset-md-1 alert-sized need-validation" method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="contactSubjectInput">{% trans "Subject:" %}</label>
+            <input id="contactSubjectInput" name="subject" type="text" class="form-control"
+                   placeholder="{% trans "I've found a bug!" %}"
+                   aria-describedby="contactSubjectHelp" minlength="{{ lengths.min_subject }}"
+                   maxlength="{{ lengths.max_subject }}" required>
+            <div class="invalid-feedback">
+                {% blocktrans trimmed with min_subject=lengths.min_subject max_subject=lengths.max_subject %}
+                    The subject length must be {{ min_subject }}-{{ max_subject }} characters long.
+                {% endblocktrans %}
+            </div>
+            <div class="valid-feedback">
+                {% trans "Good!" %}
+            </div>
+            <small id="contactSubjectHelp" class="text-muted mt-3">
+                {% trans "This should summarize your message." %}
+            </small>
+        </div>
+        <div class="form-group">
+            <label for="contactEmailInput">{% trans "E-mail:" %}</label>
+            <input id="contactEmailInput" name="email" type="email" class="form-control"
+                   placeholder="{% trans "john.doe@example.com" %}"
+                   aria-describedby="contactEmailHelp" minlength="{{ lengths.min_email }}"
+                   maxlength="{{ lengths.max_email }}" required>
+            <div class="invalid-feedback">
+                {% blocktrans trimmed with min_email=lengths.min_email max_email=lengths.max_email %}
+                    The e-mail address must be valid, and its length must be {{ min_email }}-{{ max_email }} characters
+                    long, and must include a "@".
+                {% endblocktrans %}
+            </div>
+            <div class="valid-feedback">
+                {% trans "Good!" %}
+            </div>
+            <small id="contactEmailHelp" class="text-muted mt-3">
+                {% trans "We will reply you to this address as soon as possible." %}
+            </small>
+        </div>
+        <div class="form-group">
+            <label for="contactNameInput">{% trans "Name:" %}</label>
+            <input id="contactNameInput" name="name" type="text" class="form-control"
+                   placeholder="{% trans "John Doe" %}" aria-describedby="inputGroupPrepend"
+                   minlength="{{ lengths.min_name }}" maxlength="{{ lengths.max_name }}" required>
+            <div class="invalid-feedback">
+                {% blocktrans trimmed with min_name=lengths.min_name max_name=lengths.max_name %}
+                    The name length must be {{ min_name }}-{{ max_name }} characters long.
+                {% endblocktrans %}
+            </div>
+            <div class="valid-feedback">
+                {% trans "Good!" %}
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="contactMessageInput">{% trans "Message:" %}</label>
+            <textarea id="contactMessageInput" name="message" class="form-control" required
+                      rows="8" placeholder="{% trans "Your message goes here." %}" minlength="{{ lengths.min_message }}"
+                      maxlength="{{ lengths.max_message }}"></textarea>
+            <div class="invalid-feedback">
+                {% blocktrans trimmed with min_message=lengths.min_message max_message=lengths.max_message %}
+                    The message length must be {{ min_message }}-{{ max_message }} characters long.
+                {% endblocktrans %}
+            </div>
+            <div class="valid-feedback">
+                {% trans "Good!" %}
+            </div>
+        </div>
+        <div class="d-flex offset-lg-2 offset-md-1 alert-sized">
+            <div id="contactMessageSuccessfullySent" class="mt-3 mx-auto alert alert-success alert-sized d-none"
+                 role="alert">
+                <span>{% trans "Your message has been successfully sent." %}</span>
+            </div>
+            <div id="contactMessageError" class="mt-3 mx-auto alert alert-danger alert-sized d-none"
+                 role="alert">
+                <span>{% trans "An error occurred while sending your message." %}</span>
+            </div>
+        </div>
+        <div class="my-4 d-inline-flex align-items-center">
+            <button id="contactSubmitButton" type="submit" class="btn btn-outline-primary">{% trans "Send" %}</button>
+            <div id="contactResponseLoader" class="d-none ml-3">
+                <i class="fa fa-spinner fa-spin fa-lg"></i>
+            </div>
+            <a id="goHomeLink" class="d-none" href="/">{% trans "Return to the main page" %}</a>
+        </div>
+    </form>
+    <script>
+        f = $("#contactForm");
+        f.submit(function (e) {
+            validateForm();
+            if (!f.hasClass('valid-form')) {
+                return false;
+            }
+            var url = "/contact";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: f.serialize(),
+                beforeSend: function () {
+                    $("#contactResponseLoader").removeClass('d-none');
+                    $("#contactMessageSuccessfullySent").addClass('d-none');
+                    $("#contactMessageError").addClass('d-none');
+                    $("#contactSubjectInput").removeClass('is-valid').removeClass('is-invalid');
+                    $("#contactEmailInput").removeClass('is-valid').removeClass('is-invalid');
+                    $("#contactNameInput").removeClass('is-valid').removeClass('is-invalid');
+                    $("#contactMessageInput").removeClass('is-valid').removeClass('is-invalid');
+                },
+                complete: function () {
+                    $("#contactResponseLoader").addClass('d-none');
+                },
+                success: function (data) {
+                    if (data.success) {
+                        $("#contactMessageSuccessfullySent").removeClass('d-none');
+                        $("#contactSubmitButton").addClass('d-none');
+                        $("#goHomeLink").removeClass('d-none');
+                        showElement('contactMessageSuccessfullySent', -40, 120);
+                    }
+                    else {
+                        if (data.validation_error === true) {
+                            var firstId = null;
+                            if (data.invalid_data.indexOf('subject') > -1) {
+                                $("#contactSubjectInput").addClass('is-invalid');
+                                firstId = 'contactSubjectInput';
+                            } else {
+                                $("#contactSubjectInput").addClass('is-valid');
+                            }
+                            if (data.invalid_data.indexOf('email') > -1) {
+                                $("#contactEmailInput").addClass('is-invalid');
+                                firstId = 'contactEmailInput';
+                            } else {
+                                $("#contactEmailInput").addClass('is-valid');
+                            }
+                            if (data.invalid_data.indexOf('name') > -1) {
+                                $("#contactNameInput").addClass('is-invalid');
+                                firstId = 'contactNameInput';
+                            } else {
+                                $("#contactNameInput").addClass('is-valid');
+                            }
+                            if (data.invalid_data.indexOf('message') > -1) {
+                                $("#contactMessageInput").addClass('is-invalid');
+                                firstId = 'contactMessageInput';
+                            } else {
+                                $("#contactMessageInput").addClass('is-valid');
+                            }
+                            if (firstId !== null) {
+                                showElement(firstId, -40, 180);
+                            }
+                        } else if (data.save_error) {
+                            $("#contactMessageError").addClass('d-none');
+                            showElement('contactMessageError', -40, 120);
+                        }
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#contactMessageError").addClass('d-none');
+                }
+            });
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+        });
+
+        var form = document.getElementById('contactForm');
+
+        function validateForm() {
+            if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+                form.classList.remove('valid-form');
+            } else {
+                form.classList.add('valid-form');
+            }
+            form.classList.add('was-validated');
+        }
+    </script>
+{% endblock body_content %}
