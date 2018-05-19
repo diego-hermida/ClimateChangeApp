@@ -1,0 +1,31 @@
+{% extends "climate/base_admin.html" %}
+{% load i18n %}
+
+{% block page_title %}
+    {% trans "Admin zone" %}
+{% endblock page_title %}
+
+{% block body_content %}
+    <div class="text-center my-4 pt-md-5">
+        <h1 class="text-dark">{% trans "Welcome to the admin zone" %}</h1>
+    </div>
+    <div class="offset-lg-4 offset-md-3 offset-sm-2">
+        <p class="lead mb-2">
+            {% blocktrans trimmed %}
+                Here you can:
+            {% endblocktrans %}
+        </p>
+        <ul class="lead">
+            <li>
+                {% blocktrans trimmed %}
+                    <a href="/admin/profile">Manage your profile</a>.
+                {% endblocktrans %}
+            </li>
+            <li>
+                {% blocktrans trimmed %}
+                    <a href="/admin/messages">Manage messages</a> sent by application's users.
+                {% endblocktrans %}
+            </li>
+        </ul>
+    </div>
+{% endblock body_content %}

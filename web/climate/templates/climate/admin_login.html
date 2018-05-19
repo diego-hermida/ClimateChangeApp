@@ -1,0 +1,126 @@
+{% extends "climate/base_admin.html" %}
+{% load i18n %}
+
+{% block page_title %}
+    {% trans "Login - Admin zone" %}
+{% endblock page_title %}
+
+{% block body_content %}
+    <div class="offset-lg-4 offset-md-3 mt-4 mb-5 alert-sized pt-md-5">
+        <h1 class="text-dark">{% trans "Sign in" %}</h1>
+    </div>
+    <form id="signInForm" class="my-auto offset-lg-4 offset-md-3 alert-sized need-validation" method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="col-lg-7 col-md-8 form-group">
+                <label for="signInNameInput">{% trans "Username:" %}</label>
+                <input id="signInNameInput" name="user" type="text" class="form-control"
+                       placeholder="{% trans "john.doe" %}" required>
+                <div class="invalid-feedback">
+                    {% trans "This field cannot be empty." %}
+                </div>
+                <div class="valid-feedback">
+                    {% trans "Good!" %}
+                </div>
+                <small id="signInNameHelp" class="text-muted mt-3">
+                    {% blocktrans trimmed %}
+                        The administrator should have provided you with your <strong>credentials</strong>.
+                    {% endblocktrans %}
+
+                </small>
+            </div>
+            <div class="col-lg-7 col-md-8 form-group">
+                <label for="signInPasswordInput">{% trans "Password:" %}</label>
+                <input id="signInPasswordInput" name="password" type="password" class="form-control" required>
+                <div class="invalid-feedback">
+                    {% trans "This field cannot be empty." %}
+                </div>
+                <div class="valid-feedback">
+                    {% trans "Good!" %}
+                </div>
+            </div>
+        </div>
+        <div class="alert-sized d-flex">
+            <div id="signInMessageError"
+                 class="mt-3 mx-auto mx-md-0 alert alert-danger alert-sized d-none" role="alert">
+                <span>{% trans "An error occurred while processing your authentication." %}</span>
+            </div>
+            <div id="invalidCredentialsError"
+                 class="mt-3 mx-auto mx-md-0 alert alert-danger alert-sized d-none" role="alert">
+                <span>{% trans "Your credentials are invalid." %}</span>
+            </div>
+        </div>
+        <div class="my-4 d-inline-flex align-items-center">
+            <button type="submit" class="btn btn-outline-primary">{% trans "Sign in" %}</button>
+            <div id="signInResponseLoader" class="d-none ml-3">
+                <i class="fa fa-spinner fa-spin fa-lg"></i>
+            </div>
+        </div>
+    </form>
+    <script>
+        f = $("#signInForm");
+        f.submit(function (e) {
+            validateForm();
+            if (!f.hasClass('valid-form')) {
+                return false;
+            }
+            var url = "/admin/login";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: f.serialize(),
+                beforeSend: function () {
+                    $("#signInResponseLoader").removeClass('d-none');
+                    $("#signInMessageError").addClass('d-none');
+                    $("#invalidCredentialsError").addClass('d-none');
+                    $("#signInNameInput").removeClass('is-valid').removeClass('is-invalid');
+                    $("#signInPasswordInput").removeClass('is-valid').removeClass('is-invalid');
+                },
+                complete: function () {
+                    $("#signInResponseLoader").addClass('d-none');
+                },
+                success: function (data) {
+                    if (data.success) {
+                        window.location.href = data.url
+                    }
+                    else {
+                        if (data.invalid_fields == null) {
+                            $("#invalidCredentialsError").removeClass('d-none');
+                            showElement('invalidCredentialsError', -40, 80)
+                        } else {
+                            if (data.invalid_fields.indexOf('user') > -1) {
+                                $("#signInNameInput").addClass('is-invalid');
+                            } else {
+                                $("#signInNameInput").addClass('is-valid');
+                            }
+                            if (data.invalid_fields.indexOf('password') > -1) {
+                                $("#signInPasswordInput").addClass('is-invalid');
+                            } else {
+                                $("#signInPasswordInput").addClass('is-valid');
+                            }
+                            showElement('signInNameInput', -40, 80)
+                        }
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#signInMessageError").removeClass('d-none');
+                }
+            });
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+        });
+
+        var form = document.getElementById('signInForm');
+
+        function validateForm() {
+            if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+                form.classList.remove('valid-form');
+                showElement('signInNameInput', -40, 80)
+            } else {
+                form.classList.add('valid-form');
+            }
+            form.classList.add('was-validated');
+        }
+    </script>
+{% endblock body_content %}
