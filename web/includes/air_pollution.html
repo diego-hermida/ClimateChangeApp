@@ -120,7 +120,7 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td class="align-middle" scope="row">
+                            <td class="align-middle">
                                 <h5 class="mb-1">
                                         <span class="badge" style="background-color: {{ AQI_colors.0.color }};
                                                 color: {{ AQI_colors.0.text_color }}">0-50</span>
@@ -132,7 +132,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="align-middle" scope="row">
+                            <td class="align-middle">
                                 <h5 class="mb-1">
                                         <span class="badge" style="background-color: {{ AQI_colors.1.color }};
                                                 color: {{ AQI_colors.1.text_color }}">51-100</span>
@@ -144,7 +144,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="align-middle" scope="row">
+                            <td class="align-middle">
                                 <h5 class="mb-1">
                                         <span class="badge" style="background-color: {{ AQI_colors.2.color }};
                                                 color: {{ AQI_colors.2.text_color }}">101-150</span>
@@ -156,7 +156,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="align-middle" scope="row">
+                            <td class="align-middle">
                                 <h5 class="mb-1">
                                         <span class="badge"
                                               style="background-color: {{ AQI_colors.3.color }};
@@ -182,7 +182,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="align-middle" scope="row">
+                            <td class="align-middle">
                                 <h5 class="mb-1">
                                         <span class="badge"
                                               style="background-color: {{ AQI_colors.5.color }};
@@ -230,7 +230,7 @@
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <button type="button" class="btn btn-outline-primary" onclick="openDatePicker('daterange')">
-                                <i class="fa fa-calendar"></i>
+                                <em class="fa fa-calendar"></em>
                             </button>
                         </div>
                         <input id="airPollutionDateRangeInput" type="text" name="daterange"
@@ -238,7 +238,7 @@
                                placeholder="{% trans "From - To" %}" readonly aria-readonly="true">
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-primary" style="border-radius: 0 0.25rem 0.25rem 0;">
-                                <i class="fa fa-search"></i>
+                                <em class="fa fa-search"></em>
                             </button>
                         </div>
                         <div class="invalid-feedback">
@@ -268,11 +268,11 @@
                 <div id="dateRangeNotChosen" class="mx-auto alert alert-primary alert-sized" role="alert">
                     <span>
                         {% blocktrans trimmed %}
-                            Select a <strong>date range</strong> by clicking on the <kbd><i
-                                class="fa fa-calendar"></i></kbd> button.
+                            Select a <strong>date range</strong> by clicking on the
+                            <kbd><em class="fa fa-calendar"></em></kbd> button.
                             <br/>
-                            Once done, press the <kbd><i
-                                class="fa fa-search"></i></kbd> button, and a <strong>line chart</strong>
+                            Once done, press the <kbd><em class="fa fa-search"></em></kbd> button, and a
+                            <strong>line chart</strong>
                             with historical air pollution data will appear here.
                         {% endblocktrans %}
                     </span>
@@ -285,7 +285,7 @@
                     {% trans "Data could not be retrieved." %}
                 </div>
                 <div id="airPollutionDataLoader" class="d-none mx-auto">
-                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                    <em class="fa fa-spinner fa-spin fa-3x"></em>
                 </div>
             </div>
 
@@ -317,7 +317,7 @@
                             {% endblocktrans %}
                         </p>
                         <span id="airPollutionValueCount" class="ml-3 badge badge-pill badge-primary"
-                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              data-toggle="tooltip" data-placement="bottom" data-trigger="hover"
                               title="{% trans "Number of plotted values" %}"></span>
                     </div>
                     <div class="d-flex mx-auto mt-3 mb-1 alert alert-info alert-sized">
@@ -344,7 +344,7 @@
                             <div class="d-flex justify-content-center align-items-center text-center">
                                 <p class="text-muted">{% trans "Dominant pollutant throughout the period" %}
                                     <span id="airPollutionDomCount" class="ml-2 badge badge-pill badge-primary"
-                                          data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                          data-toggle="tooltip" data-placement="bottom" data-trigger="hover"
                                           title="{% trans "Number of measures with non-null dominant pollutant" %}"></span>
                                 </p>
                             </div>
@@ -365,7 +365,7 @@
                             <div class="d-flex justify-content-center align-items-center text-center">
                                 <p class="text-muted">{% trans "Average, max and min values for all pollutants" %}
                                     <span id="airPollutionStatsCount" class="ml-2 badge badge-pill badge-primary"
-                                          data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                                          data-toggle="tooltip" data-placement="bottom" data-trigger="hover"
                                           title="{% trans "Table values are computed using plotted data" %}"></span>
                                 </p>
                             </div>

@@ -1,21 +1,20 @@
 function displayHistoricalWeatherHeatmap(startDate, endDate, data, chartId, locale, legendTitleFormat, subDomainTitleFormat) {
 
-    xs = 575.98;
-    sm = 767.98;
-    md = 991.98;
-    lg = 1199.98;
+    const xs = 575.98;
+    const sm = 767.98;
+    const md = 991.98;
+    const lg = 1199.98;
 
-    subdomain_xs = 'x_day';
-    subdomain_sm = 'x_day';
-    subdomain_md = 'day';
-    subdomain_lg = 'x_day';
-    subdomain_xl = 'x_day';
+    const subdomain_xs = 'x_day';
+    const subdomain_sm = 'x_day';
+    const subdomain_md = 'day';
+    const subdomain_lg = 'x_day';
+    const subdomain_xl = 'x_day';
 
-    rowlimit_xs = 29;
-    rowlimit_sm = 39;
-    rowlimit_md = null;
-    rowlimit_lg = 74;
-    rowlimit_xl = 89;
+    const rowlimit_sm = 39;
+    const rowlimit_md = null;
+    const rowlimit_lg = 74;
+    const rowlimit_xl = 89;
 
     function mapSubdomainToWindowSize(size) {
         if (size <= xs)

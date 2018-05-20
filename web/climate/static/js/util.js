@@ -20,7 +20,7 @@ function increaseLikeCount() {
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            ('An error occurred while increasing "Like" counter: ', errorThrown)
+            console.log('An error occurred while increasing "Like" counter.')
         }
     });
 }
@@ -38,7 +38,7 @@ function resizeFooter() {
             doResize = false;
         }
     };
-    var resizerInterval = setInterval(resizer, resizeDelay);
+    setInterval(resizer, resizeDelay);
     resizer();
     $(window).resize(function () {
         doResize = true;

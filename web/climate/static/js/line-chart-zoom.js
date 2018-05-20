@@ -1,19 +1,19 @@
 function displayLineChartZoom(seriesName, data, units, colors, locale, chartId) {
 
     var series = [];
-    for (i = 1; i < seriesName.length; i++) {
+    for (var i = 1; i < seriesName.length; i++) {
         series.push({values: [], key: seriesName[i]})
     }
-    for (i = 0; i < data.length; i++) {
-        for (j = 0; j < series.length; j++) {
-            series[j]['values'].push({x: +data[i][0], y: +data[i][j + 1]})
+    for (var j = 0; j < data.length; j++) {
+        for (var k = 0; k < series.length; k++) {
+            series[k]['values'].push({x: +data[j][0], y: +data[j][k + 1]})
         }
     }
 
     nv.addGraph(function () {
         var chart = nv.models.lineWithFocusChart();
         chart.xTickFormat(function (d) {
-            _d = new Date(d);
+            var _d = new Date(d);
             return _d.toLocaleDateString(locale) + ' ' + _d.toLocaleTimeString(locale)
         });
         chart.tooltipContent(function (key, y, e, graph) {

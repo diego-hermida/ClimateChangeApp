@@ -35,7 +35,7 @@
                             <div class="input-group-prepend">
                                 <button type="button" class="btn btn-outline-primary"
                                         onclick="$('#historicalWeatherFrom').datepicker().data('datepicker').show()">
-                                    <i class="fa fa-calendar"></i>
+                                    <em class="fa fa-calendar"></em>
                                 </button>
                             </div>
                             <input id="historicalWeatherFrom" type="text" name="start_year" data-date-format="yyyy"
@@ -50,7 +50,7 @@
                             <div class="input-group-prepend">
                                 <button type="button" class="btn btn-outline-primary"
                                         onclick="$('#historicalWeatherTo').datepicker().data('datepicker').show()">
-                                    <i class="fa fa-calendar"></i>
+                                    <em class="fa fa-calendar"></em>
                                 </button>
                             </div>
                             <input id="historicalWeatherTo" type="text" name="end_year"
@@ -88,11 +88,11 @@
                 <div id="yearRangeNotChosen" class="mx-auto alert alert-primary alert-sized" role="alert">
                     <span>
                         {% blocktrans trimmed %}
-                            Select a <strong>year range</strong> by clicking on the <kbd><i
-                                class="fa fa-calendar"></i></kbd> button.
+                            Select a <strong>year range</strong> by clicking on the <kbd><em
+                                class="fa fa-calendar"></em></kbd> button.
                             <br/>
-                            Once done, press the <kbd><i
-                                class="fa fa-search"></i></kbd> button, and a <strong>calendar chart</strong>
+                            Once done, press the <kbd><em
+                                class="fa fa-search"></em></kbd> button, and a <strong>calendar chart</strong>
                             with historical weather data will appear here.
                         {% endblocktrans %}
                     </span>
@@ -104,7 +104,7 @@
                     {% trans "Data could not be retrieved." %}
                 </div>
                 <div id="historicalWeatherDataLoader" class="d-none mx-auto">
-                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                    <em class="fa fa-spinner fa-spin fa-3x"></em>
                 </div>
             </div>
             <div id="historicalWeatherChartsDiv" class="row d-none h-100 mx-0">

@@ -70,7 +70,7 @@
         <div class="px-3 row align-items-center">
             <div class="col-auto">
                 <a class="btn btn-info py-0" href="/admin/messages" target="_self">
-                    <i class="fa fa-inbox fa-2x"></i>
+                    <em class="fa fa-inbox fa-2x"></em>
                     {% if new_msgs %}
                         <span class="mt-1 badge badge-danger align-top rounded-circle">{{ new_msgs }}</span>
                     {% endif %}
@@ -92,21 +92,21 @@
                             {% if msgs.has_previous %}
                                 <a class="btn btn-outline-info"
                                    href="?filter={{ filter }}&page={{ msgs.previous_page_number }}">
-                                    <i class="fa fa-chevron-left fa-lg"></i>
+                                    <em class="fa fa-chevron-left fa-lg"></em>
                                 </a>
                             {% else %}
                                 <a class="disabled btn btn-outline-info" aria-disabled="true" href="#">
-                                    <i class="fa fa-chevron-left fa-lg"></i>
+                                    <em class="fa fa-chevron-left fa-lg"></em>
                                 </a>
                             {% endif %}
                             {% if msgs.has_next %}
                                 <a class="btn btn-outline-info"
                                    href="?filter={{ filter }}&page={{ msgs.next_page_number }}">
-                                    <i class="fa fa-chevron-right fa-lg"></i>
+                                    <em class="fa fa-chevron-right fa-lg"></em>
                                 </a>
                             {% else %}
                                 <a class="disabled btn btn-outline-info" aria-disabled="true" href="#">
-                                    <i class="fa fa-chevron-right fa-lg"></i>
+                                    <em class="fa fa-chevron-right fa-lg"></em>
                                 </a>
                             {% endif %}
                         </div>
@@ -125,13 +125,13 @@
                                                class="btn btn-outline-primary ml-2 p-0" data-toggle="tooltip"
                                                data-placement="bottom" data-trigger="hover" role="button"
                                                title="{% trans 'Move message to inbox' %}">
-                                                <span class="col-auto"><i class="fa fa-inbox"></i></span>
+                                                <span class="col-auto"><em class="fa fa-inbox"></em></span>
                                             </a>
                                             <a href="?filter={{ filter }}&page={{ page }}&action=delete&msgid={{ msg.id }}"
                                                class="btn btn-outline-danger ml-2 p-0" data-toggle="tooltip"
                                                data-placement="bottom" data-trigger="hover" role="button"
                                                title="{% trans 'Permanently delete message' %}">
-                                                <span class="col-auto"><i class="fa fa-trash-o"></i></span>
+                                                <span class="col-auto"><em class="fa fa-trash-o"></em></span>
                                             </a>
                                         </div>
                                     {% elif not msg.replied %}
@@ -140,19 +140,19 @@
                                                class="btn btn-outline-primary ml-2 p-0" data-toggle="tooltip"
                                                data-placement="bottom" data-trigger="hover" role="button"
                                                title="{% trans 'Mark message as replied' %}">
-                                                <span class="col-auto"><i class="fa fa-reply"></i></span>
+                                                <span class="col-auto"><em class="fa fa-reply"></em></span>
                                             </a>
                                             <a href="?filter={{ filter }}&page={{ page }}&action=dismiss&msgid={{ msg.id }}"
                                                class="btn btn-outline-danger ml-2 p-0" data-toggle="tooltip"
                                                data-placement="bottom" data-trigger="hover" role="button"
                                                title="{% trans 'Dismiss message' %}">
-                                                <span class="col-auto"><i class="fa fa-times-circle"></i></span>
+                                                <span class="col-auto"><em class="fa fa-times-circle"></em></span>
                                             </a>
                                             <a href="mailto:{{ msg.email }}"
                                                class="btn btn-outline-primary ml-2 p-0" data-toggle="tooltip"
                                                data-placement="bottom" data-trigger="hover" role="button"
                                                title="{% trans 'Reply by email' %}">
-                                                <span class="col-auto"><i class="fa fa-paper-plane"></i></span>
+                                                <span class="col-auto"><em class="fa fa-paper-plane"></em></span>
                                             </a>
                                         </div>
                                     {% endif %}
@@ -161,18 +161,18 @@
                                             <span class="pl-2 pr-1" data-toggle="tooltip" data-placement="bottom"
                                                  data-trigger="hover"
                                                   title="{% trans 'Replied' context "single msg" %}">
-                                            <i class="fa fa-envelope-open text-success"></i>
+                                            <em class="fa fa-envelope-open text-success"></em>
                                         </span>
                                         {% elif msg.dismissed %}
                                             <span class="pl-2 pr-1" data-toggle="tooltip" data-placement="bottom"
                                                  data-trigger="hover"
                                                   title="{% trans 'Dismissed' context "single msg" %}">
-                                            <i class="fa fa-trash-o text-danger"></i>
+                                            <em class="fa fa-trash-o text-danger"></em>
                                         </span>
                                         {% else %}
                                             <span class="pl-2 pr-1" data-toggle="tooltip" data-placement="bottom"
                                                  data-trigger="hover" title="{% trans 'New' %}">
-                                            <i class="fa fa-envelope text-primary"></i>
+                                            <em class="fa fa-envelope text-primary"></em>
                                         </span>
                                         {% endif %}
                                         <span class="col pr-0 col-md-auto font-weight-bold">{{ msg.name }}</span>
@@ -193,21 +193,21 @@
                             {% if msgs.has_previous %}
                                 <a class="btn btn-outline-info"
                                    href="?filter={{ filter }}&page={{ msgs.previous_page_number }}">
-                                    <i class="fa fa-chevron-left fa-lg"></i>
+                                    <em class="fa fa-chevron-left fa-lg"></em>
                                 </a>
                             {% else %}
                                 <a class="disabled btn btn-outline-info" aria-disabled="true" href="#">
-                                    <i class="fa fa-chevron-left fa-lg"></i>
+                                    <em class="fa fa-chevron-left fa-lg"></em>
                                 </a>
                             {% endif %}
                             {% if msgs.has_next %}
                                 <a class="btn btn-outline-info"
                                    href="?filter={{ filter }}&page={{ msgs.next_page_number }}">
-                                    <i class="fa fa-chevron-right fa-lg"></i>
+                                    <em class="fa fa-chevron-right fa-lg"></em>
                                 </a>
                             {% else %}
                                 <a class="disabled btn btn-outline-info" aria-disabled="true" href="#">
-                                    <i class="fa fa-chevron-right fa-lg"></i>
+                                    <em class="fa fa-chevron-right fa-lg"></em>
                                 </a>
                             {% endif %}
                         </div>

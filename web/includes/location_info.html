@@ -101,7 +101,7 @@
                             </div>
                             <div class="col-5 text-center">
                                 <h1>
-                                    <i class="wi {{ current_location.current_conditions.weather.icon_code }}"></i>
+                                    <em class="wi {{ current_location.current_conditions.weather.icon_code }}"></em>
                                 </h1>
                                 <span class="text-muted">{{ current_location.current_conditions.weather.description }}</span>
                             </div>
@@ -203,9 +203,9 @@
                                         <td class="align-middle">
                                             <div class="align-items-center justify-content-center">
                                                 <h3>
-                                                    <i data-toggle="tooltip" data-placement="top"
+                                                    <em data-toggle="tooltip" data-placement="top"
                                                        title="{{ record.description }}" data-trigger="hover"
-                                                       class="wi {{ record.icon }}"></i>
+                                                       class="wi {{ record.icon }}"></em>
                                                 </h3>
                                                 <span class="text-muted">{{ record.hour }}</span>
                                             </div>

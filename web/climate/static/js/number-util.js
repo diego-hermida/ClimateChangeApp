@@ -70,4 +70,5 @@ function displayNumberLocalizedAndWithSuffix(n, multiplierFactor, units='', maxD
         return displayNumberLocalized(n / (1000 / multiplierFactor), 'k' + units, maxDecimalPlaces,
             locale, errorRepresentation);
     }
+    return displayNumberLocalized(n, '', maxDecimalPlaces, locale, errorRepresentation);
 }

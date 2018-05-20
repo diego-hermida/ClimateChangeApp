@@ -80,15 +80,15 @@
                 <li class="nav-item px-md-1">
                     <a class="btn btn-default nav-link" href="/about">
                         <span class="d-md-none">{% trans "About" %}</span>
-                        <i class="d-none d-md-inline fa fa-user fa-lg text-white" data-toggle="tooltip"
-                           data-trigger="hover" data-placement="top" title="{% trans "About" %}"></i>
+                        <em class="d-none d-md-inline fa fa-user fa-lg text-white" data-toggle="tooltip"
+                           data-trigger="hover" data-placement="top" title="{% trans "About" %}"></em>
                     </a>
                 </li>
                 <li class="nav-item px-md-1">
                     <a class="btn btn-default nav-link" href="/contact">
                         <span class="d-md-none">{% trans "Contact" %}</span>
-                        <i class="d-none d-md-inline fa fa-envelope-o fa-lg text-white" data-toggle="tooltip"
-                           data-trigger="hover" data-placement="top" title="{% trans "Contact" %}"></i>
+                        <em class="d-none d-md-inline fa fa-envelope-o fa-lg text-white" data-toggle="tooltip"
+                           data-trigger="hover" data-placement="top" title="{% trans "Contact" %}"></em>
                     </a>
                 </li>
             </ul>
@@ -103,12 +103,12 @@
             </p>
             <a class="ml-auto btn btn-default nav-link py-0 pl-5 text-light" href="/admin">
                 <span class="d-none d-sm-inline px-2">{% trans "Admin zone" %}</span>
-                <i class="fa fa-black-tie fa-lg"></i>
+                <em class="fa fa-black-tie fa-lg"></em>
             </a>
             <span class="d-none d-sm-inline px-1">•</span>
             <a class="btn btn-default nav-link py-0 px-1 px-sm-2 text-light" href="/admin/logout">
                 <span class="d-none d-sm-inline px-2">{% trans "Logout" %}</span>
-                <i class="fa fa-sign-out fa-lg"></i>
+                <em class="fa fa-sign-out fa-lg"></em>
             </a>
         </div>
     {% endif %}
@@ -142,12 +142,12 @@
                 {% if not like_given %}
                     <button id="likeButton" class="btn btn-outline-info py-1"
                             onclick="increaseLikeCount(); return false;">
-                        <i class="pb-1 fa fa-thumbs-up fa-lg"></i>
+                        <em class="pb-1 fa fa-thumbs-up fa-lg"></em>
                         <span id="likeCounter" class="ml-1 badge">{{ like_count }}</span>
                     </button>
                 {% else %}
                     <button id="likeButton" class="btn btn-outline-info py-1 disabled">
-                        <i class="pb-1 fa fa-thumbs-up fa-lg"></i>
+                        <em class="pb-1 fa fa-thumbs-up fa-lg"></em>
                         <span id="likeCounter" class="ml-1 badge">{{ like_count }}</span>
                     </button>
                 {% endif %}
@@ -155,7 +155,7 @@
         </div>
         <div class="col-12 d-flex align-items-center text-center">
             <a class="mx-auto" href="https://www.linkedin.com/in/diego-hermida/" target="_blank">
-                <i class="btn btn-outline-info fa fa-linkedin-square fa-lg px-2 mb-2 mb-md-0"></i>
+                <em class="btn btn-outline-info fa fa-linkedin-square fa-lg px-2 mb-2 mb-md-0"></em>
             </a>
         </div>
         <div class="col-12 pt-4 py-md-0 ml-auto d-flex flex-column text-center">

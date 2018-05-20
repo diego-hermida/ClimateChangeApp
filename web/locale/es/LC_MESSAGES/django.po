@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-19 21:25+0000\n"
+"POT-Creation-Date: 2018-05-20 00:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -121,45 +121,53 @@ msgstr "Renta medio-alta"
 msgid "About"
 msgstr "Acerca de"
 
-#: climate/templates/climate/about.html:29
+#: climate/templates/climate/about.html:26
+msgid "Picture of the student who developed the application."
+msgstr "Imagen del estudiante que ha desarrollado la aplicación."
+
+#: climate/templates/climate/about.html:30
 msgid "Student"
 msgstr "Estudiante"
 
-#: climate/templates/climate/about.html:40
-#: climate/templates/climate/about.html:70
+#: climate/templates/climate/about.html:41
+#: climate/templates/climate/about.html:71
 msgid "Roles"
 msgstr "Roles"
 
-#: climate/templates/climate/about.html:43
+#: climate/templates/climate/about.html:44
 msgid "Designer"
 msgstr "Diseñador"
 
-#: climate/templates/climate/about.html:46
+#: climate/templates/climate/about.html:47
 msgid "Developer"
 msgstr "Desarrollador"
 
-#: climate/templates/climate/about.html:49
+#: climate/templates/climate/about.html:50
 msgid "Tester"
 msgstr "Probador"
 
-#: climate/templates/climate/about.html:61
-#: climate/templates/climate/about.html:76
+#: climate/templates/climate/about.html:58
+msgid "Picture of the director of the project."
+msgstr "Imagen del director del proyecto."
+
+#: climate/templates/climate/about.html:62
+#: climate/templates/climate/about.html:77
 msgid "Director"
 msgstr "Director"
 
-#: climate/templates/climate/about.html:73
+#: climate/templates/climate/about.html:74
 msgid "Client"
 msgstr "Cliente"
 
-#: climate/templates/climate/about.html:87
+#: climate/templates/climate/about.html:88
 msgid "University of A Coruña"
 msgstr "Universidad de A Coruña"
 
-#: climate/templates/climate/about.html:88
+#: climate/templates/climate/about.html:89
 msgid "Faculty of Computing"
 msgstr "Facultad de Informática"
 
-#: climate/templates/climate/about.html:104
+#: climate/templates/climate/about.html:105
 msgid ""
 "<p class=\"card-text text-justify\"> The <strong>University of A Coruña</"
 "strong> was founded in 1989. Is a Spanish public university with campus in A "
@@ -184,11 +192,11 @@ msgstr ""
 "strong> en el Espacio Europeo de Enseñanza Superior y la proyección en "
 "América Latina. </p>"
 
-#: climate/templates/climate/about.html:123
+#: climate/templates/climate/about.html:124
 msgid "<strong>Useful links:</strong>"
 msgstr "<strong>Enlaces de utilidad:</strong>"
 
-#: climate/templates/climate/about.html:129
+#: climate/templates/climate/about.html:130
 msgid ""
 "University of A Coruña's <a href=\"https://www.udc.es/index.html?language=en"
 "\" target=\"_blank\">website</a>."
@@ -196,7 +204,7 @@ msgstr ""
 "<a href=\"https://www.udc.es/index.html?language=es\" target=\"_blank"
 "\">Sitio web</a> de la Universidad de A Coruña."
 
-#: climate/templates/climate/about.html:135
+#: climate/templates/climate/about.html:136
 msgid ""
 "Faculty of Computing's <a href=\"https://www.fic.udc.es/es\" target=\"_blank"
 "\">website</a> (in Spanish)."
@@ -257,7 +265,7 @@ msgstr "Este campo no puede estar vacío."
 #: climate/templates/climate/contact.html:89
 #: climate/templates/climate/contact.html:106
 #: climate/templates/climate/contact.html:120
-#: climate/templates/climate/countries.html:173
+#: climate/templates/climate/countries.html:180
 #: climate/templates/climate/locations.html:166 includes/air_pollution.html:247
 #: includes/country_energy.html:26 includes/country_energy.html:41
 #: includes/country_environment.html:31 includes/country_environment.html:46
@@ -373,11 +381,11 @@ msgstr "No obstante, si usted pretende:"
 
 #: climate/templates/climate/contact.html:43
 msgid ""
-"Say you <cite>like</cite> this app: You can use the <i class=\"px-1 fa fa-"
-"thumbs-up fa-lg text-info\"></i> button at the bottom of this page!"
+"Say you <cite>like</cite> this app: You can use the <em class=\"px-1 fa fa-"
+"thumbs-up fa-lg text-info\"></em> button at the bottom of this page!"
 msgstr ""
-"Decir que <cite>le gusta</cite> esta app: ¡use el botón <i class=\"px-1 fa "
-"fa-thumbs-up fa-lg text-info\"></i> situado al fondo de esta página!"
+"Decir que <cite>le gusta</cite> esta app: ¡use el botón <em class=\"px-1 fa "
+"fa-thumbs-up fa-lg text-info\"></em> situado al fondo de esta página!"
 
 #: climate/templates/climate/contact.html:49
 msgid ""
@@ -484,68 +492,74 @@ msgstr "La geolocalización se ha activado correctamente."
 msgid "Your search returned multiple results."
 msgstr "La búsqueda ha devuelto múltiples resultados."
 
-#: climate/templates/climate/countries.html:93
+#: climate/templates/climate/countries.html:92
+#: climate/templates/climate/locations.html:77
+#, python-format
+msgid "(showing only the first %(size)s results)"
+msgstr "(mostrando solo los primeros %(size)s resultados)"
+
+#: climate/templates/climate/countries.html:100
 #: climate/templates/climate/locations.html:85 includes/air_pollution.html:282
 #: includes/country_energy.html:64 includes/country_environment.html:69
 #: includes/historical_weather.html:101
 msgid "Your search returned 0 results."
 msgstr "La búsqueda no ha devuelto resultados."
 
-#: climate/templates/climate/countries.html:99
+#: climate/templates/climate/countries.html:106
 msgid "Such country does not exist, or there is no data available for it."
 msgstr "Ese país no existe, o no existe información disponible sobre él."
 
-#: climate/templates/climate/countries.html:105
+#: climate/templates/climate/countries.html:112
 msgid ""
 "Geolocation is disabled. <br/> <strong>Tip:</strong> Search for countries "
 "using the <strong>Search bar</strong>, or enable <strong>Geolocation</"
-"strong> by clicking on the <kbd><i class=\"fa fa-location-arrow\"></i></kbd> "
-"button."
+"strong> by clicking on the <kbd><em class=\"fa fa-location-arrow\"></em></"
+"kbd> button."
 msgstr ""
 "La geolocalización está desactivada. <br/> <strong>Consejo:</strong> Busque "
 "países usando la <strong>Barra de búsqueda</strong>, o active la "
-"<strong>geolocalización</strong> presionando el botón <kbd><i class=\"fa fa-"
-"location-arrow\"></i></kbd> ."
+"<strong>geolocalización</strong> presionando el botón <kbd><em class=\"fa fa-"
+"location-arrow\"></em></kbd> ."
 
-#: climate/templates/climate/countries.html:115
+#: climate/templates/climate/countries.html:122
 #: climate/templates/climate/locations.html:107
 msgid "An error occurred while retrieving your current position."
 msgstr "Ha ocurrido un error al intentar determinar su posición actual."
 
-#: climate/templates/climate/countries.html:123
+#: climate/templates/climate/countries.html:130
 msgid "View nearest country"
 msgstr "Visualice el país más cercano"
 
-#: climate/templates/climate/countries.html:130
+#: climate/templates/climate/countries.html:137
 msgid "View all countries"
 msgstr "Visualice todos los países"
 
-#: climate/templates/climate/countries.html:138
+#: climate/templates/climate/countries.html:145
 #: climate/templates/climate/locations.html:130
 msgid "Show or hide the map"
 msgstr "Muestre u oculte el mapa"
 
-#: climate/templates/climate/countries.html:143
+#: climate/templates/climate/countries.html:150
 #: climate/templates/climate/locations.html:135
 msgid "Geolocation is enabled"
 msgstr "La geolocalización está activada"
 
-#: climate/templates/climate/countries.html:150
+#: climate/templates/climate/countries.html:157
 #: climate/templates/climate/locations.html:142
 msgid "Enable geolocation"
 msgstr "Active la geolocalización"
 
-#: climate/templates/climate/countries.html:162 includes/location_info.html:39
+#: climate/templates/climate/countries.html:169 includes/location_info.html:39
 msgid "Country"
 msgstr "País"
 
-#: climate/templates/climate/countries.html:169
+#: climate/templates/climate/countries.html:176
 #: climate/templates/climate/locations.html:162
 #, python-format
 msgid "Keywords are invalid: \"%(keywords)s\""
 msgstr "La entrada de texto es inválida: \"%(keywords)s\""
 
-#: climate/templates/climate/countries.html:182
+#: climate/templates/climate/countries.html:189
 msgid ""
 "Click on the dropdown button to show pre-selected <strong>regions</strong> "
 "and <strong>income levels</strong>. You can click on any of them to see its "
@@ -556,11 +570,11 @@ msgstr ""
 "click en cualquiera de ellos para ver sus datos. <br>Nota: Algunas regiones "
 "pueden no tener datos."
 
-#: climate/templates/climate/countries.html:187
+#: climate/templates/climate/countries.html:194
 msgid "Regions and income levels"
 msgstr "Regiones y niveles de renta"
 
-#: climate/templates/climate/countries.html:202
+#: climate/templates/climate/countries.html:209
 msgid ""
 "<div> <strong>Tips:</strong> <ul> <li> <strong>Click</strong> on the map "
 "surface and <strong>drag</strong> to move it. </li> <li> Use the &nbsp;<kbd>"
@@ -577,7 +591,7 @@ msgstr ""
 "haciendo <strong>click</strong> sobre él. </li> <li>También puede usar la "
 "<strong>barra de búsqueda</strong> para seleccionar países.</li> </ul> </div>"
 
-#: climate/templates/climate/countries.html:232
+#: climate/templates/climate/countries.html:239
 msgid ""
 "To represent this map, <a href=\"https://www.amcharts.com/\" target=\"_blank"
 "\">amCharts</a> libraries have been used."
@@ -585,7 +599,7 @@ msgstr ""
 "Para representar este mapa, se han empleado librerías de <a href=\"https://"
 "www.amcharts.com/\" target=\"_blank\">amCharts</a>."
 
-#: climate/templates/climate/countries.html:267
+#: climate/templates/climate/countries.html:274
 msgid "Once you have selected a country, more info will appear here."
 msgstr "Una vez haya seleccionado un país, aquí aparecerá más información."
 
@@ -705,11 +719,11 @@ msgid ""
 "century</strong>. <br> This increase is mainly due to the <strong>melting</"
 "strong> of the Arctic and Antarctic. <br> </p> Among the consequences of "
 "<strong>sea level rise</strong>, we can highlight: <ul class=\"fa-ul mt-1 "
-"pl-3\"> <li><i class=\"fa-li fa fa-warning text-danger\"></i>Loss of "
-"biodiversity.</li> <li><i class=\"fa-li fa fa-warning text-danger\"></"
-"i>Storms, hurricanes and other more violent and more intense atmospheric "
-"phenomena. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></"
-"i>Possible forced migration of the population living in coastal regions. </"
+"pl-3\"> <li><em class=\"fa-li fa fa-warning text-danger\"></em>Loss of "
+"biodiversity.</li> <li><em class=\"fa-li fa fa-warning text-danger\"></"
+"em>Storms, hurricanes and other more violent and more intense atmospheric "
+"phenomena. </li> <li><em class=\"fa-li fa fa-warning text-danger\"></"
+"em>Possible forced migration of the population living in coastal regions. </"
 "li> </ul>"
 msgstr ""
 "<p class=\"text-justify mt-3 mb-2\"> En los últimos 20 años, el nivel del "
@@ -718,11 +732,11 @@ msgstr ""
 "metros hacia final de siglo</strong>. <br> Este aumento se debe "
 "mayoritariamente al <strong>deshielo</strong> del Ártico y la Antártida. "
 "<br> </p> Entre las consecuencias del <strong>aumento del nivel del mar</"
-"strong>, se pueden destacar: <ul class=\"fa-ul mt-1 pl-3\"> <li><i class="
-"\"fa-li fa fa-warning text-danger\"></i>Pérdida de biodiversidad.</li> "
-"<li><i class=\"fa-li fa fa-warning text-danger\"></i>Tormentas, huracanes y "
-"otros fenómenos atmosféricos se volverán más vielentos e intensos. </li> "
-"<li><i class=\"fa-li fa fa-warning text-danger\"></i>Posible migración "
+"strong>, se pueden destacar: <ul class=\"fa-ul mt-1 pl-3\"> <li><em class="
+"\"fa-li fa fa-warning text-danger\"></em>Pérdida de biodiversidad.</li> "
+"<li><em class=\"fa-li fa fa-warning text-danger\"></em>Tormentas, huracanes "
+"y otros fenómenos atmosféricos se volverán más vielentos e intensos. </li> "
+"<li><em class=\"fa-li fa fa-warning text-danger\"></em>Posible migración "
 "forzada de la población que habita en zonas costeras. </li> </ul>"
 
 #: climate/templates/climate/global_change.html:210
@@ -919,11 +933,11 @@ msgstr ""
 
 #: climate/templates/climate/global_change.html:508
 msgid ""
-"<i class=\"fa fa-check-circle text-success px-1\"></i> This is the only "
+"<em class=\"fa fa-check-circle text-success px-1\"></em> This is the only "
 "scenario that meets the objective of maintaining the temperature of the "
 "Earth <strong>below 2ºC above pre-industrial levels</strong>."
 msgstr ""
-"<i class=\"fa fa-check-circle text-success px-1\"></i> Este es el único "
+"<em class=\"fa fa-check-circle text-success px-1\"></em> Este es el único "
 "escenario que cumple con el objetivo de mantener la temperatura media de la "
 "Tierra por  <strong>debajo de 2ºC</strong> sobre los <strong>niveles pre-"
 "industriales</strong>."
@@ -1022,21 +1036,21 @@ msgid ""
 "2.6</strong> is the only scenario that <strong>ensures the fullfillment</"
 "strong> of this objective. </p> <p> Therefore, of the <strong>RPC 2.6</"
 "strong> scenario is not met, the consequences will be negative at multiple "
-"levels: </p> <ul class=\"fa-ul pl-3\"> <li><i class=\"fa-li fa fa-warning "
-"text-danger\"></i> The Arctic is likely to be <strong>entirely disappeared</"
-"strong> before 2100. </li> <li><i class=\"fa-li fa fa-warning text-danger"
-"\"></i> The climate will become <strong>more extreme</strong> in all "
-"regions. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></i> "
-"<strong>Heat waves</strong> will occur more frequently. </li> <li><i class="
-"\"fa-li fa fa-warning text-danger\"></i> A considerable percentage of "
+"levels: </p> <ul class=\"fa-ul pl-3\"> <li><em class=\"fa-li fa fa-warning "
+"text-danger\"></em> The Arctic is likely to be <strong>entirely disappeared</"
+"strong> before 2100. </li> <li><em class=\"fa-li fa fa-warning text-danger"
+"\"></em> The climate will become <strong>more extreme</strong> in all "
+"regions. </li> <li><em class=\"fa-li fa fa-warning text-danger\"></em> "
+"<strong>Heat waves</strong> will occur more frequently. </li> <li><em class="
+"\"fa-li fa fa-warning text-danger\"></em> A considerable percentage of "
 "terrestrial and marine species will be unable to adapt and will increase "
-"their <strong>risk of extinction</strong>. </li> <li><i class=\"fa-li fa fa-"
-"warning text-danger\"></i> The risk of flooding and erosion of "
-"<strong>coastal areas</strong> will be increased. </li> <li><i class=\"fa-li "
-"fa fa-warning text-danger\"></i> The quantity and quality of "
+"their <strong>risk of extinction</strong>. </li> <li><em class=\"fa-li fa fa-"
+"warning text-danger\"></em> The risk of flooding and erosion of "
+"<strong>coastal areas</strong> will be increased. </li> <li><em class=\"fa-"
+"li fa fa-warning text-danger\"></em> The quantity and quality of "
 "<strong>drinking water</strong> will be reduced; above all, in tropical and "
-"subtropical regions. </li> <li><i class=\"fa-li fa fa-warning text-danger"
-"\"></i> The spread of <strong>diseases</strong> by vectors, water and food "
+"subtropical regions. </li> <li><em class=\"fa-li fa fa-warning text-danger"
+"\"></em> The spread of <strong>diseases</strong> by vectors, water and food "
 "is likely to be increased. </li> </ul>"
 msgstr ""
 "<p> Para cumplir el objetivo de mantener la temperatura del planeta "
@@ -1047,22 +1061,22 @@ msgstr ""
 "escenario que <strong>asegura el cumplimiento</strong> de este objetivo.</p> "
 "<p> Por lo tanto, si el escenario <strong>RPC 2.6</strong> no se cumple, las "
 "consecuencias serán negativas a múltiples niveles: </p> <ul class=\"fa-ul "
-"pl-3\"> <li><i class=\"fa-li fa fa-warning text-danger\"></i> Es probable "
+"pl-3\"> <li><em class=\"fa-li fa fa-warning text-danger\"></em> Es probable "
 "que el Ártico haya <strong>desaparecido completamente</strong> antes de "
-"2100. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></i> El clima "
+"2100. </li> <li><em class=\"fa-li fa fa-warning text-danger\"></em> El clima "
 "se volverá más <strong>más extremo</strong> en todas las regiones. </li> "
-"<li><i class=\"fa-li fa fa-warning text-danger\"></i> <strong>Las olas de "
-"calor</strong> sucederán con mayor frecuencia. </li> <li><i class=\"fa-li fa "
-"fa-warning text-danger\"></i> Un porcentaje considerable de especies marinas "
-"y terrestres no serán capaces de adaptarse, y aumentará su <strong>riesgo de "
-"extinción</strong>. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></"
-"i> Aumentará el riesgo de inundaciones y erosión de las <strong>regiones "
-"costeras</strong>. </li> <li><i class=\"fa-li fa fa-warning text-danger\"></"
-"i> Tanto la cantidad como la calidad del <strong>agua potable</strong> se "
-"verá reducida; sobre todo, en las regiones tropicales y subtropicales. </li> "
-"<li><i class=\"fa-li fa fa-warning text-danger\"></i> La propagación de "
-"<strong>enfermedades</strong> por vectores, agua y alimentos puede que se "
-"vea aumentada. </li> </ul>"
+"<li><em class=\"fa-li fa fa-warning text-danger\"></em> <strong>Las olas de "
+"calor</strong> sucederán con mayor frecuencia. </li> <li><em class=\"fa-li "
+"fa fa-warning text-danger\"></em> Un porcentaje considerable de especies "
+"marinas y terrestres no serán capaces de adaptarse, y aumentará su "
+"<strong>riesgo de extinción</strong>. </li> <li><em class=\"fa-li fa fa-"
+"warning text-danger\"></em> Aumentará el riesgo de inundaciones y erosión de "
+"las <strong>regiones costeras</strong>. </li> <li><em class=\"fa-li fa fa-"
+"warning text-danger\"></em> Tanto la cantidad como la calidad del "
+"<strong>agua potable</strong> se verá reducida; sobre todo, en las regiones "
+"tropicales y subtropicales. </li> <li><em class=\"fa-li fa fa-warning text-"
+"danger\"></em> La propagación de <strong>enfermedades</strong> por vectores, "
+"agua y alimentos puede que se vea aumentada. </li> </ul>"
 
 #: climate/templates/climate/global_change.html:679
 msgid ""
@@ -1228,11 +1242,6 @@ msgstr ""
 "La Tierra ha alcanzado <strong>niveles de CO₂</strong> más altos que nunca "
 "en la Historia."
 
-#: climate/templates/climate/locations.html:77
-#, python-format
-msgid "(showing only the first %(size)s results)"
-msgstr "(mostrando solo los primeros %(size)s resultados)"
-
 #: climate/templates/climate/locations.html:91
 msgid "Such location does not exist, or there is no data available for it."
 msgstr "Esa localización no existe, o no existen datos disponibles sobre ella."
@@ -1241,13 +1250,13 @@ msgstr "Esa localización no existe, o no existen datos disponibles sobre ella."
 msgid ""
 "Geolocation is disabled. <br/> <strong>Tip:</strong> Search for locations "
 "using the <strong>Search bar</strong>, or enable <strong>Geolocation</"
-"strong> by clicking on the <kbd><i class=\"fa fa-location-arrow\"></i></kbd> "
-"button."
+"strong> by clicking on the <kbd><em class=\"fa fa-location-arrow\"></em></"
+"kbd> button."
 msgstr ""
 "La geolocalización está desactivada. <br/> <strong>Consejo:</strong> Busque "
 "localizaciones usando la <strong>Barra de búsqueda</strong>, o active la "
-"<strong>geolocalización</strong> presionando el botón <kbd><i class=\"fa fa-"
-"location-arrow\"></i></kbd> ."
+"<strong>geolocalización</strong> presionando el botón <kbd><em class=\"fa fa-"
+"location-arrow\"></em></kbd> ."
 
 #: climate/templates/climate/locations.html:115
 msgid "View nearest location"
@@ -1607,14 +1616,14 @@ msgstr ""
 
 #: includes/air_pollution.html:270
 msgid ""
-"Select a <strong>date range</strong> by clicking on the <kbd><i class=\"fa "
-"fa-calendar\"></i></kbd> button. <br/> Once done, press the <kbd><i class="
-"\"fa fa-search\"></i></kbd> button, and a <strong>line chart</strong> with "
+"Select a <strong>date range</strong> by clicking on the <kbd><em class=\"fa "
+"fa-calendar\"></em></kbd> button. <br/> Once done, press the <kbd><em class="
+"\"fa fa-search\"></em></kbd> button, and a <strong>line chart</strong> with "
 "historical air pollution data will appear here."
 msgstr ""
 "Seleccione un <strong>rango de fechas</strong> haciendo click en el botón "
-"<kbd><i class=\"fa fa-calendar\"></i></kbd> . <br/> Una vez hecho, haga "
-"click en el botón <kbd><i class=\"fa fa-search\"></i></kbd> , y un "
+"<kbd><em class=\"fa fa-calendar\"></em></kbd> . <br/> Una vez hecho, haga "
+"click en el botón <kbd><em class=\"fa fa-search\"></em></kbd> , y un "
 "<strong>gráfico de líneas</strong> con datos históricos de la calidad del "
 "aire aparecerá aquí."
 
@@ -1792,15 +1801,14 @@ msgstr "Buscar"
 
 #: includes/country_energy.html:54
 msgid ""
-"Select a <strong>year range</strong> by clicking on the <kbd><i class=\"fa "
-"fa-calendar\"></i></kbd> buttons. <br/> Once done, press the search button, "
+"Select a <strong>year range</strong> by clicking on the <kbd><em class=\"fa "
+"fa-calendar\"></em></kbd> buttons. <br/> Once done, press the search button, "
 "and an <strong>area chart</strong> with historical CO₂ data will appear here."
 msgstr ""
 "Seleccione un <strong>rango de años</strong> haciendo click en el botón "
-"<kbd><i class=\"fa fa-calendar\"></i></kbd> . <br/> Una vez hecho, haga "
-"click en el botón de búsqueda, y un "
-"<strong>gráfico</strong> con datos históricos de emisiones de CO₂ aparecerá "
-"aquí."
+"<kbd><em class=\"fa fa-calendar\"></em></kbd> . <br/> Una vez hecho, haga "
+"click en el botón de búsqueda, y un <strong>gráfico</strong> con datos "
+"históricos de emisiones de CO₂ aparecerá aquí."
 
 #: includes/country_energy.html:75
 msgid "CO₂ emissions"
@@ -1934,16 +1942,15 @@ msgstr "Descubra múltiples indicadores relacionados con el Cambio Climático."
 
 #: includes/country_environment.html:59
 msgid ""
-"Select a <strong>year range</strong> by clicking on the <kbd><i class=\"fa "
-"fa-calendar\"></i></kbd> buttons. <br/> Once done, press the search button, "
+"Select a <strong>year range</strong> by clicking on the <kbd><em class=\"fa "
+"fa-calendar\"></em></kbd> buttons. <br/> Once done, press the search button, "
 "and multiple <strong>bar charts</strong> with environment data will appear "
 "here."
 msgstr ""
 "Seleccione un <strong>rango de años</strong> haciendo click en el botón "
-"<kbd><i class=\"fa fa-calendar\"></i></kbd> . <br/> Una vez hecho, haga "
-"click en el botón de búsqueda, y varios "
-"<strong>gráficos de barras</strong> con datos medioambientales aparecerán "
-"aquí."
+"<kbd><em class=\"fa fa-calendar\"></em></kbd> . <br/> Una vez hecho, haga "
+"click en el botón de búsqueda, y varios <strong>gráficos de barras</strong> "
+"con datos medioambientales aparecerán aquí."
 
 #: includes/country_environment.html:83
 msgid ""
@@ -2148,14 +2155,14 @@ msgstr ""
 
 #: includes/historical_weather.html:90
 msgid ""
-"Select a <strong>year range</strong> by clicking on the <kbd><i class=\"fa "
-"fa-calendar\"></i></kbd> button. <br/> Once done, press the <kbd><i class="
-"\"fa fa-search\"></i></kbd> button, and a <strong>calendar chart</strong> "
+"Select a <strong>year range</strong> by clicking on the <kbd><em class=\"fa "
+"fa-calendar\"></em></kbd> button. <br/> Once done, press the <kbd><em class="
+"\"fa fa-search\"></em></kbd> button, and a <strong>calendar chart</strong> "
 "with historical weather data will appear here."
 msgstr ""
 "Seleccione un <strong>rango de años</strong> haciendo click en el botón "
-"<kbd><i class=\"fa fa-calendar\"></i></kbd> . <br/> Una vez hecho, haga "
-"click en el botón <kbd><i class=\"fa fa-search\"></i></kbd> , y un "
+"<kbd><em class=\"fa fa-calendar\"></em></kbd> . <br/> Una vez hecho, haga "
+"click en el botón <kbd><em class=\"fa fa-search\"></em></kbd> , y un "
 "<strong>gráfico</strong> con datos históricos de temperaturas aparecerá aquí."
 
 #: includes/historical_weather.html:112

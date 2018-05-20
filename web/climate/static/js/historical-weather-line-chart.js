@@ -1,12 +1,12 @@
 function displayHistoricalWeatherLineChart(columns, data, units, locale, chartId) {
 
     var series = [];
-    for (i = 0; i < columns.length; i++) {
+    for (var i = 0; i < columns.length; i++) {
         series.push({values: [], key: columns[i]})
     }
-    for (i = 0; i < data.length; i++) {
-        for (j = 0; j < series.length; j++) {
-            series[j]['values'].push([data[i][0], data[i][j + 1]])
+    for (var j = 0; j < data.length; j++) {
+        for (var k = 0; k < series.length; k++) {
+            series[k]['values'].push([data[j][0], data[j][k + 1]])
         }
     }
 

@@ -1,7 +1,7 @@
 function displayRpcLineChart(data, units, locale, chartId) {
 
     var series = [];
-    for (i = 0; i < data.length; i++) {
+    for (var i = 0; i < data.length; i++) {
         series.push({values: data[i].values, key: data[i].key})
     }
 

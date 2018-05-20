@@ -17,8 +17,7 @@ function displayLineChart(data, seriesName, locale, units, colors, chartId) {
             return d[1]
         });
         chart.xAxis.tickFormat(function (d) {
-            _d = new Date(d);
-            return _d.getFullYear()
+            return new Date(d).getFullYear()
         });
         chart.yAxis.tickFormat(function (d) {
             return displayNumberLocalized(d, '', 1, locale);

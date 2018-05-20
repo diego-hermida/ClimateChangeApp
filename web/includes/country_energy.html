@@ -14,7 +14,7 @@
                         <div class="input-group-prepend">
                             <button type="button" class="btn btn-outline-primary"
                                     onclick="$('#countryEnergyFrom').datepicker().data('datepicker').show()">
-                                <i class="fa fa-calendar"></i>
+                                <em class="fa fa-calendar"></em>
                             </button>
                         </div>
                         <input id="countryEnergyFrom" type="text" name="start_year" data-date-format="yyyy"
@@ -29,7 +29,7 @@
                         <div class="input-group-prepend">
                             <button type="button" class="btn btn-outline-primary"
                                     onclick="$('#countryEnergyTo').datepicker().data('datepicker').show()">
-                                <i class="fa fa-calendar"></i>
+                                <em class="fa fa-calendar"></em>
                             </button>
                         </div>
                         <input id="countryEnergyTo" type="text" name="end_year"
@@ -52,8 +52,8 @@
             <div id="energyYearRangeNotChosen" class="mx-auto alert alert-primary alert-sized" role="alert">
                     <span>
                         {% blocktrans trimmed %}
-                            Select a <strong>year range</strong> by clicking on the <kbd><i
-                                class="fa fa-calendar"></i></kbd> buttons.
+                            Select a <strong>year range</strong> by clicking on the <kbd><em
+                                class="fa fa-calendar"></em></kbd> buttons.
                             <br/>
                             Once done, press the search button, and an <strong>area chart</strong>
                             with historical CO₂ data will appear here.
@@ -67,7 +67,7 @@
                 {% trans "Data could not be retrieved." %}
             </div>
             <div id="countryEnergyDataLoader" class="d-none mx-auto">
-                <i class="fa fa-spinner fa-spin fa-3x"></i>
+                <em class="fa fa-spinner fa-spin fa-3x"></em>
             </div>
         </div>
         <div id="countryEnergyChartsDiv" class="row d-none h-100 mx-0">

@@ -1,7 +1,7 @@
 function displayLineChart(seriesName, data, locale, chartId) {
 
     var series = [];
-    for (i = 0; i < seriesName.length; i++) {
+    for (var i = 0; i < seriesName.length; i++) {
         series.push({key: seriesName[i], values: data[i]})
     }
 
