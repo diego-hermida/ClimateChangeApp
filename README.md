@@ -11,7 +11,7 @@
 [![Vulnerabilities](http://193.144.50.92:9000/api/badges/measure?metric=vulnerabilities&key=ClimateChangeApp)](http://193.144.50.92:9000/dashboard/index/ClimateChangeApp)
 
 
-This is the code repository of my **final degree project**.
+This is the code repository of my **end-of-degree project**.
 
 
 ![Tools](https://github.com/diego-hermida/ClimateChangeApp/blob/master/doc/tools.png "Tools")
