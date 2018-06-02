@@ -4,10 +4,10 @@ import signal
 from contextlib import contextmanager
 from os import makedirs, sep as os_file_separator
 from os.path import exists
+from pytz import UTC
 from random import randint
 
 import errno
-import pytz
 import yaml
 
 
@@ -32,10 +32,10 @@ def date_to_millis_since_epoch(date: datetime.datetime) -> int:
         :return: An int, representing milliseconds since epoch.
         :rtype: int
     """
-    if date.tzinfo != pytz.UTC:
+    if date.tzinfo != UTC:
         raise ValueError('Date timezone must be UTC')
-    return int((date.replace(tzinfo=pytz.UTC) - datetime.datetime.utcfromtimestamp(0).replace(
-        tzinfo=pytz.UTC)).total_seconds() * 1000.0)
+    return int((date.replace(tzinfo=UTC) - datetime.datetime.utcfromtimestamp(0).replace(
+        tzinfo=UTC)).total_seconds() * 1000.0)
 
 
 def decimal_date_to_millis_since_epoch(decimal_date: float) -> int:
@@ -48,7 +48,7 @@ def decimal_date_to_millis_since_epoch(decimal_date: float) -> int:
     decimal_date = float(decimal_date)
     year = int(decimal_date)
     rem = decimal_date - year
-    base = datetime.datetime(year, 1, 1).replace(tzinfo=pytz.UTC)
+    base = datetime.datetime(year, 1, 1).replace(tzinfo=UTC)
     result = base + datetime.timedelta(seconds=(base.replace(year=base.year + 1) - base).total_seconds() * rem)
     return date_to_millis_since_epoch(result)
 
@@ -60,7 +60,7 @@ def current_timestamp(utc=True) -> datetime.datetime:
         :return: datetime.datetime.now()
     """
     if utc:
-        return datetime.datetime.now(tz=pytz.UTC)
+        return datetime.datetime.now(tz=UTC)
     else:
         return datetime.datetime.now()
 
@@ -69,7 +69,7 @@ def current_date_in_millis() -> int:
     """
         Retrieves the current UTC date in milliseconds.
     """
-    return date_to_millis_since_epoch(datetime.datetime.now(tz=pytz.UTC))
+    return date_to_millis_since_epoch(datetime.datetime.now(tz=UTC))
 
 
 def recursive_makedir(path: str, is_file=False):
@@ -182,7 +182,7 @@ def serialize_date(date: datetime.datetime) -> str:
         :raise ValueError: If input date is not UTC.
         :rtype: str
     """
-    if date and date.tzinfo != pytz.UTC:
+    if date and date.tzinfo != UTC:
         raise ValueError('Date timezone must be UTC')
     return None if date is None else datetime.datetime.isoformat(date).replace('+00:00', 'Z')
 
@@ -197,7 +197,7 @@ def deserialize_date(date: str, date_format='%Y-%m-%dT%H:%M:%S.%fZ') -> datetime
         :rtype: datetime.datetime
     """
     return None if date is None else datetime.datetime.fromtimestamp(
-            datetime.datetime.strptime(date, date_format).timestamp()).replace(tzinfo=pytz.UTC)
+            datetime.datetime.strptime(date, date_format).timestamp()).replace(tzinfo=UTC)
 
 
 def get_module_name(path: str) -> str:
@@ -265,7 +265,7 @@ def date_plus_timedelta_gt_now(date: datetime.datetime, frequency: dict) -> bool
     """
     if date is None:
         return True
-    elif date.tzinfo != pytz.UTC:
+    elif date.tzinfo != UTC:
         raise ValueError('Date timezone must be UTC')
     else:
         date_millis = date_to_millis_since_epoch(date)
@@ -339,20 +339,20 @@ def nonempty_str(value: str, nullable=True, min_length=None, max_length=None) ->
             return None
         elif value is None:
             raise ValueError('Input must be a "str" object, not None.')
-        value = str(value)
+        value = str(value).strip()
         if value == '':
             raise ValueError('Input cannot be an empty "str" object.')
-        elif min_length is not None and max_length is not None and not min_length <= len(value) <= max_length:
-            raise AttributeError('Input must be between %d-%d characters long' % (min_length, max_length))
+        elif min_length is not None and len(value) < min_length:
+            raise AttributeError('Input must be, at least, %d characters long' % min_length)
+        elif max_length is not None and len(value) > max_length:
+            raise AttributeError('Input must be, at most, %d characters long' % max_length)
         else:
             return value
-    except ValueError:
+    except (ValueError, AttributeError) as e:
         if nullable:
             return None
         else:
-            raise
-    except AttributeError as e:
-        raise ValueError('Validation failed.') from e
+            raise ValueError('Validation failed') from e
 
 
 def parse_float(value: str, nullable=True) -> float:
@@ -437,13 +437,13 @@ def parse_bool(value: str, nullable=True) -> bool:
 def parse_date_utc(value: str):
     """
         Parses an "int" or "str" serialized integer into a "datetime.datetime" object.
-        Date timezone will be set to 'pytz.UTC'.
+        Date timezone will be set to 'UTC'.
         :param value: String to be parsed.
         :return: The parsed value.
         :raises ValueError: If the value cannot be parsed.
     """
     try:
-        return datetime.datetime.fromtimestamp(parse_int(value, nullable=False) / 1000, tz=pytz.UTC)
+        return datetime.datetime.fromtimestamp(parse_int(value, nullable=False) / 1000, tz=UTC)
     except Exception as e:
         raise ValueError from e
 

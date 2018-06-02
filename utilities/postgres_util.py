@@ -155,7 +155,7 @@ def normalize_query(query_string, findterms=re.compile(r'"([^"]+)"|(\S+)').finda
             >>> normalize_query('  some random  words "with   quotes  " and   spaces')
             ['some', 'random', 'words', 'with quotes', 'and', 'spaces']
     """
-    return [normspace(' ', (t[0] or t[1]).strip()) for t in findterms(query_string)]
+    return [x for x in [normspace(' ', (t[0] or t[1]).strip()) for t in findterms(query_string)] if x != '']
 
 
 def get_query(keywords: list, search_fields):

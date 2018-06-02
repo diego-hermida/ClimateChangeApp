@@ -61,3 +61,16 @@ class TestPostgresUtil(TestCase):
         connection.close()
         self.assertFalse(exists)
 
+    def test_normalize_query(self):
+        self.assertEqual([], utilities.postgres_util.normalize_query(' "    " '))
+        self.assertEqual(['foo', 'baz'], utilities.postgres_util.normalize_query('    foo  "    baz "'))
+
+    def test_get_query(self):
+
+        def get_all_terms(q):
+            return [get_all_terms(x) for x in q.children] if isinstance(q, utilities.postgres_util.Q) else q
+
+        q = utilities.postgres_util.get_query(['foo', 'baz'], ['name', 'description'])
+        all_terms = [item for sublist in get_all_terms(q) for item in sublist]
+        self.assertListEqual([('name__icontains', 'foo'), ('description__icontains', 'foo'), ('name__icontains', 'baz'),
+                              ('description__icontains', 'baz')], all_terms)

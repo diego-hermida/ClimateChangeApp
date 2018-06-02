@@ -184,6 +184,10 @@ class TestUtil(TestCase):
         self.assertEqual(expected, utilities.util.deserialize_date(date))
         self.assertIsNone(utilities.util.deserialize_date(None))
 
+    def test_current_timestamp(self):
+        self.assertEqual(utilities.util.UTC, utilities.util.current_timestamp(utc=True).tzinfo)
+        self.assertNotEqual(utilities.util.UTC, utilities.util.current_timestamp(utc=False).tzinfo)
+
     def test_get_module_name(self):
         file = '/foo/bar/baz/my_module.py'
         expected = 'my_module'
@@ -265,6 +269,9 @@ class TestUtil(TestCase):
         with self.assertRaises(ValueError):
             utilities.util.date_plus_timedelta_gt_now(invalid_date, {'value': 1, 'units': TimeUnits.day})
 
+        # Negative case: Date is None
+        self.assertTrue(utilities.util.date_plus_timedelta_gt_now(None, {'value': 1, 'units': TimeUnits.s}))
+
         # Negative case: Invalid TimeUnits value
         with self.assertRaises(AttributeError):
             utilities.util.date_plus_timedelta_gt_now(date, {'value': 1, 'units': TimeUnits.FOO})
@@ -329,6 +336,25 @@ class TestUtil(TestCase):
             utilities.util.parse_date_utc('')
         with self.assertRaises(ValueError):
             utilities.util.parse_date_utc(None)
+
+    def test_nonempty_string(self):
+        self.assertEqual('foo', utilities.util.nonempty_str('  foo      '))
+        self.assertIsNone(utilities.util.nonempty_str(None, nullable=True))
+        with self.assertRaises(ValueError):
+            utilities.util.nonempty_str(None, nullable=False)
+        self.assertIsNone(utilities.util.nonempty_str('   ', nullable=True))
+        with self.assertRaises(ValueError):
+            utilities.util.nonempty_str('   ', nullable=False)
+
+    def test_nonempty_string_bounded(self):
+        self.assertIsNone(utilities.util.nonempty_str(' fo', nullable=True, min_length=3))
+        with self.assertRaises(ValueError):
+            utilities.util.nonempty_str(' fo', nullable=False, min_length=3)
+        self.assertIsNone(utilities.util.nonempty_str(' fo', nullable=True, min_length=3))
+        with self.assertRaises(ValueError):
+            utilities.util.nonempty_str('fo', nullable=False, max_length=1)
+        self.assertEqual('foo', utilities.util.nonempty_str('foo', nullable=False, min_length=3, max_length=3))
+
 
     def test_compute_wind_direction(self):
         self.assertEqual('N', utilities.util.compute_wind_direction(349))
