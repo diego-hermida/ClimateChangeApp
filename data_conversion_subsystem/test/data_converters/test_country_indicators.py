@@ -39,14 +39,14 @@ class TestCountryIndicators(TestCase):
         i1._transition_state = i1._FINISHED
         self.assertIsNot(i1, country_indicators.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
-    @mock.patch('data_conversion_subsystem.data_converters.country_indicators.country_indicators.Country.objects.count',
-                Mock(return_value=304))
+    @mock.patch('data_conversion_subsystem.data_converters.country_indicators.country_indicators.Country.objects.exists',
+                Mock(return_value=True))
     def test_dependencies_satisfied_ok(self):
         self.data_converter._check_dependencies_satisfied()
         self.assertTrue(self.data_converter.dependencies_satisfied)
 
-    @mock.patch('data_conversion_subsystem.data_converters.country_indicators.country_indicators.Country.objects.count',
-                Mock(return_value=0))
+    @mock.patch('data_conversion_subsystem.data_converters.country_indicators.country_indicators.Country.objects.exists',
+                Mock(return_value=False))
     def test_dependencies_satisfied_missing(self):
         self.data_converter._check_dependencies_satisfied()
         self.assertFalse(self.data_converter.dependencies_satisfied)

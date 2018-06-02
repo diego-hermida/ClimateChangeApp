@@ -44,9 +44,9 @@ class _SeaLevelRiseDataConverter(DataConverter):
                                     'be converted.' % _id)
         if self.data:
             # Ensuring that all values are greater than or equal to 0
-            min_value = abs(self.data[0].smoothed_variation_GIA_annual_semi_annual_removed)
+            min_value = abs(self.data[0].value)
             for value in self.data:
-                value.smoothed_variation_GIA_annual_semi_annual_removed += min_value
+                value.value += min_value
 
     @transaction.atomic
     def _save_data(self):

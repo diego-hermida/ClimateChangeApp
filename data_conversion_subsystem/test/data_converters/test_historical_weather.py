@@ -69,13 +69,13 @@ class TestHistoricalWeather(TestCase):
         self.assertIsNot(i1, historical_weather.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('data_conversion_subsystem.data_converters.historical_weather.historical_weather.Location.objects.'
-                'count', Mock(return_value=91))
+                'exists', Mock(return_value=True))
     def test_dependencies_satisfied_ok(self):
         self.data_converter._check_dependencies_satisfied()
         self.assertTrue(self.data_converter.dependencies_satisfied)
 
     @mock.patch('data_conversion_subsystem.data_converters.historical_weather.historical_weather.Location.objects.'
-                'count', Mock(return_value=0))
+                'exists', Mock(return_value=False))
     def test_dependencies_satisfied_missing(self):
         self.data_converter._check_dependencies_satisfied()
         self.assertFalse(self.data_converter.dependencies_satisfied)
