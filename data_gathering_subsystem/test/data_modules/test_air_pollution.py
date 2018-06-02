@@ -23,12 +23,12 @@ class TestAirPollution(TestCase):
         self.assertIsNot(i1, air_pollution.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.air_pollution.air_pollution.MongoDBCollection')
-    def test_correct_data_collection(self, mock_collection, mock_requests):
+    def test_correct_data_collection(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -41,8 +41,9 @@ class TestAirPollution(TestCase):
              "t": {"v": -20.85}}, "time": {"s": "2017-12-31 05:00:00", "tz": "-05:00", "v": 1514696400}}}).encode()
         # Actual execution
         self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
@@ -55,12 +56,12 @@ class TestAirPollution(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.air_pollution.air_pollution.MongoDBCollection')
-    def test_correct_data_collection_with_more_items_than_allowed_requests(self, mock_collection, mock_requests):
+    def test_correct_data_collection_with_more_items_than_allowed_requests(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], 1)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], 1)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -73,8 +74,9 @@ class TestAirPollution(TestCase):
              "t": {"v": -20.85}}, "time": {"s": "2017-12-31 05:00:00", "tz": "-05:00", "v": 1514696400}}}).encode()
         # Actual execution
         self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
@@ -87,17 +89,18 @@ class TestAirPollution(TestCase):
         self.assertEqual(self.data_collector.config['MIN_UPDATE_FREQUENCY'],
                          self.data_collector.state['update_frequency'])
 
-    @mock.patch('data_gathering_subsystem.data_modules.air_pollution.air_pollution.MongoDBCollection')
-    def test_data_collection_with_no_locations(self, mock_collection):
+    def test_data_collection_with_no_locations(self):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
         self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
@@ -109,20 +112,21 @@ class TestAirPollution(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.air_pollution.air_pollution.MongoDBCollection')
-    def test_data_collection_invalid_data_from_server(self, mock_collection, mock_requests):
+    def test_data_collection_invalid_data_from_server(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         response.content = dumps({'data': ['invalid', 'data', 'structure']}).encode()
         # Actual execution
         self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -135,20 +139,21 @@ class TestAirPollution(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.air_pollution.air_pollution.MongoDBCollection')
-    def test_data_collection_with_rejected_request_from_server(self, mock_collection, mock_requests):
+    def test_data_collection_with_rejected_request_from_server(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         response.content = dumps({"status": "error", "message": "Over quota"}).encode()
         # Actual execution
         self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -161,13 +166,13 @@ class TestAirPollution(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.air_pollution.air_pollution.MongoDBCollection')
-    def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_requests):
+    def test_data_collection_with_not_all_items_saved(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
                      {'_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -180,8 +185,9 @@ class TestAirPollution(TestCase):
              "t": {"v": -20.85}}, "time": {"s": "2017-12-31 05:00:00", "tz": "-05:00", "v": 1514696400}}}).encode()
         # Actual execution
         self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -194,13 +200,13 @@ class TestAirPollution(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.air_pollution.air_pollution.MongoDBCollection')
-    def test_data_collection_with_no_items_saved(self, mock_collection, mock_requests):
+    def test_data_collection_with_no_items_saved(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
                      {'_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -213,8 +219,9 @@ class TestAirPollution(TestCase):
              "t": {"v": -20.85}}, "time": {"s": "2017-12-31 05:00:00", "tz": "-05:00", "v": 1514696400}}}).encode()
         # Actual execution
         self.data_collector = air_pollution.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())

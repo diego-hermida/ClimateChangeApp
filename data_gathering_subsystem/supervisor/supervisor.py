@@ -232,7 +232,7 @@ class DataCollectorSupervisor(Supervisor):
         operations = [UpdateOne({'_id': self.execution_report['aggregated']['_id']},
                                 update={'$set': self.execution_report['aggregated']}, upsert=True),
                       InsertOne(self.execution_report['last_execution'])]
-        self.collection.collection.bulk_write(operations)
+        self.collection.get_collection().bulk_write(operations)
         self.collection.close()
         # Improving report console output.
         copy = deepcopy(self.execution_report)

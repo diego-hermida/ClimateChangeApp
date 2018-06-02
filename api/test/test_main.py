@@ -75,7 +75,7 @@ class TestMain(TestCase):
         r = self.app.get('/modules')
         self.assertEqual(401, r.status_code)
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value={'_id': 'aggregated', 'per_module':
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(return_value={'_id': 'aggregated', 'per_module':
                 {'air_pollution': {}, 'countries': {}}}))
     def test_modules_endpoint(self):
         r = self.app.get('/modules', headers={'Authorization': 'Bearer test_token'})
@@ -83,14 +83,14 @@ class TestMain(TestCase):
         self.assertEqual(200, r.status_code)
         self.assertListEqual(['air_pollution', 'countries'], data['modules'])
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(return_value=None))
     def test_modules_endpoint_with_no_modules(self):
         r = self.app.get('/modules', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
         self.assertEqual(200, r.status_code)
         self.assertListEqual([], data['modules'])
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
             'last_execution_id': 1}, {"more_values": "should_go_here", "execution_id": 1}]))
     def test_execution_stats_endpoint_last_execution(self):
         r = self.app.get('/executionStats', headers={'Authorization': 'Bearer test_token'})
@@ -98,7 +98,7 @@ class TestMain(TestCase):
         self.assertEqual(200, r.status_code)
         self.assertEqual(1, data['execution_id'])
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(return_value=None))
     def test_execution_stats_endpoint_last_execution_and_subsystem_not_executed(self):
         r = self.app.get('/executionStats', headers={'Authorization': 'Bearer test_token'})
         self.assertEqual(404, r.status_code)
@@ -111,7 +111,7 @@ class TestMain(TestCase):
         r = self.app.get('/executionStats?executionId=-1', headers={'Authorization': 'Bearer test_token'})
         self.assertEqual(400, r.status_code)
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[None, {'_id': 'aggregated',
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(side_effect=[None, {'_id': 'aggregated',
             'last_execution_id': 1}]))
     def test_execution_stats_endpoint_with_execution_id_non_existing_but_subsystem_executed(self):
         r = self.app.get('/executionStats?executionId=2', headers={'Authorization': 'Bearer test_token'})
@@ -119,7 +119,7 @@ class TestMain(TestCase):
         self.assertEqual(404, r.status_code)
         self.assertEqual(1, data['last_execution_id'])
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(return_value=None))
     def test_execution_stats_endpoint_with_execution_id_non_existing_and_subsystem_not_executed(self):
         r = self.app.get('/executionStats?executionId=2', headers={'Authorization': 'Bearer test_token'})
         data = json.loads(r.get_data().decode('utf-8'))
@@ -241,15 +241,15 @@ class TestMain(TestCase):
 
     def test_scopes(self):
         try:
-            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 1, 'type': 'aggregated'},
+            main._stats_collection.get_collection().insert_one({'_id': {'subsystem_id': 1, 'type': 'aggregated'},
                     'per_module': {'module1': {}, 'module2': {}, 'module3': {}}, 'last_execution_id': 4})
-            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 2, 'type': 'aggregated'},
+            main._stats_collection.get_collection().insert_one({'_id': {'subsystem_id': 2, 'type': 'aggregated'},
                     'per_module': {'module4': {}, 'module5': {}}, 'last_execution_id': 1})
-            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 1, 'execution_id': 3, 'type':
+            main._stats_collection.get_collection().insert_one({'_id': {'subsystem_id': 1, 'execution_id': 3, 'type':
                     'last_execution'}, 'modules_with_pending_work': {'module1': {}, 'module2': {}}})
-            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 1, 'execution_id': 4, 'type':
+            main._stats_collection.get_collection().insert_one({'_id': {'subsystem_id': 1, 'execution_id': 4, 'type':
                     'last_execution'}, 'modules_with_pending_work': None})
-            main._stats_collection.collection.insert_one({'_id': {'subsystem_id': 2, 'execution_id': 1, 'type':
+            main._stats_collection.get_collection().insert_one({'_id': {'subsystem_id': 2, 'execution_id': 1, 'type':
                     'last_execution'}, 'modules_with_pending_work': {'module4': {}}})
 
             # Testing module access
@@ -311,7 +311,7 @@ class TestMain(TestCase):
         self.assertIs(collection2, collection3)
 
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
             'last_execution_id': 1}, {"modules_with_pending_work": {'module': {'saved_elements': 100}},
             "execution_id": 1}]))
     def test_pending_work_endpoint_last_execution_module_had_pending_work_and_data_saved(self):
@@ -321,7 +321,7 @@ class TestMain(TestCase):
         self.assertDictEqual({'pending_work': True, 'saved_elements': 100}, data)
 
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
             'last_execution_id': 1}, {"modules_with_pending_work": {'module': {'saved_elements': 0}},
             "execution_id": 1}]))
     def test_pending_work_endpoint_last_execution_module_had_pending_work_but_data_not_saved(self):
@@ -331,7 +331,7 @@ class TestMain(TestCase):
         self.assertDictEqual({'pending_work': True, 'saved_elements': 0}, data)
 
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(side_effect=[{'_id': 'aggregated',
             'last_execution_id': 1}, {"modules_with_pending_work": {}, "execution_id": 1}]))
     def test_pending_work_endpoint_last_execution_module_no_pending_work(self):
         r = self.app.get('/pendingWork/module/', headers={'Authorization': 'Bearer test_token'})
@@ -339,7 +339,7 @@ class TestMain(TestCase):
         self.assertEqual(200, r.status_code)
         self.assertDictEqual({'pending_work': False, 'saved_elements': None}, data)
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(return_value=None))
     @mock.patch('api.main._get_module_names', Mock(return_value=[]))
     def test_pending_work_endpoint_last_execution_and_subsystem_not_executed(self):
         r = self.app.get('/pendingWork/module/', headers={'Authorization': 'Bearer test_token'})
@@ -355,7 +355,7 @@ class TestMain(TestCase):
         r = self.app.get('/pendingWork/module?executionId=-1', headers={'Authorization': 'Bearer test_token'})
         self.assertEqual(400, r.status_code)
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(side_effect=[None, {'_id': 'aggregated',
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(side_effect=[None, {'_id': 'aggregated',
             'last_execution_id': 1}]))
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
     def test_pending_work_endpoint_with_execution_id_non_existing_but_subsystem_executed(self):
@@ -364,7 +364,7 @@ class TestMain(TestCase):
         self.assertEqual(404, r.status_code)
         self.assertEqual(1, data['last_execution_id'])
 
-    @mock.patch('api.main._stats_collection.collection.find_one', Mock(return_value=None))
+    @mock.patch('api.main._stats_collection._collection.find_one', Mock(return_value=None))
     @mock.patch('api.main._get_module_names', Mock(return_value=['module']))
     def test_pending_work_endpoint_with_execution_id_non_existing_and_subsystem_not_executed(self):
         r = self.app.get('/pendingWork/module?executionId=2', headers={'Authorization': 'Bearer test_token'})

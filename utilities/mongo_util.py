@@ -1,6 +1,10 @@
-from global_config.config import GLOBAL_CONFIG
+import threading
+from functools import wraps
 from os import environ
+
 from pymongo import MongoClient
+
+from global_config.config import GLOBAL_CONFIG
 
 
 def drop_database(database=GLOBAL_CONFIG['MONGODB_DATABASE']):
@@ -8,7 +12,7 @@ def drop_database(database=GLOBAL_CONFIG['MONGODB_DATABASE']):
         Deletes all contents from a database.
         :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
                     port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
                     authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
                     serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
@@ -28,7 +32,7 @@ def create_user(username: str, password: str, roles: list, database=GLOBAL_CONFI
         :param roles: User roles.
         :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
                     port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
                     authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
                     serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
@@ -49,7 +53,7 @@ def drop_user(username=GLOBAL_CONFIG['MONGODB_USERNAME'], database=GLOBAL_CONFIG
         :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
         :return: True, if the user has been successfully dropped; False, otherwise.
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
                     port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
                     authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
                     serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
@@ -75,15 +79,15 @@ def bulk_create_authorized_users(users: list, database=GLOBAL_CONFIG['MONGODB_DA
     for user in users:
         # Changing "$set" to "$setOnInsert" FIXES [BUG-029].
         ops.append(UpdateOne({'_id': user['_id']}, update={'$setOnInsert': user}, upsert=True))
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
                     port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
                     authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
                     serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
                     username=GLOBAL_CONFIG['MONGODB_ROOT'], password=GLOBAL_CONFIG['MONGODB_ROOT_PASSWORD'],
                     authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
     try:
-        result = c.get_database(database).get_collection(GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION']).\
-                bulk_write(ops)
+        result = c.get_database(database).get_collection(
+                GLOBAL_CONFIG['MONGODB_API_AUTHORIZED_USERS_COLLECTION']).bulk_write(ops)
         return result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] + result.bulk_api_result[
             'nUpserted']
     finally:
@@ -95,7 +99,7 @@ def ping_database():
         Performs a connection attempt, to ensure database is up. Regardless of the error, the client will be closed.
         :raises EnvironmentError: If any error occurs during the process.
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
                     port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
                     authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
                     serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
@@ -109,7 +113,8 @@ def ping_database():
         c.close()
 
 
-def get_and_increment_execution_id(subsystem_id: int, database=GLOBAL_CONFIG['MONGODB_DATABASE'], increment=True) -> int:
+def get_and_increment_execution_id(subsystem_id: int, database=GLOBAL_CONFIG['MONGODB_DATABASE'],
+                                   increment=True) -> int:
     """
         Retrieves the current execution ID. Each time this value is retrieved, it is auto-incremented in one unit.
         Postcondition: The execution ID is auto-incremented in one unit.
@@ -118,7 +123,7 @@ def get_and_increment_execution_id(subsystem_id: int, database=GLOBAL_CONFIG['MO
         :param increment: If True, the execution ID will be incremented (default).
         :return: An integer, containing the current execution ID.
     """
-    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
+    c = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
                     port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
                     authSource=GLOBAL_CONFIG['MONGODB_ADMIN'],
                     serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
@@ -126,10 +131,10 @@ def get_and_increment_execution_id(subsystem_id: int, database=GLOBAL_CONFIG['MO
                     authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'], maxPoolSize=1)
     try:
         return c.get_database(database).get_collection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION']).find_one_and_update(
-                {'_id': {'execution_id': True, 'subsystem_id': subsystem_id}},
-                {'$inc': {'value': 1}}, fields={'value': 1}, new=True, upsert=True)['value'] if increment else \
-                    c.get_database(database).get_collection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION']).find_one({'_id':
-                    {'execution_id': True, 'subsystem_id': subsystem_id}})['value']
+                {'_id': {'execution_id': True, 'subsystem_id': subsystem_id}}, {'$inc': {'value': 1}},
+                fields={'value': 1}, new=True, upsert=True)['value'] if increment else \
+            c.get_database(database).get_collection(GLOBAL_CONFIG['MONGODB_STATS_COLLECTION']).find_one(
+                    {'_id': {'execution_id': True, 'subsystem_id': subsystem_id}})['value']
     finally:
         c.close()
 
@@ -144,13 +149,64 @@ def get_connection_pool(username=GLOBAL_CONFIG['MONGODB_USERNAME'], password=GLO
         :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
         :return: A pymongo.MongoClient instance.
     """
-    return MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'), 
-                       port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)),
-                       authSource=database, serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-                       username=username, password=password, authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'],
+    return MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
+                       port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)), authSource=database,
+                       serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'], username=username,
+                       password=password, authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'],
                        maxPoolSize=GLOBAL_CONFIG['MONGODB_MAX_POOL_SIZE'],
                        waitQueueMultiple=GLOBAL_CONFIG['MONGODB_WAIT_QUEUE_MULTIPLE'],
                        waitQueueTimeoutMS=GLOBAL_CONFIG['WAIT_QUEUE_MILLISECONDS_TIMEOUT'])
+
+
+def proxy_collection(f):
+    """
+        This decorator allows proxying the internal pymongo.MongoClient of a MongoDBCollection.
+        This leads to the fact that connections will be lazily created when needed.
+        :param f: Fuction to be decorated.
+    """
+
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        c = args[0]
+        if c.is_closed():
+            c._collection, c._client = _init_collection(c._collection_name, c._use_pool, c._username, c._password,
+                                                        c._database_name)
+        return f(*args, **kwargs)
+
+    return wrapped
+
+
+def _init_collection(collection_name, use_pool=True, username=GLOBAL_CONFIG['MONGODB_USERNAME'],
+                     password=GLOBAL_CONFIG['MONGODB_USER_PASSWORD'], database=GLOBAL_CONFIG['MONGODB_DATABASE']):
+    """
+        Internal function that creates a pymongo.MongoClient and initializes a connection to a collection.
+        :param collection_name: Name of the collection to be connected to.
+        :param use_pool: Uses a connection pool instead of creating a single connection. The connection pool will
+                         be initialized the first time a MongoDBCollection object is created.
+                         The MongoDBCollection will store a connection pool per (username, database).
+        :param username: User name. Defaults to GLOBAL_CONFIG.MONGODB_USERNAME
+        :param password: User's password. Defaults to GLOBAL_CONFIG.MONGODB_USER_PASSWORD
+        :param database: Database name. Defaults to GLOBAL_CONFIG.MONGODB_DATABASE
+        :return: A tuple of two elements: a connection to a collection and a pymongo.MongoClient
+    """
+    if use_pool:
+        _id = hash((username, database))
+        try:
+            client = MongoDBCollection._pools[_id]
+        except KeyError:
+            with MongoDBCollection._lock:
+                if not MongoDBCollection._pools.get(_id):
+                    MongoDBCollection._pools[_id] = get_connection_pool(username=username, password=password,
+                                                                        database=database)
+            client = MongoDBCollection._pools[_id]
+    else:
+        client = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
+                             port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)), authSource=database,
+                             serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
+                             username=username, password=password,
+                             authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'])
+    client.server_info()  # Checks valid connection.
+    return client.get_database(database).get_collection(collection_name), client
 
 
 class MongoDBCollection:
@@ -165,7 +221,6 @@ class MongoDBCollection:
         This class is thread-safe, since a "threading.Lock" object is used to synchronize the creation and access to
         the connection pools.
     """
-    import threading
 
     _pools = {}
     _lock = threading.Lock()
@@ -188,41 +243,31 @@ class MongoDBCollection:
         self._collection_name = collection_name
         self._database_name = database
         self._username = username
+        self._password = password
         self._use_pool = use_pool
-        if use_pool:
-            _id = hash((username, database))
-            try:
-                self._client = MongoDBCollection._pools[_id]
-            except KeyError:
-                MongoDBCollection._lock.acquire()
-                if not MongoDBCollection._pools.get(_id):
-                    MongoDBCollection._pools[_id] = get_connection_pool(username=username, password=password,
-                                                                        database=database)
-                MongoDBCollection._lock.release()
-                self._client = MongoDBCollection._pools[_id]
-        else:
-            self._client = MongoClient(host=environ.get(GLOBAL_CONFIG['MONGODB_SERVER'], 'localhost'),
-                    port=int(environ.get(GLOBAL_CONFIG['MONGODB_PORT'], 27017)), authSource=database,
-                    serverSelectionTimeoutMS=GLOBAL_CONFIG['MONGODB_DB_MAX_MILLISECONDS_WAIT'],
-                    username=username, password=password, authMechanism=GLOBAL_CONFIG['MONGODB_AUTH_MECHANISM'])
-        self._client.server_info()  # Checks valid connection.
-        self.collection = self._client.get_database(database).get_collection(collection_name)
+        self._client = None
+        self._collection = None
+
+    @proxy_collection
+    def get_collection(self):
+        return self._collection
 
     def is_closed(self) -> bool:
         """
             Checks whether or not the current connection to the collection is closed.
             :return: True, if the either the client or the connection are None, False otherwise.
         """
-        return self.collection is None or self._client is None
+        return self._collection is None or self._client is None
 
     def close(self):
         """
-            Closes the MongoClient, and unassigns the 'collection' variable.
+            Closes the MongoClient, and unassigns the '_collection' variable.
             However, the MongoDBCollection instance can still be used, by calling the 'connect' method first, which will
             open the connection and initialize the collection again.
         """
-        self._client.close()  # If used later, MongoClient will automatically open the connection with MongoDB
-        self.collection = None
+        if not self.is_closed():
+            self._client.close()  # If used later, MongoClient will automatically open the connection with MongoDB
+            self._collection = None
 
     def connect(self, collection_name=None):
         """
@@ -231,13 +276,19 @@ class MongoDBCollection:
             :param collection_name: Name of the collection to be connected to. If this name is the same as the current
                                     collection, this operation won't do anything.
         """
-        if self._collection_name == collection_name and not self.is_closed():
+        if self._client is None:
+            self._collection, self._client = _init_collection(
+                    collection_name if collection_name else self._collection_name, self._use_pool, self._username,
+                    self._password, self._database_name)
+            return
+        elif self._collection_name == collection_name and not self.is_closed():
             return
         elif self._collection_name != collection_name:
             self.close()
-        self.collection = self._client.get_database(self._database_name).get_collection(
+        self._collection = self._client.get_database(self._database_name).get_collection(
                 collection_name if collection_name else self._collection_name)
 
+    @proxy_collection
     def find(self, fields=None, conditions=None, start_index=None, count=None, sort=None) -> (list, int):
         """
             Searches for data in a MongoDB collection. Results are paged (if 'count' and 'start_index' are set).
@@ -262,7 +313,7 @@ class MongoDBCollection:
                                             available, this value will be None.
             :rtype: tuple
         """
-        cursor = self.collection.find(conditions, fields).sort(sort if sort else '$natural').limit(
+        cursor = self._collection.find(conditions, fields).sort(sort if sort else '$natural').limit(
                 count + 1 if count else 0).skip(start_index if start_index is not None else 0)
         data = [x for x in cursor]
         cursor.close()
@@ -275,20 +326,47 @@ class MongoDBCollection:
             next_start_index = (start_index if start_index is not None else 0) + count
         return data, next_start_index
 
+    @proxy_collection
+    def find_one(self, *args, **kwargs):
+        return self._collection.find_one(*args, **kwargs)
+
+    @proxy_collection
+    def bulk_write(self, *args, **kwargs):
+        return self._collection.bulk_write(*args, **kwargs)
+
+    @proxy_collection
+    def insert_many(self, *args, **kwargs):
+        return self._collection.insert_many(*args, **kwargs)
+
+    @proxy_collection
+    def count(self, *args, **kwargs):
+        return self._collection.count(*args, **kwargs)
+
+    @proxy_collection
+    def distinct(self, *args, **kwargs):
+        return self._collection.distinct(*args, **kwargs)
+
+    @proxy_collection
+    def create_index(self, *args, **kwargs):
+        return self._collection.create_index(*args, **kwargs)
+
+    @proxy_collection
     def is_empty(self) -> bool:
         """
             Checks whether a collection is empty or not.
             :return: True if the collection is empty, False otherwise.
             :rtype: bool
         """
-        return self.collection.count() == 0
+        return self._collection.count() == 0
 
+    @proxy_collection
     def remove_all(self):
         """
             Removes all elements from the collection.
         """
-        return self.collection.delete_many({})
+        return self._collection.delete_many({})
 
+    @proxy_collection
     def get_last_elements(self, amount=1, filter=None):
         """
             Finds the last element(s) which meet(s) a given condition(s).
@@ -298,13 +376,13 @@ class MongoDBCollection:
             :return: A deserialized JSON document, or a list of them, depending on the value of the 'amount' parameter.
                      If the collection has no items, this operation will return 'None'.
         """
-        count = self.collection.count(filter=filter)
+        count = self._collection.count(filter=filter)
         if count == 0:
             return None
         else:
-            result = list(self.collection.find(filter=filter).skip(count - amount))
+            result = list(self._collection.find(filter=filter).skip(count - amount))
             return result[0] if amount == 1 else result
 
     def __str__(self):
-        return 'MongoDBCollection [collection=%s, database=%s, username=%s, pool=%s' % (self._collection_name,
-                self._database_name, self._username, self._use_pool)
+        return 'MongoDBCollection [collection=%s, database=%s, username=%s, pool=%s' % (
+            self._collection_name, self._database_name, self._username, self._use_pool)

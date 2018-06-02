@@ -168,7 +168,7 @@ class DataCollector(ABC, Runnable):
         # Needs to be initialized to log errors.
         self.logger = get_logger(file_path, self.module_name, to_stdout=log_to_stdout, to_file=log_to_file,
                                  subsystem_id=DGS_CONFIG['SUBSYSTEM_INSTANCE_ID'], component=DGS_CONFIG['COMPONENT'],
-                                 root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'], 
+                                 root_dir=DGS_CONFIG['DATA_GATHERING_SUBSYSTEM_LOG_FILES_ROOT_FOLDER'],
                                  to_telegram=log_to_telegram)
         self._transition_state = self._CREATED
         try:
@@ -176,7 +176,7 @@ class DataCollector(ABC, Runnable):
             self._backoff_prevented_execution = False
             self._state_transitions.append(self._transition_state)
             self.check_result = None
-            self.collection = None
+            self.collection = MongoDBCollection(self.module_name)  # Proxy collection (lazily initialized)
             self.data = None
             self.pending_work = None
             self.state = None
@@ -258,16 +258,11 @@ class DataCollector(ABC, Runnable):
             is initialized at this point to be used.
             Precondition: Collected data must be JSON serializable, and saved in the 'data' instance attribute.
         """
-        if not self.data:
-            if self.collection:
-                self.collection.close()
-        else:
-            for data in self.data:
-                data[DGS_CONFIG['EXECUTION_ID_DOCUMENT_FIELD']] = builtins.EXECUTION_ID
-            if self.collection:
-                self.collection.connect(self.module_name)
-            else:
-                self.collection = MongoDBCollection(self.module_name)
+        if not self.data and self.collection:
+            self.collection.close()
+            return
+        for data in self.data:
+            data[DGS_CONFIG['EXECUTION_ID_DOCUMENT_FIELD']] = builtins.EXECUTION_ID
 
     def _check_execution(self):
         """

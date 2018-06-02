@@ -3,7 +3,6 @@ import requests
 
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
-from utilities.mongo_util import MongoDBCollection
 from utilities.util import date_to_millis_since_epoch, current_timestamp
 
 _singleton = None
@@ -30,7 +29,7 @@ class _EnergySourcesDataCollector(DataCollector):
         """
         super()._collect_data()
         # Retrieves countries from database
-        self.collection = MongoDBCollection(collection_name=self.config['COUNTRIES_MODULE_NAME'])
+        self.collection.connect(collection_name=self.config['COUNTRIES_MODULE_NAME'])
         countries, next_start_index = self.collection.find(fields={'_id': 1, 'name': 1}, sort='_id')
         self.collection.close()
         self.data = []
@@ -94,11 +93,9 @@ class _EnergySourcesDataCollector(DataCollector):
         """
         super()._save_data()
         if self.data:
-            operations = []
-            for value in self.data:
-                operations.append(UpdateOne({'country_id': value['country_id'], 'time_utc': value['time_utc']},
-                        update={'$setOnInsert': value}, upsert=True))
-            result = self.collection.collection.bulk_write(operations)
+            result = self.collection.bulk_write([UpdateOne({'country_id': value['country_id'],
+                                                            'time_utc': value['time_utc']},
+                        update={'$setOnInsert': value}, upsert=True) for value in self.data])
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] == len(self.data):

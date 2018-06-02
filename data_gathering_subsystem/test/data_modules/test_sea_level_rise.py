@@ -24,11 +24,11 @@ class TestSeaLevelRise(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_correct_data_collection(self, mock_collection, mock_ftp, mock_reader):
+    def test_correct_data_collection(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 2, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['GMSL_TPJAOS_V4.jpg', 'GMSL_TPJAOS_V4_199209_201708.txt',
@@ -41,8 +41,9 @@ class TestSeaLevelRise(TestCase):
         mock_reader.return_value.get_data.return_value = data
         # Actual execution
         self.data_collector = sea_level_rise.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -96,11 +97,11 @@ class TestSeaLevelRise(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_ftp, mock_reader):
+    def test_data_collection_with_not_all_items_saved(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 11, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['GMSL_TPJAOS_V4.jpg', 'GMSL_TPJAOS_V4_199209_201708.txt',
@@ -123,8 +124,9 @@ class TestSeaLevelRise(TestCase):
         mock_reader.return_value.get_data.return_value = data
         # Actual execution
         self.data_collector = sea_level_rise.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -138,11 +140,11 @@ class TestSeaLevelRise(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_too_much_items_not_saved(self, mock_collection, mock_ftp, mock_reader):
+    def test_data_collection_with_too_much_items_not_saved(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 9, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['GMSL_TPJAOS_V4.jpg', 'GMSL_TPJAOS_V4_199209_201708.txt',
@@ -165,8 +167,9 @@ class TestSeaLevelRise(TestCase):
         mock_reader.return_value.get_data.return_value = data
         # Actual execution
         self.data_collector = sea_level_rise.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -179,11 +182,11 @@ class TestSeaLevelRise(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.sea_level_rise.sea_level_rise.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_no_items_saved(self, mock_collection, mock_ftp, mock_reader):
+    def test_data_collection_with_no_items_saved(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['GMSL_TPJAOS_V4.jpg', 'GMSL_TPJAOS_V4_199209_201708.txt',
@@ -206,8 +209,9 @@ class TestSeaLevelRise(TestCase):
         mock_reader.return_value.get_data.return_value = data
         # Actual execution
         self.data_collector = sea_level_rise.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())

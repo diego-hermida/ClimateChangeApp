@@ -5,7 +5,6 @@ import requests
 from pymongo import UpdateOne
 from pytz import UTC
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
-from utilities.mongo_util import MongoDBCollection
 from utilities.util import date_to_millis_since_epoch, current_timestamp
 
 _singleton = None
@@ -69,10 +68,9 @@ class _HistoricalWeatherDataCollector(DataCollector):
             # CHECK MODE
             self.logger.info('Scheduled check for outdated locations activated.')
             # Checking for new locations
-            self.collection = MongoDBCollection(collection_name=self.module_name)
-            current_locations = self.collection.collection.distinct('location_id')
+            current_locations = self.collection.distinct('location_id')
             self.collection.connect(self.config['LOCATIONS_MODULE_NAME'])
-            locations_count = self.collection.collection.count()
+            locations_count = self.collection.count()
             if locations_count == 0:
                 self.logger.info('No locations are available. Data collection will be stopped.')
                 self.advisedly_no_data_collected = True
@@ -125,8 +123,8 @@ class _HistoricalWeatherDataCollector(DataCollector):
                 if not self.state['current_date']:
                     self.state['current_date'] = self._query_date()
                 # Finding current location in database
-                self.collection = MongoDBCollection(self.config['LOCATIONS_MODULE_NAME'])
-                location = self.collection.collection.find_one({'_id': self.state['missing_data_ids'][0]})
+                self.collection.connect(self.config['LOCATIONS_MODULE_NAME'])
+                location = self.collection.find_one({'_id': self.state['missing_data_ids'][0]})
                 self.collection.connect(collection_name=self.module_name)
                 try:
                     tokens = [x for x in self.config['TOKENS'] if self.state['tokens'][x]['usable']]
@@ -209,11 +207,9 @@ class _HistoricalWeatherDataCollector(DataCollector):
         """
         super()._save_data()
         if self.data:
-            operations = []
-            for value in self.data:
-                operations.append(UpdateOne({'location_id': value['location_id'], 'date_utc': value['date_utc']},
-                        update={'$setOnInsert': value}, upsert=True))
-            result = self.collection.collection.bulk_write(operations)
+            result = self.collection.bulk_write([UpdateOne({'location_id': value['location_id'],
+                                                            'date_utc': value['date_utc']},
+                        update={'$setOnInsert': value}, upsert=True) for value in self.data])
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] - (result.bulk_api_result['nInserted'] + result.bulk_api_result[

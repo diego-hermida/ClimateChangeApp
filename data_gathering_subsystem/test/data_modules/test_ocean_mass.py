@@ -24,11 +24,11 @@ class TestOceanMass(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_correct_data_collection(self, mock_collection, mock_ftp, mock_reader):
+    def test_correct_data_collection(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 4, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['antarctica_mass_200204_201701.txt',
@@ -40,8 +40,9 @@ class TestOceanMass(TestCase):
         mock_reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
         self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -54,7 +55,7 @@ class TestOceanMass(TestCase):
                          self.data_collector.state['antarctica']['update_frequency'])
         self.assertEqual(self.data_collector.config['MAX_UPDATE_FREQUENCY'],
                          self.data_collector.state['greenland']['update_frequency'])
-        data = mock_collection.mock_calls[1][1][0]
+        data = mock_collection.mock_calls[0][1][0]
         for v in data:
             if v._doc['$setOnInsert']['type'] == ocean_mass.MassType.antarctica:
                 self.assertAlmostEqual(-285.85, v._doc['$setOnInsert']['measures'][2]['trend'], 0.01)
@@ -63,11 +64,11 @@ class TestOceanMass(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_correct_data_collection_with_unnecesary_files(self, mock_collection, mock_ftp, mock_reader):
+    def test_correct_data_collection_with_unnecesary_files(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 4, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['antarctica_mass_200204_201701.txt', 'unnecesary_file.txt',
@@ -80,8 +81,9 @@ class TestOceanMass(TestCase):
         mock_reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
         self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -97,11 +99,11 @@ class TestOceanMass(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_not_all_files_updated_since_last_check(self, mock_collection, mock_ftp, mock_reader):
+    def test_data_collection_with_not_all_files_updated_since_last_check(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 4, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['antarctica_mass_200204_201701.txt',
@@ -114,8 +116,9 @@ class TestOceanMass(TestCase):
         mock_reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
         self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -199,11 +202,11 @@ class TestOceanMass(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_ftp, mock_reader):
+    def test_data_collection_with_not_all_items_saved(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 7, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['antarctica_mass_200204_201701.txt',
@@ -218,8 +221,9 @@ class TestOceanMass(TestCase):
         mock_reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
         self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -236,11 +240,11 @@ class TestOceanMass(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_too_much_items_not_saved(self, mock_collection, mock_ftp, mock_reader):
+    def test_data_collection_with_too_much_items_not_saved(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 6, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['antarctica_mass_200204_201701.txt',
@@ -255,8 +259,9 @@ class TestOceanMass(TestCase):
         mock_reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
         self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())
@@ -269,11 +274,11 @@ class TestOceanMass(TestCase):
 
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.Reader')
     @mock.patch('data_gathering_subsystem.data_modules.ocean_mass.ocean_mass.FTP')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_no_items_saved(self, mock_collection, mock_ftp, mock_reader):
+    def test_data_collection_with_no_items_saved(self, mock_ftp, mock_reader):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking FTP operations
         mock_ftp.return_value.nlst.return_value = ['antarctica_mass_200204_201701.txt',
@@ -288,8 +293,9 @@ class TestOceanMass(TestCase):
         mock_reader.return_value.get_data = Mock(side_effect=side_effect)
         # Actual execution
         self.data_collector = ocean_mass.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_ftp.called)
         self.assertTrue(mock_reader.called)
         self.assertTrue(self.data_collector.finished_execution())

@@ -71,7 +71,7 @@ class _CountriesDataCollector(DataCollector):
             if not self.collection.is_empty():
                 self.collection.remove_all()
                 self.logger.debug('Cleared database collection so as to perform bulk-insert.')
-            ids = self.collection.collection.insert_many(self.data)
+            ids = self.collection.insert_many(self.data)
             inserted = len(ids.inserted_ids)
             self.state['inserted_elements'] = inserted
             if inserted == len(self.data):

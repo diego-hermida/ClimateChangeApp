@@ -23,12 +23,12 @@ class TestCountries(TestCase):
         self.assertIsNot(i1, countries.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_correct_data_collection(self, mock_collection, mock_requests):
+    def test_correct_data_collection(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.is_empty.return_value = False
-        mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.is_empty.return_value = False
+        mock_collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': 1}, {'_id': 2}, {'_id': 3}, {'_id': 4}, {'_id': 5}, {'_id': 6}]
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -61,8 +61,9 @@ class TestCountries(TestCase):
              "longitude": "1.5218", "latitude": "42.5075"}]]).encode()
         # Actual execution
         self.data_collector = countries.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
@@ -73,19 +74,20 @@ class TestCountries(TestCase):
         self.assertEqual(self.data_collector.config['UPDATE_FREQUENCY'], self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_no_countries(self, mock_collection, mock_requests):
+    def test_data_collection_with_no_countries(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = []
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         response.content = dumps([{"page": 1, "pages": 1, "per_page": "10000", "total": 0}, []]).encode()
         # Actual execution
         self.data_collector = countries.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertFalse(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -98,9 +100,9 @@ class TestCountries(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_too_much_invalid_data_from_server(self, mock_collection, mock_requests):
+    def test_data_collection_with_too_much_invalid_data_from_server(self, mock_requests):
         # Mocking requests (get and response content)
+        mock_collection = Mock()
         mock_requests.return_value = response = Mock()
         response.content = dumps([{"page": 1, "pages": 1, "per_page": "10000", "total": 2}, ['invalid data',
                 {"id": "ABW", "iso2Code": "AW", "name": "Aruba", "region": {"id": "LCN", "value": "Latin America & "
@@ -109,8 +111,9 @@ class TestCountries(TestCase):
                 "longitude": "-70.0167", "latitude": "12.5167"}]]).encode()
         # Actual execution
         self.data_collector = countries.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertFalse(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -122,19 +125,20 @@ class TestCountries(TestCase):
 
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_rejected_request_from_server(self, mock_collection, mock_requests):
+    def test_data_collection_with_rejected_request_from_server(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': 1}]
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         response.content = dumps({'error': 500, 'message': 'Server is unavailable.'}).encode()
         # Actual execution
         self.data_collector = countries.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertFalse(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -145,11 +149,11 @@ class TestCountries(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_requests):
+    def test_data_collection_with_not_all_items_saved(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': 1}, {'_id': 2}, {'_id': 3}, {'_id': 4}, {'_id': 5}, {'_id': 6}, {'_id': 7},
                                       {'_id': 8}, {'_id': 9}]
         # Mocking requests (get and response content)
@@ -192,8 +196,9 @@ class TestCountries(TestCase):
             "longitude": "69.1761", "latitude": "34.5228"}]]).encode()
         # Actual execution
         self.data_collector = countries.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -204,11 +209,11 @@ class TestCountries(TestCase):
         self.assertEqual(self.data_collector.config['UPDATE_FREQUENCY'], self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_too_much_items_not_saved(self, mock_collection, mock_requests):
+    def test_data_collection_with_too_much_items_not_saved(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': 1}]
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -222,8 +227,9 @@ class TestCountries(TestCase):
             "capitalCity": "Oranjestad", "longitude": "-70.0167", "latitude": "12.5167"}]]).encode()
         # Actual execution
         self.data_collector = countries.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())

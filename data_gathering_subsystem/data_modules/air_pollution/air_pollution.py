@@ -3,7 +3,6 @@ import requests
 
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from pymongo import UpdateOne
-from utilities.mongo_util import MongoDBCollection
 from utilities.util import current_timestamp
 
 _singleton = None
@@ -29,7 +28,7 @@ class _AirPollutionDataCollector(DataCollector):
         """
         super()._collect_data()
         # Retrieves locations with WAQI Station ID from database
-        self.collection = MongoDBCollection(collection_name=self.config['LOCATIONS_MODULE_NAME'])
+        self.collection.connect(collection_name=self.config['LOCATIONS_MODULE_NAME'])
         locations, next_start_index = self.collection.find(start_index=self.state['start_index'], count=self.config[
                 'MAX_REQUESTS_PER_MINUTE'], fields={'_id': 1, 'name': 1, 'waqi_station_id': 1}, sort='_id',
                 conditions={'waqi_station_id':{'$ne': None}})
@@ -79,12 +78,10 @@ class _AirPollutionDataCollector(DataCollector):
         """
         super()._save_data()
         if self.data:
-            operations = []
             # Using `location_id` instead of `station_id` FIXES [BUG-037].
-            for value in self.data:
-                operations.append(UpdateOne({'location_id': value['location_id'], 'time_utc': value['time_utc']},
-                        update={'$setOnInsert': value}, upsert=True))
-            result = self.collection.collection.bulk_write(operations)
+            result = self.collection.bulk_write([UpdateOne({'location_id': value['location_id'],
+                                                            'time_utc': value['time_utc']},
+                        update={'$setOnInsert': value}, upsert=True) for value in self.data])
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] == len(self.data):

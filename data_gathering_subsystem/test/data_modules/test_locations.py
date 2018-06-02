@@ -36,17 +36,17 @@ class TestLocations(TestCase):
     @mock.patch('data_gathering_subsystem.data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.locations.locations.MongoDBCollection')
-    def test_correct_data_collection_all_found_no_unmatched_no_multiple(self, mock_collection, mock_requests,
+    def test_correct_data_collection_all_found_no_unmatched_no_multiple(self, mock_requests,
                                                                         mock_zipfile, mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection =  Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -85,8 +85,9 @@ class TestLocations(TestCase):
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(mock_zipfile.called)
         self.assertTrue(mock_bytes.called)
@@ -107,17 +108,17 @@ class TestLocations(TestCase):
     @mock.patch('data_gathering_subsystem.data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.locations.locations.MongoDBCollection')
-    def test_correct_data_collection_all_found_unmatched_multiple(self, mock_collection, mock_requests, mock_zipfile,
+    def test_correct_data_collection_all_found_unmatched_multiple(self, mock_requests, mock_zipfile,
                                                                   mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = ([], None)
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.find.return_value = ([], None)
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -161,8 +162,9 @@ class TestLocations(TestCase):
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(mock_zipfile.called)
         self.assertTrue(mock_bytes.called)
@@ -183,8 +185,7 @@ class TestLocations(TestCase):
     @mock.patch('data_gathering_subsystem.data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.locations.locations.MongoDBCollection')
-    def test_correct_data_collection_some_locations_not_found(self, mock_collection, mock_requests, mock_zipfile,
+    def test_correct_data_collection_some_locations_not_found(self, mock_requests, mock_zipfile,
                                                               mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
@@ -194,9 +195,10 @@ class TestLocations(TestCase):
         mock_zipfile.return_value.open.return_value = BytesIO(data)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = ([], None)
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.find.return_value = ([], None)
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 4, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -229,8 +231,9 @@ class TestLocations(TestCase):
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(mock_zipfile.called)
         self.assertTrue(mock_bytes.called)
@@ -278,16 +281,16 @@ class TestLocations(TestCase):
     @mock.patch('data_gathering_subsystem.data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.locations.locations.MongoDBCollection')
-    def test_correct_data_collection_not_all_collected(self, mock_collection, mock_requests, mock_zipfile, mock_bytes):
+    def test_correct_data_collection_not_all_collected(self, mock_requests, mock_zipfile, mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = ([], None)
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.find.return_value = ([], None)
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 3, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -326,8 +329,9 @@ class TestLocations(TestCase):
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(mock_zipfile.called)
         self.assertTrue(mock_bytes.called)
@@ -348,17 +352,17 @@ class TestLocations(TestCase):
     @mock.patch('data_gathering_subsystem.data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.locations.locations.MongoDBCollection')
-    def test_data_collection_with_invalid_data_from_server(self, mock_collection, mock_requests, mock_zipfile,
+    def test_data_collection_with_invalid_data_from_server(self, mock_requests, mock_zipfile,
                                                            mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = ([], None)
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.find.return_value = ([], None)
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 5, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -395,8 +399,9 @@ class TestLocations(TestCase):
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(mock_zipfile.called)
         self.assertTrue(mock_bytes.called)
@@ -417,17 +422,17 @@ class TestLocations(TestCase):
     @mock.patch('data_gathering_subsystem.data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.locations.locations.MongoDBCollection')
-    def test_correct_data_collection_no_elements_collected(self, mock_collection, mock_requests, mock_zipfile,
+    def test_correct_data_collection_no_elements_collected(self, mock_requests, mock_zipfile,
                                                            mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = ([], None)
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.find.return_value = ([], None)
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -466,8 +471,9 @@ class TestLocations(TestCase):
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = LOCATIONS
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(mock_zipfile.called)
         self.assertTrue(mock_bytes.called)
@@ -488,18 +494,18 @@ class TestLocations(TestCase):
     @mock.patch('data_gathering_subsystem.data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.locations.locations.MongoDBCollection')
-    def test_correct_data_collection_missing_locations_in_database(self, mock_collection, mock_requests, mock_zipfile,
+    def test_correct_data_collection_missing_locations_in_database(self, mock_requests, mock_zipfile,
                                                            mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = ([{'name': 'Delhi'}, {'name': 'Mexico City'},
+        mock_collection = Mock()
+        mock_collection.find.return_value = ([{'name': 'Delhi'}, {'name': 'Mexico City'},
                 {'name': 'Guatemala City'}, {'name': 'Cairo'}], None)
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -515,8 +521,9 @@ class TestLocations(TestCase):
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = dict(LOCATIONS)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(mock_zipfile.called)
         self.assertTrue(mock_bytes.called)
@@ -533,24 +540,25 @@ class TestLocations(TestCase):
     @mock.patch('data_gathering_subsystem.data_modules.locations.locations.BytesIO')
     @mock.patch('zipfile.ZipFile')
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.locations.locations.MongoDBCollection')
-    def test_correct_data_collection_no_missing_locations_in_database(self, mock_collection, mock_requests,
+    def test_correct_data_collection_no_missing_locations_in_database(self, mock_requests,
                 mock_zipfile, mock_bytes):
         # Mocking ZipFile
         mock_zipfile.return_value = Mock()
         mock_zipfile.return_value.open.return_value = BytesIO(DATA)
         mock_zipfile.return_value.infolist.return_value = [ZipInfo('cities1000.txt', (2018, 1, 2, 2, 13, 24))]
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.find.return_value = ([{'name': 'Delhi'}, {'name': 'Mexico City'},
+        mock_collection = Mock()
+        mock_collection.find.return_value = ([{'name': 'Delhi'}, {'name': 'Mexico City'},
                 {'name': 'Guatemala City'}, {'name': 'Cairo'}, {'name': 'Kabul'}], None)
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
         self.data_collector = locations.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['LOCATIONS'] = dict(LOCATIONS)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(mock_zipfile.called)
         self.assertTrue(mock_bytes.called)

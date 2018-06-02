@@ -49,20 +49,21 @@ class TestEnergySources(TestCase):
         self.assertIsNot(i1, energy_sources.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.energy_sources.energy_sources.MongoDBCollection')
-    def test_correct_data_collection(self, mock_collection, mock_requests):
+    def test_correct_data_collection(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         response.content = DATA
         # Actual execution
         self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
@@ -72,12 +73,12 @@ class TestEnergySources(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.energy_sources.energy_sources.MongoDBCollection')
-    def test_data_collection_stops_when_reached_limit(self, mock_collection, mock_requests):
+    def test_data_collection_stops_when_reached_limit(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
@@ -85,8 +86,9 @@ class TestEnergySources(TestCase):
         response.content = '{"message": "API rate limit exceeded"}'.encode()
         # Actual execution
         self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
@@ -96,17 +98,18 @@ class TestEnergySources(TestCase):
                          self.data_collector.state['update_frequency'])
         self.assertTrue(self.data_collector.advisedly_no_data_collected)
 
-    @mock.patch('data_gathering_subsystem.data_modules.energy_sources.energy_sources.MongoDBCollection')
-    def test_data_collection_with_no_countries(self, mock_collection):
+    def test_data_collection_with_no_countries(self):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Actual execution
         self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
         self.assertEqual(0, self.data_collector.state['data_elements'])
@@ -116,20 +119,21 @@ class TestEnergySources(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.energy_sources.energy_sources.MongoDBCollection')
-    def test_data_collection_invalid_data_from_server(self, mock_collection, mock_requests):
+    def test_data_collection_invalid_data_from_server(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         response.content = INVALID_DATA
         # Actual execution
         self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -140,20 +144,21 @@ class TestEnergySources(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.energy_sources.energy_sources.MongoDBCollection')
-    def test_data_collection_with_rejected_request_from_server(self, mock_collection, mock_requests):
+    def test_data_collection_with_rejected_request_from_server(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 'ES', 'name': 'Spain'}], None)
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
         mock_requests.return_value = response = Mock()
         response.content = ERROR
         # Actual execution
         self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -164,13 +169,13 @@ class TestEnergySources(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.energy_sources.energy_sources.MongoDBCollection')
-    def test_data_collection_with_not_all_items_saved(self, mock_collection, mock_requests):
+    def test_data_collection_with_not_all_items_saved(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'},
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 'ES', 'name': 'Spain'},
                                                            {'_id': 'AR', 'name': 'Argentina'}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
 
         # Mocking requests (get and response content)
@@ -178,9 +183,9 @@ class TestEnergySources(TestCase):
         response.content = DATA
         # Actual execution
         self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
@@ -190,13 +195,13 @@ class TestEnergySources(TestCase):
                          self.data_collector.state['update_frequency'])
 
     @mock.patch('requests.get')
-    @mock.patch('data_gathering_subsystem.data_modules.energy_sources.energy_sources.MongoDBCollection')
-    def test_data_collection_with_no_items_saved(self, mock_collection, mock_requests):
+    def test_data_collection_with_no_items_saved(self, mock_requests):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.find.return_value = ([{'_id': 'ES', 'name': 'Spain'},
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.find.return_value = ([{'_id': 'ES', 'name': 'Spain'},
                                                            {'_id': 'AR', 'name': 'Argentina'}], None)
-        mock_collection.return_value.collection.bulk_write.return_value = insert_result = Mock()
+        mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
 
         # Mocking requests (get and response content)
@@ -204,9 +209,9 @@ class TestEnergySources(TestCase):
         response.content = DATA
         # Actual execution
         self.data_collector = energy_sources.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(mock_requests.called)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())

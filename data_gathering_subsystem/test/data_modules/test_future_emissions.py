@@ -21,17 +21,18 @@ class TestFutureEmissions(TestCase):
         i1._transition_state = i1._FINISHED
         self.assertIsNot(i1, future_emissions.instance(log_to_file=False, log_to_stdout=False, log_to_telegram=False))
 
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_correct_data_collection(self, mock_collection):
+    def test_correct_data_collection(self):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.is_empty.return_value = False
-        mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.is_empty.return_value = False
+        mock_collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': x} for x in range(2221)]
         # Actual execution
         self.data_collector = future_emissions.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
@@ -53,16 +54,17 @@ class TestFutureEmissions(TestCase):
         self.assertEqual(self.data_collector.config['STATE_STRUCT']['update_frequency'],
                          self.data_collector.state['update_frequency'])
 
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_not_all_items_saved(self, mock_collection):
+    def test_data_collection_with_not_all_items_saved(self):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': x} for x in range(1999)]
         # Actual execution
         self.data_collector = future_emissions.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])
@@ -71,16 +73,17 @@ class TestFutureEmissions(TestCase):
         self.assertEqual(1999, self.data_collector.state['inserted_elements'])
         self.assertEqual(self.data_collector.config['UPDATE_FREQUENCY'], self.data_collector.state['update_frequency'])
 
-    @mock.patch('data_gathering_subsystem.data_collector.data_collector.MongoDBCollection')
-    def test_data_collection_with_too_much_items_not_saved(self, mock_collection):
+    def test_data_collection_with_too_much_items_not_saved(self):
         # Mocking MongoDBCollection: initialization and operations
-        mock_collection.return_value.close.return_value = None
-        mock_collection.return_value.collection.insert_many.return_value = insert_result = Mock()
+        mock_collection = Mock()
+        mock_collection.close.return_value = None
+        mock_collection.insert_many.return_value = insert_result = Mock()
         insert_result.inserted_ids = [{'_id': x} for x in range(1998)]
         # Actual execution
         self.data_collector = future_emissions.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.collection = mock_collection
         self.data_collector.run()
-        self.assertTrue(mock_collection.called)
+        self.assertTrue(mock_collection.method_calls)
         self.assertTrue(self.data_collector.finished_execution())
         self.assertFalse(self.data_collector.successful_execution())
         self.assertIsNotNone(self.data_collector.state['data_elements'])

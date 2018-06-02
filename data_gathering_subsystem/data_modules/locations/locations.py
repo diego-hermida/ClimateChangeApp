@@ -8,7 +8,6 @@ from pymongo import UpdateOne
 from pytz import UTC
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from unidecode import unidecode
-from utilities.mongo_util import MongoDBCollection
 from utilities.util import check_coordinates, date_to_millis_since_epoch, deserialize_date, MeasureUnits, \
         serialize_date, current_timestamp
 
@@ -60,7 +59,6 @@ class _LocationsDataCollector(DataCollector):
         # Collecting data only if file has been modified
         if True if not self.state['last_modified'] or not last_modified else last_modified > self.state['last_modified']:
             # Optimization: Only updating missing locations.
-            self.collection = MongoDBCollection(self.module_name)
             missing_locations = self.collection.find(fields={'name': 1}, conditions={'$and': [{'waqi_station_id':
                     {'$ne': None}}, {'wunderground_loc_id': {'$ne': None}}, {'owm_station_id': {'$ne': None}}]},
                     sort='_id')[0]
@@ -223,10 +221,8 @@ class _LocationsDataCollector(DataCollector):
         """
         super()._save_data()
         if self.data:
-            operations = []
-            for value in self.data:
-                operations.append(UpdateOne({'_id': value['_id']}, update={'$set': value}, upsert=True))
-            result = self.collection.collection.bulk_write(operations)
+            result = self.collection.bulk_write([UpdateOne({'_id': value['_id']}, update={'$set': value}, upsert=True)
+                                                 for value in self.data])
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']
             if self.state['inserted_elements'] == len(self.data):
