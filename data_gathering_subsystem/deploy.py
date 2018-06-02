@@ -116,22 +116,27 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
         if args.all or args.create_indexes:
             logger.info('Creating database indexes. Configuration is read from the "deploy.config" file.')
             index_info = get_config(__file__)['MONGODB_INDEXES']
-            for collection_name in index_info:
-                keys = []
-                unique = index_info[collection_name].get('unique', False)
-                name = index_info[collection_name].get('name')
-                if name is None:
-                    name = collection_name + '__index_on__'
-                    _keys = [list(x.keys())[0] for x in index_info[collection_name]['keys']]
-                    for k in _keys:
-                        name += k + '__'
-                    name = name[:-2]
-                for i in index_info[collection_name]['keys']:
-                    keys.append(list(i.items())[0])
-                c = MongoDBCollection(collection_name=collection_name, use_pool=True)
-                c.collection.create_index(keys=keys, unique=unique, name=name)
-                if name in c.collection.index_information():
-                    logger.info('Index "%s" has been successfully created.' % name)
+            collection_names = tuple(index_info.keys())
+            if collection_names:
+                c = MongoDBCollection(collection_name=collection_names[0], use_pool=True)
+                for collection_name in collection_names:
+                    keys = []
+                    unique = index_info[collection_name].get('unique', False)
+                    name = index_info[collection_name].get('name')
+                    if name is None:
+                        name = collection_name + '__index_on__'
+                        _keys = [list(x.keys())[0] for x in index_info[collection_name]['keys']]
+                        for k in _keys:
+                            name += k + '__'
+                        name = name[:-2]
+                    for i in index_info[collection_name]['keys']:
+                        keys.append(list(i.items())[0])
+                    c.connect(collection_name)
+                    c.create_index(keys=keys, unique=unique, name=name)
+                    if name in c.get_collection().index_information():
+                        logger.info('Index "%s" has been successfully created.' % name)
+            else:
+                logger.info('No indexes have been declared at the .config file. Omitting indexes creation.')
 
         # 4. Verifying all modules are instantiable and runnable.
         if args.all or args.verify_modules:

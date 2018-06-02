@@ -268,8 +268,27 @@ class TestDeploy(TestCase):
         args.with_test_reports = False
         args.remove_files = False
         deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
-        self.assertEqual(3, mock_collection.return_value.collection.create_index.call_count)
-        result = [x[1]['name'] for x in mock_collection.return_value.collection.create_index.call_args_list]
+        self.assertEqual(3, mock_collection.return_value.create_index.call_count)
+        result = [x[1]['name'] for x in mock_collection.return_value.create_index.call_args_list]
         self.assertListEqual(
                 ['country_indicators__index_on__year__country_id__indicator', 'sea_level_rise__index_on__time_utc',
                  'Index'], result)
+
+    @mock.patch('data_gathering_subsystem.deploy.get_config', Mock(return_value={'MONGODB_INDEXES': {}}))
+    @mock.patch('data_gathering_subsystem.deploy.ping_database', Mock())
+    @mock.patch('argparse.ArgumentParser')
+    def test_no_indexes_are_created_if_index_file_is_empty(self, mock_args):
+        from logging import INFO
+
+        mock_args.return_value.parse_args.return_value = args = Mock()
+        args.all = False
+        args.skip_all = False
+        args.db_user = False
+        args.create_indexes = True
+        args.drop_database = False
+        args.verify_modules = False
+        args.with_tests = False
+        args.with_test_reports = False
+        args.remove_files = False
+        with self.assertLogs('DeployDataGatheringSubsystemLogger', level=INFO):
+            deploy.deploy(log_to_file=False, log_to_stdout=False, log_to_telegram=False)
