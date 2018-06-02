@@ -46,7 +46,7 @@ DATA_2005 = {"_id": "5a92ab9f454cd95abb16ce08", "year": "1765", "scenario": "PRE
                           {"measure": "CH3CL", "value": "0.48000000E+03", "units": "ppt"}], "_execution_id": 1}
 
 DATA_UNEXPECTED = {"_id": "5a92ab9f454cd95abb16ce08", "year": "1765", "scenario": "PRE_2005",
-                   "measures": [{"measure": "CO2_EQ", "value": None, "units": "ppm"}]}
+                   "measures": [{"measure": "CO2", "value": None, "units": "ppm"}]}
 
 DATA_RPC26 = deepcopy(DATA_2005)
 DATA_RPC26['scenario'] = 'RPC_2.6'

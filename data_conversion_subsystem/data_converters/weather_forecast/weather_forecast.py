@@ -26,7 +26,7 @@ class _WeatherForecastDataConverter(DataConverter):
                          log_to_telegram=log_to_telegram)
 
     def _check_dependencies_satisfied(self):
-        self.dependencies_satisfied = Location.objects.count() > 0 and WeatherType.objects.count() > 0
+        self.dependencies_satisfied = Location.objects.exists() and WeatherType.objects.exists()
 
     def _perform_data_conversion(self):
         """

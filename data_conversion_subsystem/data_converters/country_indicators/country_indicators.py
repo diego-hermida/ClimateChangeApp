@@ -29,7 +29,7 @@ class _CountryIndicatorsDataConverter(DataConverter):
                          log_to_telegram=log_to_telegram)
 
     def _check_dependencies_satisfied(self):
-        self.dependencies_satisfied = Country.objects.count() > 0
+        self.dependencies_satisfied = Country.objects.exists()
 
     @transaction.atomic
     def _perform_data_conversion(self):

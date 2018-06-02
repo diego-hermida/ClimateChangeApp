@@ -424,36 +424,18 @@ class HistoricalWeatherObservation(models.Model):
 
 
 class SeaLevelRiseMeasure(models.Model):
-    SINGLE_FREQUENCY = 'SF'
-    DUAL_FREQUENCY = 'DF'
-    ALTIMETER_TYPE = (
-        ('SF', 'Single Frequency'),
-        ('DF', 'Dual Frequency')
-    )
     timestamp_epoch = models.BigIntegerField(primary_key=True, auto_created=False)
     year = models.PositiveSmallIntegerField()
-    altimeter = models.CharField(max_length=2, choices=ALTIMETER_TYPE)
     units = models.CharField(max_length=2, choices=MEASURE_UNITS, default='MM')
-    variation = models.FloatField()
-    deviation = models.FloatField()
-    smoothed_variation = models.FloatField()
-    variation_GIA = models.FloatField()
-    deviation_GIA = models.FloatField()
-    smoothed_variation_GIA = models.FloatField()
-    smoothed_variation_GIA_annual_semi_annual_removed = models.FloatField()
+    value = models.FloatField()
 
     def __str__(self):
-        return 'SeaLevelRiseMeasure [timestamp: %s, altimeter: %s, units: %s, variation: %s, deviation: %s, ' \
-               'smoothed_variation: %s, variation_GIA: %s, deviation_GIA: %s, smoothed_variation_GIA: %s,'\
-               'smoothed_variation_GIA_annual_semi_annual_removed: %s]' % (self.timestamp, self.altimeter, self.units,
-                self.variation, self.deviation, self.smoothed_variation, self.variation_GIA, self.deviation_GIA,
-                self.smoothed_variation_GIA, self.smoothed_variation_GIA_annual_semi_annual_removed)
+        return 'SeaLevelRiseMeasure [timestamp: %s, value: %s]' % (self.timestamp_epoch, self.value)
 
 
 class OceanMassMeasure(models.Model):
     ANTARCTICA = 'ANT'
     GREENLAND = 'GRE'
-    OCEAN = 'OCE'
     OCEAN_MASS_MEASURE_TYPE = (
         ('ANT', 'Antarctica'),
         ('GRE', 'Greenland'),
@@ -492,76 +474,8 @@ class RpcDatabaseEmission(models.Model):
     )
     year = models.SmallIntegerField(db_index=True)
     scenario = models.CharField(max_length=8, choices=SCENARIO_TYPE, db_index=True)
-    co2_eq = models.FloatField()
-    co2_eq_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPM')
-    kyoto_co2_eq = models.FloatField()
-    kyoto_co2_eq_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPM')
     co2 = models.FloatField()
     co2_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPM')
-    ch4 = models.FloatField()
-    ch4_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPB')
-    n2o = models.FloatField()
-    n2o_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPB')
-    kyoto_flourinated_hfc134a_eq = models.FloatField()
-    kyoto_flourinated_hfc134a_eq_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    montreal_flourinated_cfc_13_eq = models.FloatField()
-    montreal_flourinated_cfc_13_eq_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    cf4 = models.FloatField()
-    cf4_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    c2f6 = models.FloatField()
-    c2f6_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    c6f14 = models.FloatField()
-    c6f14_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hfc23 = models.FloatField()
-    hfc23_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hfc32 = models.FloatField()
-    hfc32_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hfc43_10 = models.FloatField()
-    hfc43_10_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hfc125 = models.FloatField()
-    hfc125_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hfc134a = models.FloatField()
-    hfc134a_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hfc143a = models.FloatField()
-    hfc143a_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hfc227ea = models.FloatField()
-    hfc227ea_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hfc245fa = models.FloatField()
-    hfc245fa_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    sf6 = models.FloatField()
-    sf6_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    cfc_11 = models.FloatField()
-    cfc_11_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    cfc_12 = models.FloatField()
-    cfc_12_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    cfc_113 = models.FloatField()
-    cfc_113_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    cfc_114 = models.FloatField()
-    cfc_114_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    cfc_115 = models.FloatField()
-    cfc_115_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    carb_tet = models.FloatField()
-    carb_tet_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    mfc = models.FloatField()
-    mfc_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hcfc_22 = models.FloatField()
-    hcfc_22_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hcfc_141b = models.FloatField()
-    hcfc_141b_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    hcfc_142b = models.FloatField()
-    hcfc_142b_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    halon_1211 = models.FloatField()
-    halon_1211_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    halon_1202 = models.FloatField()
-    halon_1202_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    halon_1301 = models.FloatField()
-    halon_1301_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    halon_2402 = models.FloatField()
-    halon_2402_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    ch3br = models.FloatField()
-    ch3br_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
-    ch3cl = models.FloatField()
-    ch3cl_units = models.CharField(max_length=3, choices=MEASURE_UNITS, default='PPT')
 
     class Meta:
         indexes = [models.Index(fields=['year', 'scenario'])]
@@ -572,7 +486,7 @@ class RpcDatabaseEmission(models.Model):
         return [x[1] for x in RpcDatabaseEmission.SCENARIO_TYPE]
 
     def __str__(self):
-        return 'RpcDatabaseEmission [year: %s, scenario: %s]' % (self.year, self.scenario)
+        return 'RpcDatabaseEmission [year: %s, scenario: %s, co2: %s]' % (self.year, self.scenario, self.co2)
 
 
 # Statistics and metadata

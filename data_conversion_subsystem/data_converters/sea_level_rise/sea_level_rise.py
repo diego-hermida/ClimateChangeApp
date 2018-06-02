@@ -35,21 +35,9 @@ class _SeaLevelRiseDataConverter(DataConverter):
             try:
                 timestamp_epoch = value['time_utc']
                 year = parse_date_utc(timestamp_epoch).year
-                altimeter = SeaLevelRiseMeasure.DUAL_FREQUENCY if value['altimeter'] == 'dual_frequency' else \
-                        SeaLevelRiseMeasure.SINGLE_FREQUENCY
-                variation = parse_float(value['measures']['variation'], nullable=False)
-                deviation = parse_float(value['measures']['deviation'], nullable=False)
-                smoothed_variation = parse_float(value['measures']['smoothed_variation'], nullable=False)
-                variation_gia = parse_float(value['measures']['variation_GIA'], nullable=False)
-                deviation_gia = parse_float(value['measures']['deviation_GIA'], False)
-                smoothed_variation_gia = parse_float(value['measures']['smoothed_variation_GIA'], nullable=False)
-                smoothed_variation_gia_annual_semi_annual_removed = parse_float(value['measures'][
+                value = parse_float(value['measures'][
                         'smoothed_variation_GIA_annual_&_semi_annual_removed'], nullable=False)
-                self.data.append(SeaLevelRiseMeasure(timestamp_epoch=timestamp_epoch, year=year, altimeter=altimeter,
-                        variation=variation, deviation=deviation, smoothed_variation=smoothed_variation,
-                        variation_GIA=variation_gia, deviation_GIA=deviation_gia,
-                        smoothed_variation_GIA=smoothed_variation_gia,
-                        smoothed_variation_GIA_annual_semi_annual_removed=smoothed_variation_gia_annual_semi_annual_removed))
+                self.data.append(SeaLevelRiseMeasure(timestamp_epoch=timestamp_epoch, year=year, value=value))
             except (ValueError, AttributeError, KeyError, IndexError, TypeError):
                 _id = value.get('_id', 'Unknown ID')
                 self.logger.exception('An error occurred while parsing data. SeaLevelRiseMeasure with ID "%s" will not '

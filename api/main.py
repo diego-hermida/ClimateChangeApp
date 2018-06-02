@@ -22,7 +22,7 @@ class _AppTokenAuth(TokenAuth):
     """
     def check_auth(self, token, allowed_roles, resource, method):
         global _user
-        _user = _auth_collection.collection.find_one({'token': token})
+        _user = _auth_collection.get_collection().find_one({'token': token})
         _user = _user if _user else {}
         return True if _user else False
 
@@ -138,7 +138,7 @@ def _get_module_names():
     """
         Internal function that queries MongoDB in order to retrieve all valid module names.
     """
-    result = _stats_collection.collection.find_one({'_id': {'subsystem_id': _user.get('scope'), 'type': 'aggregated'}})
+    result = _stats_collection.get_collection().find_one({'_id': {'subsystem_id': _user.get('scope'), 'type': 'aggregated'}})
     return sorted(list(result['per_module'].keys())) if result else []
 
 
@@ -220,18 +220,18 @@ def execution_stats():
     execution_id = validate_integer('executionId', only_positive=True, required=False)
     if execution_id is None:
         try:
-            execution_id = _stats_collection.collection.find_one({'_id': {'subsystem_id': _user.get('scope'),
+            execution_id = _stats_collection.get_collection().find_one({'_id': {'subsystem_id': _user.get('scope'),
                     'type': 'aggregated'}})['last_execution_id']
         except TypeError:
             return app.response_class(response=_dumps({'stats': None, 'reason': 'The Data Gathering Subsystem '
                     'has not yet been executed.', 'last_execution_id': None}), status=404, mimetype='application/json')
-    result = _stats_collection.collection.find_one(filter={'_id': {'subsystem_id':  _user.get('scope'),
+    result = _stats_collection.get_collection().find_one(filter={'_id': {'subsystem_id':  _user.get('scope'),
             'execution_id': execution_id, 'type': 'last_execution'}})
     if result:
         return app.response_class(response=_dumps(result), status=200, mimetype='application/json')
     else:
         try:
-            execution_id = _stats_collection.collection.find_one({'_id': {'subsystem_id':  _user.get('scope'),
+            execution_id = _stats_collection.get_collection().find_one({'_id': {'subsystem_id':  _user.get('scope'),
                     'type': 'aggregated'}})['last_execution_id']
         except TypeError:
             return app.response_class(response=_dumps({'stats': None, 'reason': 'The Data Gathering Subsystem '
@@ -318,12 +318,12 @@ def pending_work(module_name: str):
                  "'/modules' endpoint in order to retrieve valid modules."}}), status=404, mimetype='application/json')
     if execution_id is None:
         try:
-            execution_id = _stats_collection.collection.find_one({'_id': {'subsystem_id':  _user.get('scope'),
+            execution_id = _stats_collection.get_collection().find_one({'_id': {'subsystem_id':  _user.get('scope'),
                     'type': 'aggregated'}})['last_execution_id']
         except TypeError:
             return app.response_class(response=_dumps({'pending_work': None, 'reason': 'The Data Gathering Subsystem '
                     'has not yet been executed.', 'last_execution_id': None}), status=404, mimetype='application/json')
-    result = _stats_collection.collection.find_one(filter={'_id': {'subsystem_id':  _user.get('scope'),
+    result = _stats_collection.get_collection().find_one(filter={'_id': {'subsystem_id':  _user.get('scope'),
             'execution_id': execution_id, 'type': 'last_execution'}})
     if result:
         module_info = result['modules_with_pending_work'].get(module_name)
@@ -335,7 +335,7 @@ def pending_work(module_name: str):
                     mimetype='application/json')
     else:
         try:
-            execution_id = _stats_collection.collection.find_one({'_id': {'subsystem_id':  _user.get('scope'),
+            execution_id = _stats_collection.get_collection().find_one({'_id': {'subsystem_id':  _user.get('scope'),
                     'type': 'aggregated'}})['last_execution_id']
         except TypeError:
             return app.response_class(response=_dumps({'pending_work': None, 'reason': 'The Data Gathering Subsystem '

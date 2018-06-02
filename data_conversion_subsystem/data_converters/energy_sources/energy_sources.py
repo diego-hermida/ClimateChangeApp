@@ -26,7 +26,7 @@ class _EnergySourcesDataConverter(DataConverter):
                          log_to_telegram=log_to_telegram)
 
     def _check_dependencies_satisfied(self):
-        self.dependencies_satisfied = Country.objects.count() > 0
+        self.dependencies_satisfied = Country.objects.exists()
 
     def _perform_data_conversion(self):
         """

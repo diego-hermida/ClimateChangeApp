@@ -17,9 +17,9 @@ DATA = {"_id": "5a92aba6dd571bdf0ff20cee", "time_utc": 726209883936, "_execution
 
 DATA_UNEXPECTED = {"_id": "5a92aba6dd571bdf0ff20cee", "time_utc": 726209883936, "_execution_id": 1,
                    "altimeter": "dual_frequency",
-                   "measures": {"variation": None, "deviation": "", "smoothed_variation": "-37.02",
+                   "measures": {"variation": "", "deviation": "", "smoothed_variation": "-37.02",
                                 "variation_GIA": "-37.24", "deviation_GIA": "92.66", "smoothed_variation_GIA": "-37.02",
-                                "smoothed_variation_GIA_annual_&_semi_annual_removed": "-37.52"},
+                                "smoothed_variation_GIA_annual_&_semi_annual_removed": None},
                    "observations": "466462", "units": "mm", "weighted_observations": "337277.00"}
 
 

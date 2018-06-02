@@ -1,6 +1,6 @@
 argparse
 coverage
-Django==1.11.7
+Django==2.0.2
 psycopg2cffi
 python-telegram-bot==9.0.0
 pytz
