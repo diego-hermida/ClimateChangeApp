@@ -61,13 +61,13 @@ class TestWeatherForecast(TestCase):
     @mock.patch('data_conversion_subsystem.data_converters.weather_forecast.weather_forecast.WeatherType.objects.'
                 'exists', Mock(return_value=True))
     @mock.patch('data_conversion_subsystem.data_converters.weather_forecast.weather_forecast.Location.objects.'
-                'exists', Mock(return_value=False))
+                'exists', Mock(return_value=True))
     def test_dependencies_satisfied_ok(self):
         self.data_converter._check_dependencies_satisfied()
         self.assertTrue(self.data_converter.dependencies_satisfied)
 
     @mock.patch('data_conversion_subsystem.data_converters.weather_forecast.weather_forecast.WeatherType.objects.'
-                'exists', Mock(return_value=True))
+                'exists', Mock(return_value=False))
     @mock.patch('data_conversion_subsystem.data_converters.weather_forecast.weather_forecast.Location.objects.'
                 'exists', Mock(return_value=False))
     def test_dependencies_satisfied_missing(self):
