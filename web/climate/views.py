@@ -10,7 +10,7 @@ from . import dto
 from .config.config import WEB_CONFIG
 from .services.factories import CountryServiceFactory, GlobalClimateChangeServiceFactory, LikeServiceFactory, \
     LocationServiceFactory
-from .services.services import AdminService, MessageActionType, MessageFilterType, MessageService
+from .services.service_impl import AdminService, MessageActionType, MessageFilterType, MessageService
 
 # Getting services from factories, in order to decouple cached services from the business logic
 like_service = LikeServiceFactory.get_instance()
@@ -66,6 +66,7 @@ def _retrieve_nearest_location(request) -> dict:
     loc = location_service.get_nearest_location_from_coordinates(latitude, longitude)
     if not loc:
         context['location_error'] = True
+        request.session['location_error'] = True
     else:
         geo['nearest_location_id'] = loc.id
         geo['nearest_country_id'] = loc.country_id
@@ -78,6 +79,7 @@ def _retrieve_nearest_location(request) -> dict:
 @require_GET
 def locations(request):
     context = {'geolocation': request.session.get('geolocation'),
+               'location_error': request.session.get('location_error'),
                'no_matching_location': request.session.pop('no_matching_location', False)}
     if context.get('geolocation', False) and context['geolocation'].get('nearest_location_id', False):
         context['current_location'] = location_service.get_single_location(
@@ -93,7 +95,8 @@ def locations(request):
 
 @require_POST
 def locations__search(request):
-    context = {'from_search': True, 'geolocation': request.session.get('geolocation')}
+    context = {'from_search': True, 'geolocation': request.session.get('geolocation'),
+               'location_error': request.session.get('location_error')}
     try:
         keywords = validators.validate_keywords_search(request, 'loc')
         result, more_results = location_service.get_locations_by_keywords(keywords, WEB_CONFIG['MAX_SEARCH_RESULTS'])
@@ -106,6 +109,10 @@ def locations__search(request):
                                      'country_id': x.country_id} for x in result]
             context['more_results'] = more_results
             context['map_locations'] = context['locations']
+    except validators.KeywordsLengthValidationError as e:
+        context['validation_error'] = True
+        context['invalid_data'] = e.invalid_data
+        context['length_error'] = True
     except validators.ValidationError as e:
         context['validation_error'] = True
         context['invalid_data'] = e.invalid_data
@@ -121,25 +128,28 @@ def locations__search(request):
 def locations__geolocation(request):
     try:
         context = _retrieve_nearest_location(request)
-        context['current_location'] = location_service.get_single_location(
-                context['geolocation']['nearest_location_id'])
-        context['AQI_colors'] = location_service.get_air_pollution_colors() if context['current_location'] else None
+        if not context.get('location_error', False):
+            context['current_location'] = location_service.get_single_location(
+                    context['geolocation']['nearest_location_id'])
+            context['AQI_colors'] = location_service.get_air_pollution_colors() if context['current_location'] else None
+        return render(request, 'climate/locations.html', context)
     except validators.ValidationError as e:
         return render(request, 'climate/locations.html', {'validation_error': True, 'invalid_data': e.invalid_data})
-    return render(request, 'climate/locations.html', context)
 
 
 @require_GET
 def locations__all(request):
     context = {'from_all': True, 'map_locations': location_service.get_all_locations(
             ('id', 'latitude', 'longitude', 'name', 'country_id'), tuple(), as_objects=False),
-               'geolocation': request.session.get('geolocation')}
+               'geolocation': request.session.get('geolocation'),
+               'location_error': request.session.get('location_error')}
     return render(request, 'climate/locations.html', context)
 
 
 @require_GET
 def locations__single(request, location_id: int):
-    context = {'geolocation': request.session.get('geolocation')}
+    context = {'geolocation': request.session.get('geolocation'),
+               'location_error': request.session.get('location_error')}
     try:
         location_id = validators.validate_integer(location_id)
     except validators.ValidationError as e:
@@ -211,7 +221,8 @@ def locations__list(request):
 
 @require_GET
 def countries(request):
-    context = {'geolocation': request.session.get('geolocation')}
+    context = {'geolocation': request.session.get('geolocation'),
+               'location_error': request.session.get('location_error')}
     if context.get('geolocation', False) and context['geolocation'].get('nearest_country_id', False):
         context['current_country'] = country_service.get_single_country(context['geolocation']['nearest_country_id'])
         context['last_updated'] = current_timestamp(utc=False)
@@ -220,13 +231,15 @@ def countries(request):
 
 @require_GET
 def countries__all(request):
-    context = {'from_all': True, 'geolocation': request.session.get('geolocation')}
+    context = {'from_all': True, 'geolocation': request.session.get('geolocation'),
+               'location_error': request.session.get('location_error')}
     return render(request, 'climate/countries.html', context)
 
 
 @require_POST
 def countries__search(request):
-    context = {'from_search': True, 'geolocation': request.session.get('geolocation')}
+    context = {'from_search': True, 'geolocation': request.session.get('geolocation'),
+               'location_error': request.session.get('location_error')}
     try:
         keywords = validators.validate_keywords_search(request, 'country')
         result, more_results = country_service.get_countries_by_keywords(keywords, WEB_CONFIG['MAX_SEARCH_RESULTS'])
@@ -236,6 +249,10 @@ def countries__search(request):
         else:
             context['countries'] = [{'name': _(x.name), 'id': x.iso2_code} for x in result]
             context['more_results'] = more_results
+    except validators.KeywordsLengthValidationError as e:
+        context['validation_error'] = True
+        context['invalid_data'] = e.invalid_data
+        context['length_error'] = True
     except validators.ValidationError as e:
         context['validation_error'] = True
         context['invalid_data'] = e.invalid_data
@@ -247,7 +264,8 @@ def countries__single(request, country_code: str):
     try:
         country_code = validators.validate_country_code(country_code)
         context = {'geolocation': request.session.get('geolocation'), 'last_updated': current_timestamp(utc=False),
-                   'current_country': country_service.get_single_country(country_code)}
+                   'current_country': country_service.get_single_country(country_code),
+                   'location_error': request.session.get('location_error')}
         context['no_matching_country'] = context['current_country'] is None
     except validators.ValidationError as e:
         context = {'validation_error': True, 'invalid_data': e.invalid_data}
@@ -258,11 +276,13 @@ def countries__single(request, country_code: str):
 def countries__geolocation(request):
     try:
         context = _retrieve_nearest_location(request)
-        context['current_country'] = country_service.get_single_country(context['geolocation']['nearest_country_id'])
-        context['no_matching_country'] = context['current_country'] is None
+        if not context.get('location_error', False):
+            context['current_country'] = country_service.get_single_country(
+                    context['geolocation']['nearest_country_id'])
+            context['no_matching_country'] = context['current_country'] is None
+        return render(request, 'climate/countries.html', context)
     except validators.ValidationError as e:
         return render(request, 'climate/countries.html', {'validation_error': True, 'invalid_data': e.invalid_data})
-    return render(request, 'climate/countries.html', context)
 
 
 @require_POST
@@ -272,7 +292,7 @@ def countries__energy(request):
         start_year, end_year = validators.validate_integer_range(request, 'start_year', 'end_year', nullable=True,
                                                                  positive_only=True, strict_comparison=True)
         data = country_service.get_data_from_indicators(country_id, WEB_CONFIG['ENERGY_INDICATORS'], start_year,
-                                                        end_year)
+                                                        end_year, null_values=False)
         co2_index = next((i for i, x in enumerate(data) if x.indicator_id == 'EN.ATM.CO2E.KT'), 0)
         data_pollution = dto.CountryIndicatorDto.get_pollution_statistics_and_normalize_data(data[co2_index:])
         data_energy = dto.CountryIndicatorDto.get_energy_statistics_and_normalize_data(data[:co2_index],
@@ -290,7 +310,7 @@ def countries__environment(request):
         start_year, end_year = validators.validate_integer_range(request, 'start_year', 'end_year', nullable=True,
                                                                  positive_only=True)
         data = country_service.get_data_from_indicators(country_id, WEB_CONFIG['ENVIRONMENT_INDICATORS'], start_year,
-                                                        end_year)
+                                                        end_year, null_values=False)
         environment_data = dto.CountryIndicatorDto.get_environment_statistics_and_normalize_data(data, WEB_CONFIG[
             'ENVIRONMENT_INDICATORS'], ['urban_land', 'forest_area', 'protected_areas', 'improved_water'])
         return JsonResponse(data=environment_data)
@@ -354,7 +374,8 @@ def contact(request):
     if request.method == 'POST':
         try:
             subject, email, name, message = validators.validate_contact_fields(request)
-            return JsonResponse(data={'success': MessageService.create_message(subject, email, name, message)})
+            return JsonResponse(
+                    data={'success': MessageService.create_message(subject, email, name, message) is not None})
         except validators.ValidationError as e:
             return JsonResponse({'validation_error': True, 'invalid_data': e.invalid_data})
     else:
@@ -371,7 +392,7 @@ def contact(request):
 def admin_login(request):
     if request.method == 'POST':
         try:
-            username, password = validators.validate_credentials(request)
+            username, password = validators.validate_credentials(request.POST.get('user'), request.POST.get('password'))
             context = {'success': AdminService.login(username, password, request), 'invalid_fields': None}
             context['url'] = '/admin' if context['success'] else None
         except validators.ValidationError as e:
@@ -416,8 +437,7 @@ def admin_messages(request):
             else:
                 request.session['error'] = not result
             return redirect('/admin/messages?filter=%s' % MessageActionType.get_filter_name(action,
-                                                                                            current_filter_name=MessageFilterType.get_representation(
-                                                                                                    message_filter)))
+                    current_filter_name=MessageFilterType.get_representation(message_filter)))
         except validators.ValidationError:
             return redirect('/admin/messages')
     else:

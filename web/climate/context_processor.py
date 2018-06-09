@@ -68,8 +68,12 @@ def base(request):
                  {'name': _('Low income'), 'url': base + 'XM'}, {'name': _('Middle income'), 'url': base + 'XP'},
                  {'name': _('Upper middle income'), 'url': base + 'XT'}], key=lambda v: unidecode.unidecode(v['name']))
 
+    def get_min_keywords_length() -> int:
+        return WEB_CONFIG['MIN_KEYWORDS_LENGTH']
+
     return {'admin_sections': get_admin_sections, 'sections': get_sections, 'like_count': get_like_count,
             'like_given': get_like_given, 'country_regions': get_preselected_regions,
             'country_income_levels': get_preselected_income_levels,
             'historical_weather_max_days': get_historical_weather_max_days,
-            'air_pollution_max_days': get_air_pollution_max_days}
+            'air_pollution_max_days': get_air_pollution_max_days,
+            'min_keywords_length': get_min_keywords_length}

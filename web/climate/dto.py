@@ -1,24 +1,21 @@
-from django.db.models import Max, Min
 from django.utils.translation import ugettext_lazy as _
 
-from data_conversion_subsystem.data.models import AirPollutionMeasure, Country, CountryIndicator, \
-    CurrentConditionsObservation, HistoricalWeatherObservation, Location, OceanMassMeasure, RpcDatabaseEmission, \
-    WeatherForecastObservation
+from data_conversion_subsystem.data.models import AirPollutionMeasure, OceanMassMeasure, RpcDatabaseEmission
 from utilities.util import parse_date_utc
 
 
 class LocationDto:
 
-    def __init__(self, **kwargs):
-        self.location = kwargs.get('location')
-        self.current_conditions = None if kwargs.get(
-                'current_conditions') is False else self.fetch_current_conditions_data()
-        self.weather_forecast = kwargs.get('weather_forecast') or self.fetch_weather_forecast_data()
-        self.location.air_pollution_data = self.has_air_pollution_data()
-        self.air_pollution = self.fetch_air_pollution_data() if self.location.air_pollution_last_measure else None
+    def __init__(self, location, has_air_pollution_data, has_historical_weather_data, air_pollution_last_measure,
+                 current_conditions, weather_forecast):
+        self.location = location
+        self.current_conditions = current_conditions
+        self.weather_forecast = LocationDto.normalize_weather_forecast_data(weather_forecast[0], weather_forecast[1])
+        self.location.air_pollution_data = has_air_pollution_data
+        self.air_pollution = self.normalize_last_air_pollution_measure(air_pollution_last_measure)
         self.is_capital_city = self.location.name == self.location.country.capital_city_name
-        self.location.owm_data = self.has_current_weather_data()
-        self.location.wunderground_data = self.has_historical_weather_data()
+        self.location.owm_data = location.owm_data and self.current_conditions and self.weather_forecast
+        self.location.wunderground_data = has_historical_weather_data
         self.has_all_data = self.location.owm_data and self.location.wunderground_data and self.location.air_pollution_data
         self.i18n()
 
@@ -31,75 +28,34 @@ class LocationDto:
             self.location.country.income_level.name = _(self.location.country.income_level.name)
             self.location.country.region.name = _(self.location.country.region.name)
 
-    def has_air_pollution_data(self) -> bool:
-        return self.location.air_pollution_data and AirPollutionMeasure.objects.filter(
-                location_id=self.location.id).exists()
-
-    def fetch_air_pollution_data(self):
-        return {'last_measure': {'last_modified': self.location.air_pollution_last_measure.timestamp,
-                                 'dominant_pollutant': {
-                                     'value': self.location.air_pollution_last_measure.get_dominant_pollutant_value_display(),
-                                     'color': self.location.air_pollution_last_measure.get_dominant_pollutant_color_display(),
-                                     'code': self.location.air_pollution_last_measure.get_dominant_pollutant_display(),
-                                     'text_color': self.location.air_pollution_last_measure.get_dominant_pollutant_text_color_display()},
-                                 'health_issue': self.location.air_pollution_last_measure.display_health_warning(),
-                                 'measures': self.location.air_pollution_last_measure.get_measures()}, 'measures': []}
-
-    def has_current_weather_data(self) -> bool:
-        return self.location.owm_data and (self.weather_forecast or self.current_conditions)
-
-    def has_historical_weather_data(self) -> bool:
-        return self.location.wunderground_data and HistoricalWeatherObservation.objects.filter(
-                location_id=self.location.id).exists()
+    @staticmethod
+    def normalize_last_air_pollution_measure(measure):
+        return {'last_measure': {'last_modified': measure.timestamp,
+                                 'dominant_pollutant': {'value': measure.get_dominant_pollutant_value_display(),
+                                                        'color': measure.get_dominant_pollutant_color_display(),
+                                                        'code': measure.get_dominant_pollutant_display(),
+                                                        'text_color': measure.get_dominant_pollutant_text_color_display()},
+                                 'health_issue': measure.display_health_warning(), 'measures': measure.get_measures()},
+                'measures': []} if measure else None
 
     @staticmethod
-    def from_location(loc: Location):
-        return LocationDto(location=loc)
-
-    @staticmethod
-    def from_location_id(location_id: int):
+    def normalize_weather_forecast_data(forecast, temperatures_per_day, min_forecasts=2, max_days=3) -> list:
         """
-            Given a Location ID, this is the most efficient way to build a LocationDto.
-            Fetches: CurrentConditionsObservation --> Location --> Country --> (IncomeLevel and Region)
-                             + all WeatherForecastObservations + their related WeatherTypes
-            :param location_id: Primary key of a Location object.
-            :return: A LocationDto object.
-            :rtype LocationDto
-        """
-        try:
-            # Attempts to fetch CurrentConditionsObservation and traverse its relations.
-            current_conditions = CurrentConditionsObservation.objects.select_related('weather').select_related(
-                    'location__country__region').select_related('location__country__income_level').select_related(
-                    'location__air_pollution_last_measure').get(pk=location_id)
-            return LocationDto(location=current_conditions.location, current_conditions=current_conditions)
-        except CurrentConditionsObservation.DoesNotExist:
-            return LocationDto(location=Location.objects.select_related('country__region').select_related(
-                    'country__income_level').select_related('air_pollution_last_measure').get(pk=location_id),
-                               current_conditions=False)
-
-    def fetch_current_conditions_data(self):
-        return CurrentConditionsObservation.objects.get(location_id=self.location.id)
-
-    def fetch_weather_forecast_data(self, min_forecasts=2, max_days=3) -> list:
-        """
-            Fetches the following data:
+            Given the following data:
                 - Min and Max temperatures, per day.
                 - Hour and icon to display for each forecast observation.
             Returned values will have the following structure:
                 [{'date': datetime.date, 'max_temp': int, 'min_temp', int,
                   'forecast': [{'hour': int, 'icon': str}, ...],  ...]
 
-        :param id: Primary key to a Location object. Weather forecast data will be filtered to that location.
-        :param min_forecasts: Removes data for those days which have <val> or less records.
-        :param max_days: Limits the data to the <val> first days.
-        :return: A list of "dict" objects, containing the data previously described.
+        :param forecast: A list of WeatherForecastObservation objects.
+        :param temperatures_per_day: A list of weather forecast statistics (max and min temperatures, per day).
+        :param min_forecasts: Removes data for those days having `min_forecasts` or less records.
+        :param max_days: Limits the data to the `max_days` first days.
+        :return: A list of `dict` objects, containing the data previously described.
         """
-        forecast = WeatherForecastObservation.objects.filter(location_id=self.location.id).values('date', 'time',
-                'weather__icon_code', 'weather__description').order_by('date', 'time')
         if not forecast:
             return []
-        temperatures_per_day = WeatherForecastObservation.objects.filter(location_id=self.location.id).values(
-                'date').annotate(Max('temperature'), Min('temperature')).order_by('date')
         weather_forecast = {}
         for day in temperatures_per_day:
             weather_forecast[day['date']] = {'max_temp': day['temperature__max'], 'min_temp': day['temperature__min'],
@@ -205,7 +161,7 @@ class OceanMassMeasureDto:
         for v in data:
             if v[3] == OceanMassMeasure.ANTARCTICA:
                 antarctica_data.append(v)
-            elif v[3] == OceanMassMeasure.GREENLAND:
+            else:
                 arctic_data.append(v)
         return arctic_data, antarctica_data
 
@@ -237,55 +193,17 @@ class RpcDatabaseEmissionDto:
 
 class CountryDto:
 
-    def __init__(self, **kwargs):
-        self.country = kwargs.get('country')
-        self.country.income_level.name = _(self.country.income_level.name)
-        self.country.region.name = _(self.country.region.name)
-        self.monitored_locations = self.count_monitored_locations() \
-                if self.country.region.iso3_code != 'NA' and self.country.income_level.iso3_code != 'NA' else 0
-        if self.monitored_locations is 1:
-            self.location_id = self.fetch_monitored_location_id()
-        self.population, self.population_year, self.population_previous, self.population_year_previous, \
-                self.percentage_difference = self.compute_population_data()
+    def __init__(self, country, monitored_locations, monitored_location_id, population_data):
+        self.country = country
+        self.monitored_locations = monitored_locations
+        self.location_id = monitored_location_id
+        self.population, self.population_year, self.population_previous, self.population_year_previous, self.percentage_difference = population_data
         self.i18n()
 
     def i18n(self):
         self.country.name = _(self.country.name)
-
-    @staticmethod
-    def from_country(country: Country):
-        return CountryDto(country=country)
-
-    @staticmethod
-    def from_country_code(code: str):
-        try:
-            return CountryDto(country=Country.objects.filter(pk=code).select_related('income_level').select_related(
-                'region').get())
-        except Country.DoesNotExist:
-            return None
-
-    def count_monitored_locations(self):
-        return Location.objects.filter(country_id=self.country.iso2_code).count()
-
-    def fetch_monitored_location_id(self):
-        return Location.objects.filter(country_id=self.country.iso2_code).values_list('id').get()[0]
-
-    def compute_population_data(self) -> (int, int, int, int, float):
-        last_year = \
-            CountryIndicator.objects.filter(country_id=self.country.iso2_code, indicator_id='SP.POP.TOTL').exclude(
-                    value__isnull=True).aggregate(Max('year'))['year__max']
-        previous_year = CountryIndicator.objects.filter(country_id=self.country.iso2_code, year__lt=last_year,
-                                                        indicator_id='SP.POP.TOTL').exclude(
-                value__isnull=True).aggregate(Max('year'))['year__max'] if last_year else None
-        if last_year and previous_year:
-            data = CountryIndicator.objects.filter(country_id=self.country.iso2_code, indicator_id='SP.POP.TOTL',
-                    year__in=[last_year, previous_year], ).values_list('value').order_by('-year')
-            pop = int(data[0][0])
-            previous_pop = int(data[1][0])
-            return pop, last_year, previous_pop, previous_year, (((pop - previous_pop) / previous_pop) * 100) \
-                    if pop and previous_pop else None
-        else:
-            return None, None, None, None, None
+        self.country.income_level.name = _(self.country.income_level.name)
+        self.country.region.name = _(self.country.region.name)
 
 
 class CountryIndicatorDto:
