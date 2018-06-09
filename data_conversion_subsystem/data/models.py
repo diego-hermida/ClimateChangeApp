@@ -140,12 +140,12 @@ class EnergySourcesMeasure(models.Model):
 
 class Location(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True)
-    name = models.CharField(max_length=100, db_index=True)
+    name = models.CharField(max_length=100)
     country = models.ForeignKey(Country, db_index=True, on_delete=models.SET_NULL, null=True)
-    climate_zone = models.CharField(max_length=3, db_index=True)
+    climate_zone = models.CharField(max_length=3)
     elevation = models.SmallIntegerField(null=True)
     elevation_units = models.CharField(max_length=1, choices=MEASURE_UNITS, default=None, null=True)
-    last_modified = models.DateTimeField()
+    last_modified = models.DateTimeField(null=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
     population = models.BigIntegerField(null=True)
