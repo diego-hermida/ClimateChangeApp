@@ -1,4 +1,15 @@
+argparse
+coverage
 django-bootstrap4
 django==2.0.2
-django-widget-tweaks
+django-bootstrap-daterangepicker
+django-bootstrap4
+django-debug-toolbar
+gunicorn
+psycopg2cffi
 python-memcached
+pytz
+pyYAML
+python-telegram-bot==9.0.0
+unidecode
+unittest-xml-reporting==2.1.1
