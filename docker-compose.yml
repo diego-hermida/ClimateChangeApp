@@ -163,6 +163,7 @@ services:
             dockerfile: ./web/Dockerfile-cache
             network: climatechangeapp_network
         container_name: cache_server
+        image: diegohermida/cache_server:latest
         expose: # Exposing port instead of publishing it. To access the container's port, use the subnet's container IP
           - 11211
         networks:
@@ -191,6 +192,7 @@ services:
             dockerfile: web/Dockerfile-nginx
             network: climatechangeapp_network
         container_name: proxy_server
+        image: diegohermida/proxy_server:latest
         ports:
           - "0.0.0.0:${PROXY_PORT:-80}:80"
         networks:
