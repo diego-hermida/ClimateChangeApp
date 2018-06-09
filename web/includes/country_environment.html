@@ -270,7 +270,7 @@
             success: function (data) {
                 function validate() {
                     if (data.validation_error === true) {
-                        index = data.invalid_data.indexOf('start_year');
+                        var index = data.invalid_data.indexOf('start_year');
                         if (index > -1) {
                             $('#countryEnvironmentFrom').removeClass('border-primary').addClass('is-invalid');
                             showElement('countryEnvironmentFrom', -40, 180);
@@ -295,9 +295,6 @@
 
                 validate();
                 if (data.data !== null && data.total_data > 0) {
-                    lineChartSeries = [
-                        '{% trans "Population with access to improved drinking water source (%)" %}'
-                    ];
                     if (data.data.urban_land.data == null) {
                         $('#urbanAreaLandWrapper').addClass('d-none');
                     } else {

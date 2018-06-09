@@ -320,8 +320,6 @@
                     $("#historicalWeatherDataLoader").addClass('d-none');
                 },
                 success: function (data) {
-                    console.log(data);
-
                     function validate() {
                         if (data.validation_error === true) {
                             var index = data.invalid_data.indexOf('phenomenon');
@@ -365,12 +363,12 @@
                     }
                     else {
                         if (data.data != null && data.plot_values === true) {
-                            legendTitleFormat = {
+                            const legendTitleFormat = {
                                 lower: '{% trans "Less than {min} {name}" %}',
                                 inner: '{% trans "Between {down} and {up} {name}" %}',
                                 upper: '{% trans "More than {max} {name}" %}'
                             };
-                            subDomainTitleFormat = {
+                            const subDomainTitleFormat = {
                                 empty: '{% trans "No value for {date}" %}',
                                 filled: '{% trans "{count} {name} on {date}" %}'
                             };
@@ -384,14 +382,14 @@
                                 $('#noYearRangeSelectedAlert').addClass('d-flex').removeClass('d-none');
                             }
                         }
-                        columnsLineChart = ['{% trans "Highest annual temperature" %}',
+                        const columnsLineChart = ['{% trans "Highest annual temperature" %}',
                             '{% trans "Lowest max. annual temperature" %}',
                             '{% trans "Highest min. annual temperature" %}',
                             '{% trans "Lowest annual temperature" %}',
                             '{% trans "Average annual temperature" %}'];
-                        columnsBarChart = ['{% trans "Fog" %}', '{% trans "Hail" %}', '{% trans "Thunder" %}',
+                        const columnsBarChart = ['{% trans "Fog" %}', '{% trans "Hail" %}', '{% trans "Thunder" %}',
                             '{% trans "Tornado" %}', '{% trans "Rain" %}', '{% trans "Snow" %}'];
-                        units = ['{% trans "day" %}', '{% trans "days" %}'];
+                        const units = ['{% trans "day" %}', '{% trans "days" %}'];
                         displayHistoricalWeatherLineChart(columnsLineChart, data.stats, '°C',
                             '{{ LANGUAGE_CODE }}', 'historicalWeatherLineChart');
                         displayHistoricalWeatherBarChart(columnsBarChart, data.stats, 'historicalWeatherBarChart', units);
