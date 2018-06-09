@@ -42,9 +42,11 @@ done
 DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-test-reports";
 API_DEPLOY_ARGS="--all --with-test-reports";
 DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-test-reports";
+WEB_APPLICATION_SUBSYSTEM_DEPLOY_ARGS="--all --with-test-reports";
 TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--with-test-reports";
 UTILITIES_DEPLOY_ARGS="--with-test-reports";
-
+SUPERUSER_USERNAME="FOO"
+SUPERUSER_PASSWORD="BAZ"
 
 # Setting CI values for ports
 export MONGODB_PORT=27017;
@@ -185,12 +187,26 @@ if [ $? != 0 ]; then
 fi
 
 
+# Web Application Subsystem component
+message 4 "[COMPONENT] Web Application Subsystem";
+
+# Building the Web Application Subsystem component
+docker-compose -f docker-compose-ci.yml build \
+                     --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
+                     --build-arg SUPERUSER_USERNAME=${SUPERUSER_USERNAME} --build-arg SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD} \
+                     --build-arg DEPLOY_ARGS="${WEB_APPLICATION_SUBSYSTEM_DEPLOY_ARGS}" web_application_subsystem_ci
+if [ $? != 0 ]; then
+    exit_with_message 1 "> The Web Application Subsystem image could not be built." 1;
+fi
+
+
 # Displaying installation summary
 echo "";
 message 2 "[SUCCESS] Installation results (CI):";
 message 2 "\t• API: built";
 message 2 "\t• Data Conversion Subsystem: built";
 message 2 "\t• Data Gathering Subsystem: built";
+message 2 "\t• Web Application Subsystem: built";
 message 2 "\t• MongoDB: up";
 message 2 "\t• PostgreSQL: up";
 echo "";

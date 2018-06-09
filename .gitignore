@@ -19,3 +19,5 @@ data_modules/weather_forecast/__pycache__/
 exec/__pycache__/
 utilities/__pycache__/
 data_collector/__pycache__/
+
+**/*migration*.py

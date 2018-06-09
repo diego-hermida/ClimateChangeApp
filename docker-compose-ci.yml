@@ -48,6 +48,19 @@ services:
           - ci_network
         depends_on:
           - mongodb_ci
+    web_application_subsystem_ci:
+        build:
+            context: .
+            dockerfile: ./web/Dockerfile
+            network: climatechangeapp_ci_network
+        container_name: web_application_subsystem_ci
+        image: diegohermida/web_application_subsystem:latest_ci
+        expose:
+          - 8000
+        environment:
+          - PYTHONUNBUFFERED=1
+        depends_on:
+          - postgres_ci
     mongodb_ci:
         image: mongo:latest
         container_name: mongodb_ci

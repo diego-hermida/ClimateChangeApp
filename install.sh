@@ -14,6 +14,8 @@ function usage () {
             \n • -h, --help: shows this message.
             \n • --version: displays app's version.
             \n • --api-port xxxxx: sets the exposed API port. Defaults to 5000.
+            \n • --cache-server-port xxxxx: sets the exposed Cache server port. Defaults to 11211.
+            \n • --cache-server-size <size>: specifies the maximum size of the cache server (in MB). Defaults to 512 MB.
             \n • --hide-containers: makes Docker containers not reachable from the Internet.
             \n • --host-ip xxx.xxx.xxx.xxx: specifies the IP address of the machine. By default, this installer attempts
             \n\t  to resolve the machine's IP address. Invoke \"./install.sh --show-ip\" to display the resolved IP address.
@@ -25,6 +27,9 @@ function usage () {
             \n • --root-dir <path>: installs the Application under a custom directory. Defaults to \"~/ClimateChangeApp\".
             \n • --run-telegram: launches the Telegram Configurator service after building it.
             \n • --show-ip: displays the IP address of the machine. If multiple IP's, displays them all.
+            \n • --superuser-name: Name of the web application's superuser, which will be able to login at \"/admin\"
+            \n\t   in the web application.
+            \n • --superuser-password: Password of the web application's superuser.
             \n • --uid <val>: sets the UID of the user executing the Subsystem. Using \"0\" or \"root\" is not recommended.
             \n\t   Defaults to the current user's UID." $1;
 }
@@ -34,6 +39,8 @@ function usage () {
 
 # Setting default values
 API_PORT=5000;
+CACHE_SERVER_PORT=11211
+CACHE_SERVER_SIZE=256
 EXPOSE_CONTAINERS=true;
 HOST_IP=$(get_ip_address);
 MACOS=false;
@@ -42,6 +49,8 @@ POSTGRES_PORT=5432;
 ROOT_DIR=~/ClimateChangeApp;
 RUN_TELEGRAM=false;
 SKIP_DEPLOY=true;
+SUPERUSER_USERNAME=""
+SUPERUSER_PASSWORD=""
 USER=$(id -u)
 
 
@@ -59,6 +68,16 @@ while getopts "$EXPECTED_INPUT" ARG; do
                     VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
                     ensure_not_empty  "--api-port" ${VAL};
                     API_PORT=${VAL};
+                ;;
+                cache-server-port)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--cache-server-port" ${VAL};
+                    CACHE_SERVER_PORT=${VAL};
+                ;;
+                cache-server-size)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty  "--cache-server-size" ${VAL};
+                    CACHE_SERVER_SIZE=${VAL};
                 ;;
                 hide-containers) EXPOSE_CONTAINERS=false ;;
                 host-ip)
@@ -85,6 +104,16 @@ while getopts "$EXPECTED_INPUT" ARG; do
                 ;;
                 run-telegram) RUN_TELEGRAM=true ;;
                 show-ip) show_ip_addresses ;;
+                superuser-name)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty "--superuser-name" ${VAL}
+                    SUPERUSER_USERNAME=${VAL};
+                ;;
+                superuser-password)
+                    VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
+                    ensure_not_empty "--superuser-password" ${VAL}
+                    SUPERUSER_PASSWORD=${VAL};
+                ;;
                 uid)
                     VAL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ));
                     ensure_not_empty  "--uid" ${VAL};
@@ -135,6 +164,7 @@ if  [ "$SKIP_DEPLOY" == "true" ]; then
     API_DEPLOY_ARGS="--skip-all";
     DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
     DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
+    WEB_APPLICATION_SUBSYSTEM_DEPLOY_ARGS="--skip-all";
     TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--skip-all";
     UTILITIES_DEPLOY_ARGS="--skip-all";
 else
@@ -142,6 +172,7 @@ else
     API_DEPLOY_ARGS="--all --with-tests";
     DATA_GATHERING_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
     DATA_CONVERSION_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
+    WEB_APPLICATION_SUBSYSTEM_DEPLOY_ARGS="--all --with-tests";
     TELEGRAM_CONFIGURATOR_DEPLOY_ARGS="--with-tests";
     UTILITIES_DEPLOY_ARGS="--with-tests";
 fi
@@ -320,12 +351,73 @@ if [ $? != 0 ]; then
 fi
 
 
+# Cache server component
+message 4 "[COMPONENT] Cache server (Memcached)";
+
+# Deleting the Cache server service if it was already been created: Brand-new container.
+if [ "$(docker ps -aq -f name=cache_server)" ]; then
+    message -1 "[INFO] Removing previous Cache server container.";
+    docker stop cache_server;
+    docker rm cache_server;
+fi
+
+# Launching the Cache server service
+message -1 "[INFO] Launching the  Cache server service.";
+docker-compose build cache_server;
+docker-compose up -d cache_server;
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] The  Cache server service could not be initialized." 1;
+fi
+
+# Getting internal IP address
+CACHE_SERVER_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' cache_server)"
+if [ $? != 0 ]; then
+    exit_with_message 1 "[ERROR] Could not retrieve the local  Cache server address." 1;
+else
+    message -1 "[INFO] Using \"$CACHE_SERVER_IP\" as the  Cache server address.";
+fi
+
+
+#  Web Application Subsystem component
+message 4 "[COMPONENT] Web Application Subsystem";
+
+# Building the Web Application Subsystem component
+docker-compose build --build-arg CACHE_SERVER_IP=${CACHE_SERVER_IP} --build-arg CACHE_SERVER_PORT=${CACHE_SERVER_PORT} \
+                     --build-arg POSTGRES_IP=${POSTGRES_IP} --build-arg POSTGRES_PORT=${POSTGRES_PORT} \
+                     --build-arg SUPERUSER_USERNAME=${SUPERUSER_USERNAME} --build-arg SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD} \
+                     --build-arg DEPLOY_ARGS="${WEB_APPLICATION_SUBSYSTEM_DEPLOY_ARGS}" --build-arg USER=${USER} web_application_subsystem
+if [ $? != 0 ]; then
+    exit_with_message 1 "> The Web Application Subsystem image could not be built." 1;
+fi
+
+# Launching the Web Application Subsystem
+docker-compose up -d web_application_subsystem
+
+
+# Cache server component
+message 4 "[COMPONENT] Proxy server (NginX)";
+
+# Deleting the Cache server service if it was already been created: Brand-new container.
+if [ "$(docker ps -aq -f name=proxy_server)" ]; then
+    message -1 "[INFO] Removing previous Proxy server container.";
+    docker stop proxy_server;
+    docker rm proxy_server;
+fi
+
+# Launching the Proxy server
+docker-compose build proxy_server
+docker-compose up -d proxy_server
+
+
 # Displaying installation summary
 echo "";
 message 2 "[SUCCESS] Installation results:";
 message 2 "\t• API: up";
+message 2 "\t• Cache server: up";
 message 2 "\t• Data Conversion Subsystem: built";
 message 2 "\t• Data Gathering Subsystem: built";
 message 2 "\t• MongoDB: up";
 message 2 "\t• PostgreSQL: up";
+message 2 "\t• Proxy Server: up";
+message 2 "\t• Web Application Subsystem: up";
 echo "";

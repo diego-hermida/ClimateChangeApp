@@ -25,10 +25,10 @@ services:
         container_name: data_gathering_subsystem
         image: diegohermida/data_gathering_subsystem:latest
         volumes:
-            - ${ROOT_DIR:-~/ClimateChangeApp}/log:/ClimateChangeApp/log
-            - ${ROOT_DIR:-~/ClimateChangeApp}/state:/ClimateChangeApp/state
+          - ${ROOT_DIR:-~/ClimateChangeApp}/log:/ClimateChangeApp/log
+          - ${ROOT_DIR:-~/ClimateChangeApp}/state:/ClimateChangeApp/state
         environment:
-            - PYTHONUNBUFFERED=1
+          - PYTHONUNBUFFERED=1
         networks:
           - app_network
     data_conversion_subsystem:
@@ -39,10 +39,10 @@ services:
         container_name: data_conversion_subsystem
         image: diegohermida/data_conversion_subsystem:latest
         volumes:
-            - ${ROOT_DIR:-~/ClimateChangeApp}/log:/ClimateChangeApp/log
-            - ${ROOT_DIR:-~/ClimateChangeApp}/state:/ClimateChangeApp/state
+          - ${ROOT_DIR:-~/ClimateChangeApp}/log:/ClimateChangeApp/log
+          - ${ROOT_DIR:-~/ClimateChangeApp}/state:/ClimateChangeApp/state
         environment:
-            - PYTHONUNBUFFERED=1
+          - PYTHONUNBUFFERED=1
         networks:
           - app_network
     api:
@@ -53,11 +53,11 @@ services:
         container_name: api
         image: diegohermida/api:latest
         environment:
-            - PYTHONUNBUFFERED=1
+          - PYTHONUNBUFFERED=1
         volumes:
-            - ${ROOT_DIR:-~/ClimateChangeApp}/log/api:/ClimateChangeApp/log/api
+          - ${ROOT_DIR:-~/ClimateChangeApp}/log/api:/ClimateChangeApp/log/api
         ports:
-            - "${BIND_IP_ADDRESS:-127.0.0.1}:${API_PORT:-5000}:5000"
+          - "${BIND_IP_ADDRESS:-127.0.0.1}:${API_PORT:-5000}:5000"
         networks:
           - app_network
     telegram_bot:
@@ -74,13 +74,13 @@ services:
         image: healthcheck/mongo:latest
         container_name: mongodb
         environment:
-            - MONGO_DATA_DIR=/data/db
-            - MONGO_INITDB_ROOT_USERNAME=root
-            - MONGO_INITDB_ROOT_PASSWORD=root
+          - MONGO_DATA_DIR=/data/db
+          - MONGO_INITDB_ROOT_USERNAME=root
+          - MONGO_INITDB_ROOT_PASSWORD=root
         volumes:
-            - ${ROOT_DIR:-~/ClimateChangeApp}/data/db:/data/db
+          - ${ROOT_DIR:-~/ClimateChangeApp}/data/db:/data/db
         ports:
-            - "${BIND_IP_ADDRESS:-127.0.0.1}:${MONGODB_PORT:-27017}:27017"
+          - "${BIND_IP_ADDRESS:-127.0.0.1}:${MONGODB_PORT:-27017}:27017"
         networks:
           - app_network
         command: mongod --smallfiles
@@ -88,13 +88,13 @@ services:
         image: healthcheck/postgres:latest
         container_name: postgres
         environment:
-            - PGDATA=/postgresql/data
-            - POSTGRES_USER=root
-            - POSTGRES_PASSWORD=root
+          - PGDATA=/postgresql/data
+          - POSTGRES_USER=root
+          - POSTGRES_PASSWORD=root
         volumes:
-            - ${ROOT_DIR:-~/ClimateChangeApp}/postgresql/data:/postgresql/data
+          - ${ROOT_DIR:-~/ClimateChangeApp}/postgresql/data:/postgresql/data
         ports:
-            - "${BIND_IP_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
+          - "${BIND_IP_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
         networks:
           - app_network
     utilities:
@@ -105,7 +105,7 @@ services:
         container_name: utilities
         image: diegohermida/utilities:latest
         environment:
-            - PYTHONUNBUFFERED=1
+          - PYTHONUNBUFFERED=1
         depends_on:
           - mongodb
           - postgres
@@ -118,11 +118,11 @@ services:
         image: diegohermida/jenkins:latest
         container_name: jenkins
         volumes:
-            - ${ROOT_DIR:-~/ClimateChangeApp}/jenkins:/var/jenkins_home
-            - /var/run/docker.sock:/var/run/docker.sock
+          - ${ROOT_DIR:-~/ClimateChangeApp}/jenkins:/var/jenkins_home
+          - /var/run/docker.sock:/var/run/docker.sock
         ports:
-            - "0.0.0.0:${JENKINS_PORT:-8090}:8080"
-            - "0.0.0.0:${JENKINS_AGENTS_PORT:-50000}:50000"
+          - "0.0.0.0:${JENKINS_PORT:-8090}:8080"
+          - "0.0.0.0:${JENKINS_AGENTS_PORT:-50000}:50000"
         networks:
           - app_network
     sonar:
@@ -133,27 +133,67 @@ services:
         image: diegohermida/sonarqube:latest
         container_name: sonar
         environment:
-            - SONARQUBE_JDBC_USERNAME=sonar
-            - SONARQUBE_JDBC_PASSWORD=sonar
-            - SONARQUBE_JDBC_URL=jdbc:postgresql://${POSTGRES_SONAR_IP:-127.0.0.1}:5432/sonar
+          - SONARQUBE_JDBC_USERNAME=sonar
+          - SONARQUBE_JDBC_PASSWORD=sonar
+          - SONARQUBE_JDBC_URL=jdbc:postgresql://${POSTGRES_SONAR_IP:-127.0.0.1}:5432/sonar
         volumes:
-            - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/extensions:/opt/sonarqube/extensions
-            - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/data:/opt/sonarqube/data
+          - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/extensions:/opt/sonarqube/extensions
+          - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/data:/opt/sonarqube/data
         ports:
-            - "0.0.0.0:${SONAR_PORT:-9000}:9000"
+          - "0.0.0.0:${SONAR_PORT:-9000}:9000"
         networks:
           - app_network
     sonar_db:
         image: healthcheck/postgres:latest
         container_name: sonar_db
         environment:
-            - PGDATA=/postgresql/data
-            - POSTGRES_USER=sonar
-            - POSTGRES_PASSWORD=sonar
-            - POSRGRES_DB=sonar
+          - PGDATA=/postgresql/data
+          - POSTGRES_USER=sonar
+          - POSTGRES_PASSWORD=sonar
+          - POSRGRES_DB=sonar
         volumes:
-            - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/postgresql/data:/postgresql/data
+          - ${ROOT_DIR:-~/ClimateChangeApp}/sonar/postgresql/data:/postgresql/data
         expose: # Exposing port instead of publishing it. To access the container's port, use the subnet's container IP
-            - 5432
+          - 5432
         networks:
           - app_network
+    cache_server:
+        build:
+            context: .
+            dockerfile: ./web/Dockerfile-cache
+            network: climatechangeapp_network
+        container_name: cache_server
+        expose: # Exposing port instead of publishing it. To access the container's port, use the subnet's container IP
+          - 11211
+        networks:
+          - app_network
+        entrypoint:
+          - memcached
+          - -m ${CACHE_SIZE:-512}
+    web_application_subsystem:
+        build:
+            context: .
+            dockerfile: ./web/Dockerfile
+            network: climatechangeapp_network
+        container_name: web_application_subsystem
+        image: diegohermida/web_application_subsystem:latest
+        expose: # Exposing port instead of publishing it. To access the container's port, use the subnet's container IP
+          - 8000
+        environment:
+          - PYTHONUNBUFFERED=1
+        depends_on:
+          - cache_server
+        networks:
+          - app_network
+    proxy_server:
+        build:
+            context: .
+            dockerfile: web/Dockerfile-nginx
+            network: climatechangeapp_network
+        container_name: proxy_server
+        ports:
+          - "0.0.0.0:${PROXY_PORT:-80}:80"
+        networks:
+          - app_network
+        depends_on:
+          - web_application_subsystem
