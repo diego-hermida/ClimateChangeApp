@@ -1,6 +1,7 @@
 version: "3.5"
 
 networks:
+    # Running containers must set the property "networks: ci_network"
     ci_network:
         name: climatechangeapp_ci_network # If this name changes, service > build > network names must also change.
         driver: bridge
@@ -17,8 +18,6 @@ services:
             - PYTHONUNBUFFERED=1
         depends_on:
           - mongodb_ci
-        networks:
-          - ci_network
     data_conversion_subsystem_ci:
         build:
             context: .
@@ -28,8 +27,6 @@ services:
         image: diegohermida/data_conversion_subsystem:latest_ci
         environment:
             - PYTHONUNBUFFERED=1
-        networks:
-          - ci_network
         depends_on:
           - postgres_ci
           - api_ci
@@ -44,8 +41,6 @@ services:
             - PYTHONUNBUFFERED=1
         expose:
           - "5000"
-        networks:
-          - ci_network
         depends_on:
           - mongodb_ci
     web_application_subsystem_ci:
@@ -106,8 +101,6 @@ services:
         depends_on:
           - mongodb_ci
           - postgres_ci
-        networks:
-          - ci_network
     coverage_ci:
         build:
             context: .
