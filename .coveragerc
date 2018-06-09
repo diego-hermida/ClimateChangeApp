@@ -11,16 +11,4 @@ omit =
     **/__init__.py
 
 [report]
-exclude_lines =
-    def __repr__
-    def __str__
-    raise AssertionError
-    raise NotImplementedError
-    class .+:
-    import .+
-    from .+ import .+
-    def .+(.+):
-    @.+(.+)
-    if __name__ == __main__:
-
 ignore_errors = True
