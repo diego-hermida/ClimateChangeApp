@@ -106,7 +106,7 @@ def deploy(log_to_file=True, log_to_stdout=True, log_to_telegram=None):
             logger.info('Creating database tables from Django models.')
             execute(['makemigrations'])
             execute(['migrate'])
-            logger.info('Migrations were successfully made.')
+            logger.info('Migrations were successfully applied.')
             logger.info('Removing migrations history.')
             remove_all_under_directory(DCS_CONFIG['DATA_CONVERSION_SUBSYSTEM_MIGRATIONS_FOLDER'])
             with open(DCS_CONFIG['DATA_CONVERSION_SUBSYSTEM_MIGRATIONS_FOLDER'] + '__init__.py', 'w'):
