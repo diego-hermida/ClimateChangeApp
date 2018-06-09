@@ -72,6 +72,16 @@ def current_date_in_millis() -> int:
     return date_to_millis_since_epoch(datetime.datetime.now(tz=UTC))
 
 
+def timestamp_to_datetime(millis: int, timezone=UTC) -> datetime.datetime:
+    """
+        Given a timestamp (in millis since epoch), retrieves a datetime.datetime object.
+        :param millis: Timestamp, representing millis since epoch.
+        :param timezone: A `pytz` timezone object.
+        :return: A datetime.datetime object, with the given timezone.
+    """
+    return datetime.datetime.fromtimestamp(int(millis / 1000), tz=timezone)
+
+
 def recursive_makedir(path: str, is_file=False):
     """
         Recursively creates all directories under a base directory. If a directory does already exist, silently performs

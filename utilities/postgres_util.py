@@ -102,7 +102,8 @@ def create_application_user(connection=None, close_after=False):
         If the user did already exist, it will be dropped before being created.
         :param connection: If set, it will use the existing connection instead of creating a new one.
         :param close_after: If True, closes the connection after the operations.
-        Postcondition: The user has ALL PRIVILEGES on the application database.
+        Postcondition: The user has ALL PRIVILEGES on the application database, and the privilege to create DATABASES
+                       in the DBMS.
         NOTE: Since user/table names cannot be passed as a parameter, string interpolation is used. However, these
               names are safe in a configuration file, so SQL-injection attacks should not be possible.
               Issue URL(s):
@@ -121,6 +122,7 @@ def create_application_user(connection=None, close_after=False):
             GLOBAL_CONFIG['POSTGRES_USERNAME'], GLOBAL_CONFIG['POSTGRES_USER_PASSWORD']))
         cursor.execute("GRANT ALL PRIVILEGES ON DATABASE %s TO %s;" % (
             GLOBAL_CONFIG['POSTGRES_DATABASE'], GLOBAL_CONFIG['POSTGRES_USERNAME']))
+        cursor.execute("ALTER USER %s CREATEDB;" % GLOBAL_CONFIG['POSTGRES_USERNAME'])
     finally:
         cursor.close()
         try:
