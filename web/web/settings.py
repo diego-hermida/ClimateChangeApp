@@ -9,25 +9,23 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 WSGI_APPLICATION = 'web.wsgi.application'
 ROOT_URLCONF = 'web.urls'
 ALLOWED_HOSTS = ['localhost']
-INTERNAL_IPS = ['localhost', '127.0.0.1']
-DEBUG = True
+INTERNAL_IPS = ['localhost']
 
 
 # Application definition
 INSTALLED_APPS = [
+    'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'climate',
+    'climate.webmodels',
+    'data_conversion_subsystem.data',
+    'debug_toolbar',
     'bootstrap4',
     'bootstrap_daterangepicker',
-    'widget_tweaks',
-    'data_conversion_subsystem.data',
-    'climate.webmodels',
-    'climate',
-    'debug_toolbar'
 ]
 
 # Middleware definition
@@ -81,17 +79,33 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': WEB_CONFIG['CACHE_ENDPOINT'],
+        'LOCATION': os.environ.get(WEB_CONFIG['CACHE_SERVER_IP'], 'localhost') + ':' + os.environ.get(
+                WEB_CONFIG['CACHE_SERVER_PORT'], '11211'),
     }
 }
 
 
+# Security
+SECURE_SSL_REDIRECT = False
+DEBUG = False
+
+
+# Test config
+TEST_XML_RUNNER = 'utilities.xmltestrunner.XMLTestRunner'
+TEST_OUTPUT_VERBOSE = 2
+TEST_OUTPUT_DIR = GLOBAL_CONFIG['TEST_RESULTS_DIR']
+TEST_OUTPUT_FILE_NAME = WEB_CONFIG['TESTS_FILENAME']
+
 # Session settings
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&k3q+pmu)5%asj6yjpkag')
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
-SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = False
+CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_AGE = 3600  # An hour
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 
 # Internationalization
@@ -112,5 +126,5 @@ LOCALE_PATHS = (
 # Static files (CSS, JavaScript, Images)
 STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATIC_URL = '/static/'
-STATIC_PREFIX = 'climate/static' if DEBUG else 'static'
+STATIC_PREFIX = 'climate/static'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, STATIC_PREFIX)]
