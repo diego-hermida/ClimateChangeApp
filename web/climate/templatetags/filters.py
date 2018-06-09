@@ -1,5 +1,5 @@
 from django import template
-
+from utilities.util import parse_float
 register = template.Library()
 
 
@@ -13,15 +13,15 @@ def round(value) -> float:
         >>> round(1234567)
         1.234567
     """
-    value = str(value)
-
-    if value.isdigit():
-        value_int = int(value)
+    try:
+        value_int = parse_float(value, nullable=False)
         if value_int > 1000000:
             return value_int / 1000000.0
         elif value_int > 1000:
             return value_int / 1000.0
-    return '?'
+        return value_int
+    except ValueError:
+        return '?'
 
 
 @register.filter
@@ -34,12 +34,12 @@ def units(value) -> str:
         >>> units(1234567)
         'M'
     """
-    value = str(value)
-
-    if value.isdigit():
-        value_int = int(value)
+    try:
+        value_int = parse_float(value, nullable=False)
         if value_int > 1000000.0:
             return 'M'
         elif value_int > 1000.0:
             return 'K'
-    return ''
+        return ''
+    except ValueError:
+        return ''
