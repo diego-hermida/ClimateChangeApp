@@ -129,12 +129,12 @@ if [ $? != 0 ]; then
     SUCCESS_REPORT=$((SUCCESS_REPORT - 1));
     message 3 "[WARNING] Web Application Subsystem Docker container could not be created.";
 else
-    docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/dcs.coverage ./coverage/.coverage.dcs;
+    docker cp ${CONTAINER_ID}:/ClimateChangeApp/coverage/web.coverage ./coverage/.coverage.web;
     if [ $? != 0 ]; then
         SUCCESS_COVERAGE=$((SUCCESS_COVERAGE - 1));
         message 3 "[WARNING] Web Application Subsystem coverage report could not be fetched.";
     fi
-    docker cp ${CONTAINER_ID}:/ClimateChangeApp/test_results/dcs_tests.xml ./test_results/dcs_tests.xml;
+    docker cp ${CONTAINER_ID}:/ClimateChangeApp/test_results/web_tests.xml ./test_results/web_tests.xml;
     if [ $? != 0 ]; then
         SUCCESS_REPORT=$((SUCCESS_REPORT - 1));
         message 3 "[WARNING] Web Application Subsystem test results report could not be fetched.";
