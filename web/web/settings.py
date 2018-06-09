@@ -88,6 +88,11 @@ CACHES = {
 # Security
 SECURE_SSL_REDIRECT = False
 DEBUG = False
+SESSION_COOKIE_HTTPONLY = False
+CSRF_COOKIE_HTTPONLY = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 
 # Test config
@@ -99,13 +104,8 @@ TEST_OUTPUT_FILE_NAME = WEB_CONFIG['TESTS_FILENAME']
 # Session settings
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&k3q+pmu)5%asj6yjpkag')
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
-SESSION_COOKIE_HTTPONLY = False
-CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_AGE = 3600  # An hour
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
 
 
 # Internationalization
