@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-20 00:10+0000\n"
+"POT-Creation-Date: 2018-06-07 08:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -129,20 +129,15 @@ msgstr "Imagen del estudiante que ha desarrollado la aplicación."
 msgid "Student"
 msgstr "Estudiante"
 
-#: climate/templates/climate/about.html:41
-#: climate/templates/climate/about.html:71
-msgid "Roles"
-msgstr "Roles"
-
-#: climate/templates/climate/about.html:44
+#: climate/templates/climate/about.html:34
 msgid "Designer"
 msgstr "Diseñador"
 
-#: climate/templates/climate/about.html:47
+#: climate/templates/climate/about.html:37
 msgid "Developer"
 msgstr "Desarrollador"
 
-#: climate/templates/climate/about.html:50
+#: climate/templates/climate/about.html:40
 msgid "Tester"
 msgstr "Probador"
 
@@ -151,52 +146,31 @@ msgid "Picture of the director of the project."
 msgstr "Imagen del director del proyecto."
 
 #: climate/templates/climate/about.html:62
-#: climate/templates/climate/about.html:77
+#: climate/templates/climate/about.html:69
 msgid "Director"
 msgstr "Director"
 
-#: climate/templates/climate/about.html:74
+#: climate/templates/climate/about.html:66
 msgid "Client"
 msgstr "Cliente"
 
-#: climate/templates/climate/about.html:88
+#: climate/templates/climate/about.html:86
+msgid "Logo of the University of A Coruña"
+msgstr "Logo de la Universidad de A Coruña"
+
+#: climate/templates/climate/about.html:89
 msgid "University of A Coruña"
 msgstr "Universidad de A Coruña"
 
-#: climate/templates/climate/about.html:89
+#: climate/templates/climate/about.html:90
 msgid "Faculty of Computing"
 msgstr "Facultad de Informática"
 
-#: climate/templates/climate/about.html:105
-msgid ""
-"<p class=\"card-text text-justify\"> The <strong>University of A Coruña</"
-"strong> was founded in 1989. Is a Spanish public university with campus in A "
-"Coruña, Ferrol and Bastiagueiro. </p> <p> Its primary objective is the "
-"<strong>generation, management and dissemination</strong> of culture and "
-"scientific, technological and professional knowledge through the development "
-"of research and teaching. </p> <p> The University of A Coruña explicitly "
-"expresses its <strong>commitment to the study</strong> and the integral "
-"development of Galicia, its social, cultural and linguistic identity, and it "
-"will promote its <strong>full integration</strong> into the European Higher "
-"Education and and the projection in Latin America. </p>"
-msgstr ""
-"<p class=\"card-text text-justify\"> La <strong>Universidad de A Coruña</"
-"strong> se fundó en 1989. Es una universidad pública española con campus en "
-"A Coruña, Ferrol y Bastiagueiro. </p> <p> Su finalidad esencial es "
-"la<strong>generación, gestión y difusión</strong> de la cultura y el "
-"conocimiento científico, tecnológico y profesional a través del desarrollo "
-"de la investigación y de docencia. </p> <p> La Universidad de A Coruña "
-"manifiesta explícitamente su <strong>compromiso con el estudio</strong> y "
-"desarrollo integral de Galicia, singularmente de su identidad social, "
-"cultural y lingüística, y asimismo promoverá su <strong>plena integración</"
-"strong> en el Espacio Europeo de Enseñanza Superior y la proyección en "
-"América Latina. </p>"
-
-#: climate/templates/climate/about.html:124
+#: climate/templates/climate/about.html:108
 msgid "<strong>Useful links:</strong>"
 msgstr "<strong>Enlaces de utilidad:</strong>"
 
-#: climate/templates/climate/about.html:130
+#: climate/templates/climate/about.html:114
 msgid ""
 "University of A Coruña's <a href=\"https://www.udc.es/index.html?language=en"
 "\" target=\"_blank\">website</a>."
@@ -204,7 +178,7 @@ msgstr ""
 "<a href=\"https://www.udc.es/index.html?language=es\" target=\"_blank"
 "\">Sitio web</a> de la Universidad de A Coruña."
 
-#: climate/templates/climate/about.html:136
+#: climate/templates/climate/about.html:120
 msgid ""
 "Faculty of Computing's <a href=\"https://www.fic.udc.es/es\" target=\"_blank"
 "\">website</a> (in Spanish)."
@@ -265,8 +239,8 @@ msgstr "Este campo no puede estar vacío."
 #: climate/templates/climate/contact.html:89
 #: climate/templates/climate/contact.html:106
 #: climate/templates/climate/contact.html:120
-#: climate/templates/climate/countries.html:180
-#: climate/templates/climate/locations.html:166 includes/air_pollution.html:247
+#: climate/templates/climate/countries.html:195
+#: climate/templates/climate/locations.html:181 includes/air_pollution.html:247
 #: includes/country_energy.html:26 includes/country_energy.html:41
 #: includes/country_environment.html:31 includes/country_environment.html:46
 #: includes/historical_weather.html:47 includes/historical_weather.html:62
@@ -482,34 +456,43 @@ msgstr "Enviar"
 msgid "Return to the main page"
 msgstr "Volver a la página principal"
 
-#: climate/templates/climate/countries.html:69
-#: climate/templates/climate/locations.html:54
-msgid "Geolocation has been successfully enabled."
-msgstr "La geolocalización se ha activado correctamente."
-
-#: climate/templates/climate/countries.html:79
-#: climate/templates/climate/locations.html:64
+#: climate/templates/climate/countries.html:70
+#: climate/templates/climate/locations.html:55
 msgid "Your search returned multiple results."
 msgstr "La búsqueda ha devuelto múltiples resultados."
 
-#: climate/templates/climate/countries.html:92
-#: climate/templates/climate/locations.html:77
+#: climate/templates/climate/countries.html:83
+#: climate/templates/climate/locations.html:68
 #, python-format
 msgid "(showing only the first %(size)s results)"
 msgstr "(mostrando solo los primeros %(size)s resultados)"
 
-#: climate/templates/climate/countries.html:100
-#: climate/templates/climate/locations.html:85 includes/air_pollution.html:282
+#: climate/templates/climate/countries.html:91
+#: climate/templates/climate/locations.html:76 includes/air_pollution.html:282
 #: includes/country_energy.html:64 includes/country_environment.html:69
 #: includes/historical_weather.html:101
 msgid "Your search returned 0 results."
 msgstr "La búsqueda no ha devuelto resultados."
 
-#: climate/templates/climate/countries.html:106
+#: climate/templates/climate/countries.html:97
 msgid "Such country does not exist, or there is no data available for it."
 msgstr "Ese país no existe, o no existe información disponible sobre él."
 
-#: climate/templates/climate/countries.html:112
+#: climate/templates/climate/countries.html:103
+#: climate/templates/climate/locations.html:88
+msgid "Geolocation has been successfully enabled."
+msgstr "La geolocalización se ha activado correctamente."
+
+#: climate/templates/climate/countries.html:111
+#: climate/templates/climate/locations.html:96
+msgid ""
+"Geolocation has been successfully enabled, but nearest location is not "
+"available."
+msgstr ""
+"La geolocalización se ha activado correctamente, pero la localización más "
+"cercana no está disponible."
+
+#: climate/templates/climate/countries.html:121
 msgid ""
 "Geolocation is disabled. <br/> <strong>Tip:</strong> Search for countries "
 "using the <strong>Search bar</strong>, or enable <strong>Geolocation</"
@@ -521,45 +504,51 @@ msgstr ""
 "<strong>geolocalización</strong> presionando el botón <kbd><em class=\"fa fa-"
 "location-arrow\"></em></kbd> ."
 
-#: climate/templates/climate/countries.html:122
-#: climate/templates/climate/locations.html:107
+#: climate/templates/climate/countries.html:131
+#: climate/templates/climate/locations.html:116
 msgid "An error occurred while retrieving your current position."
 msgstr "Ha ocurrido un error al intentar determinar su posición actual."
 
-#: climate/templates/climate/countries.html:130
+#: climate/templates/climate/countries.html:139
 msgid "View nearest country"
 msgstr "Visualice el país más cercano"
 
-#: climate/templates/climate/countries.html:137
+#: climate/templates/climate/countries.html:146
 msgid "View all countries"
 msgstr "Visualice todos los países"
 
-#: climate/templates/climate/countries.html:145
-#: climate/templates/climate/locations.html:130
+#: climate/templates/climate/countries.html:154
+#: climate/templates/climate/locations.html:139
 msgid "Show or hide the map"
 msgstr "Muestre u oculte el mapa"
 
-#: climate/templates/climate/countries.html:150
-#: climate/templates/climate/locations.html:135
+#: climate/templates/climate/countries.html:159
+#: climate/templates/climate/locations.html:144
 msgid "Geolocation is enabled"
 msgstr "La geolocalización está activada"
 
-#: climate/templates/climate/countries.html:157
-#: climate/templates/climate/locations.html:142
+#: climate/templates/climate/countries.html:166
+#: climate/templates/climate/locations.html:151
 msgid "Enable geolocation"
 msgstr "Active la geolocalización"
 
-#: climate/templates/climate/countries.html:169 includes/location_info.html:39
+#: climate/templates/climate/countries.html:178 includes/location_info.html:39
 msgid "Country"
 msgstr "País"
 
-#: climate/templates/climate/countries.html:176
-#: climate/templates/climate/locations.html:162
+#: climate/templates/climate/countries.html:186
+#: climate/templates/climate/locations.html:172
+#, python-format
+msgid "Keywords must be, at least, %(len)s characters long."
+msgstr "Las palabras clave deben poseer, al menos, una longitud de %(len)s caracteres."
+
+#: climate/templates/climate/countries.html:190
+#: climate/templates/climate/locations.html:176
 #, python-format
 msgid "Keywords are invalid: \"%(keywords)s\""
 msgstr "La entrada de texto es inválida: \"%(keywords)s\""
 
-#: climate/templates/climate/countries.html:189
+#: climate/templates/climate/countries.html:204
 msgid ""
 "Click on the dropdown button to show pre-selected <strong>regions</strong> "
 "and <strong>income levels</strong>. You can click on any of them to see its "
@@ -570,11 +559,11 @@ msgstr ""
 "click en cualquiera de ellos para ver sus datos. <br>Nota: Algunas regiones "
 "pueden no tener datos."
 
-#: climate/templates/climate/countries.html:194
+#: climate/templates/climate/countries.html:209
 msgid "Regions and income levels"
 msgstr "Regiones y niveles de renta"
 
-#: climate/templates/climate/countries.html:209
+#: climate/templates/climate/countries.html:224
 msgid ""
 "<div> <strong>Tips:</strong> <ul> <li> <strong>Click</strong> on the map "
 "surface and <strong>drag</strong> to move it. </li> <li> Use the &nbsp;<kbd>"
@@ -591,7 +580,7 @@ msgstr ""
 "haciendo <strong>click</strong> sobre él. </li> <li>También puede usar la "
 "<strong>barra de búsqueda</strong> para seleccionar países.</li> </ul> </div>"
 
-#: climate/templates/climate/countries.html:239
+#: climate/templates/climate/countries.html:254
 msgid ""
 "To represent this map, <a href=\"https://www.amcharts.com/\" target=\"_blank"
 "\">amCharts</a> libraries have been used."
@@ -599,7 +588,7 @@ msgstr ""
 "Para representar este mapa, se han empleado librerías de <a href=\"https://"
 "www.amcharts.com/\" target=\"_blank\">amCharts</a>."
 
-#: climate/templates/climate/countries.html:274
+#: climate/templates/climate/countries.html:289
 msgid "Once you have selected a country, more info will appear here."
 msgstr "Una vez haya seleccionado un país, aquí aparecerá más información."
 
@@ -636,7 +625,7 @@ msgstr ""
 "será más que un recuerdo. <br>"
 
 #: climate/templates/climate/global_change.html:70
-#: climate/templates/climate/global_change.html:404
+#: climate/templates/climate/global_change.html:405
 msgid "Climate projections"
 msgstr "Proyecciones climáticas"
 
@@ -650,19 +639,19 @@ msgstr ""
 
 #: climate/templates/climate/global_change.html:100
 #: climate/templates/climate/global_change.html:225
-#: climate/templates/climate/global_change.html:410
+#: climate/templates/climate/global_change.html:411
 msgid "Load data"
 msgstr "Mostrar los datos"
 
 #: climate/templates/climate/global_change.html:104
 #: climate/templates/climate/global_change.html:229
-#: climate/templates/climate/global_change.html:414
+#: climate/templates/climate/global_change.html:415
 msgid "No data has been found."
 msgstr "No se han encontrado datos."
 
 #: climate/templates/climate/global_change.html:107
 #: climate/templates/climate/global_change.html:232
-#: climate/templates/climate/global_change.html:417
+#: climate/templates/climate/global_change.html:418
 #: includes/air_pollution.html:285 includes/country_energy.html:67
 #: includes/country_environment.html:72 includes/historical_weather.html:104
 msgid "Data could not be retrieved."
@@ -680,7 +669,7 @@ msgstr ""
 #: climate/templates/climate/global_change.html:130
 #: climate/templates/climate/global_change.html:256
 #: climate/templates/climate/global_change.html:336
-#: climate/templates/climate/global_change.html:440
+#: climate/templates/climate/global_change.html:441
 #: includes/air_pollution.html:321
 msgid "Number of plotted values"
 msgstr "Número de valores representados"
@@ -741,8 +730,8 @@ msgstr ""
 
 #: climate/templates/climate/global_change.html:210
 #: climate/templates/climate/global_change.html:314
-#: climate/templates/climate/global_change.html:394
-#: climate/templates/climate/global_change.html:687
+#: climate/templates/climate/global_change.html:395
+#: climate/templates/climate/global_change.html:689
 #: climate/templates/climate/index.html:202 includes/air_pollution.html:203
 #: includes/air_pollution.html:429 includes/country_energy.html:145
 #: includes/country_energy.html:230 includes/country_environment.html:247
@@ -791,17 +780,17 @@ msgid "from <span id=\"arcticIceExtentStartYear\"></span> levels"
 msgstr "desde los niveles de <span id=\"arcticIceExtentStartYear\"></span>"
 
 #: climate/templates/climate/global_change.html:301
-#: climate/templates/climate/global_change.html:381
+#: climate/templates/climate/global_change.html:382
 msgid "per year"
 msgstr "por año"
 
 #: climate/templates/climate/global_change.html:306
-#: climate/templates/climate/global_change.html:386
+#: climate/templates/climate/global_change.html:387
 msgid "Gt: giga-ton"
 msgstr "Gt: giga-tonelada"
 
 #: climate/templates/climate/global_change.html:309
-#: climate/templates/climate/global_change.html:389
+#: climate/templates/climate/global_change.html:390
 msgid "(10⁹ tons; 1 ton = 1000 kg)"
 msgstr "(10⁹ toneladas; 1 tonelada = 1000 kg)"
 
@@ -831,11 +820,11 @@ msgstr ""
 "Las anomalías de masa en la Antártida se generan usando datos del GRACE "
 "desde el JPL RL05M.1 Mascon Solution: Version 2."
 
-#: climate/templates/climate/global_change.html:364
+#: climate/templates/climate/global_change.html:365
 msgid "from <span id=\"antarcticaIceExtentStartYear\"></span> levels"
 msgstr "desde los niveles de <span id=\"antarcticaIceExtentStartYear\"></span>"
 
-#: climate/templates/climate/global_change.html:431
+#: climate/templates/climate/global_change.html:432
 msgid ""
 "Climate projections (CO₂ emissions) from <span id=\"RPCFrom\" class=\"font-"
 "weight-bold\"></span> to <span id=\"RPCTo\" class=\"font-weight-bold\"></"
@@ -845,7 +834,7 @@ msgstr ""
 "\"font-weight-bold\"></span> hasta <span id=\"RPCTo\" class=\"font-weight-"
 "bold\"></span>"
 
-#: climate/templates/climate/global_change.html:443
+#: climate/templates/climate/global_change.html:444
 msgid ""
 "<strong>Credit: </strong>RPC Database. Full attributions list is available "
 "<a href=\"http://www.iiasa.ac.at/web-apps/tnt/RcpDb/dsd?"
@@ -855,11 +844,11 @@ msgstr ""
 "atribuciones está disponible <a href=\"http://www.iiasa.ac.at/web-apps/tnt/"
 "RcpDb/dsd?Action=htmlpage&page=about#\" target=\"_blank\">aquí</a>."
 
-#: climate/templates/climate/global_change.html:452
+#: climate/templates/climate/global_change.html:453
 msgid "What are RPCs?"
 msgstr "¿Qué son los RPCs?"
 
-#: climate/templates/climate/global_change.html:453
+#: climate/templates/climate/global_change.html:454
 msgid ""
 "<p> Climate predictions are based on <strong>climate models</strong>, which "
 "stimulate aspects such as the temperature of the atmosphere and the oceans, "
@@ -886,18 +875,18 @@ msgstr ""
 "strong>s. Éstos describen trayectorias alternativas para los parámetros de "
 "interés, y cubren hasta el año <strong>2100</strong>."
 
-#: climate/templates/climate/global_change.html:474
+#: climate/templates/climate/global_change.html:475
 msgid "RPC 2.6"
 msgstr "RPC 2.6"
 
-#: climate/templates/climate/global_change.html:480
-#: climate/templates/climate/global_change.html:525
-#: climate/templates/climate/global_change.html:563
-#: climate/templates/climate/global_change.html:601
+#: climate/templates/climate/global_change.html:481
+#: climate/templates/climate/global_change.html:527
+#: climate/templates/climate/global_change.html:565
+#: climate/templates/climate/global_change.html:603
 msgid "CO₂ emissions: "
 msgstr "Emisiones de CO₂:"
 
-#: climate/templates/climate/global_change.html:482
+#: climate/templates/climate/global_change.html:483
 msgid ""
 "They reach a maximum in 2020 (and are reduced to 0 in 2080), with a maximum "
 "concentration of 440 ppm."
@@ -905,25 +894,25 @@ msgstr ""
 "Alcanzan un máximo en 2020 (y se reducen a 0 hacia 2080), con una "
 "concentración máxima de 440 ppm."
 
-#: climate/templates/climate/global_change.html:489
-#: climate/templates/climate/global_change.html:535
-#: climate/templates/climate/global_change.html:573
-#: climate/templates/climate/global_change.html:610
+#: climate/templates/climate/global_change.html:490
+#: climate/templates/climate/global_change.html:537
+#: climate/templates/climate/global_change.html:575
+#: climate/templates/climate/global_change.html:612
 msgid "Population: "
 msgstr "Población: "
 
-#: climate/templates/climate/global_change.html:491
+#: climate/templates/climate/global_change.html:492
 msgid "Around 9,000 million in 2050. Economic development is high."
 msgstr "Alrededor de 9.000 millones en 2050. El desarrollo económico es alto."
 
-#: climate/templates/climate/global_change.html:497
-#: climate/templates/climate/global_change.html:543
-#: climate/templates/climate/global_change.html:581
-#: climate/templates/climate/global_change.html:618
+#: climate/templates/climate/global_change.html:498
+#: climate/templates/climate/global_change.html:545
+#: climate/templates/climate/global_change.html:583
+#: climate/templates/climate/global_change.html:620
 msgid "Energy: "
 msgstr "Energía: "
 
-#: climate/templates/climate/global_change.html:499
+#: climate/templates/climate/global_change.html:500
 msgid ""
 "Abandonment of oil as a fuel, replaced by other fossil fuels and renewable "
 "energies."
@@ -931,7 +920,7 @@ msgstr ""
 "Abandono del petróleo como combustible, sustituido por otros combustibles "
 "fósiles y energías renovables."
 
-#: climate/templates/climate/global_change.html:508
+#: climate/templates/climate/global_change.html:509
 msgid ""
 "<em class=\"fa fa-check-circle text-success px-1\"></em> This is the only "
 "scenario that meets the objective of maintaining the temperature of the "
@@ -942,11 +931,11 @@ msgstr ""
 "Tierra por  <strong>debajo de 2ºC</strong> sobre los <strong>niveles pre-"
 "industriales</strong>."
 
-#: climate/templates/climate/global_change.html:519
+#: climate/templates/climate/global_change.html:521
 msgid "RPC 4.5"
 msgstr "RPC 4.5"
 
-#: climate/templates/climate/global_change.html:527
+#: climate/templates/climate/global_change.html:529
 #, python-format
 msgid ""
 "Levels 50%% higher than the 2000 levels in 2050. Towards 2080 they stabilize "
@@ -956,12 +945,12 @@ msgstr ""
 "estabilizan a los niveles del 2000. Concentración de 520 ppm en 2070, "
 "incrementándose levemente."
 
-#: climate/templates/climate/global_change.html:537
+#: climate/templates/climate/global_change.html:539
 msgid "Economic and demographic growth slightly lower than that of RPC 2.6."
 msgstr ""
 "Crecimiento económico y demográfico ligeramente inferior al de RPC 2.6."
 
-#: climate/templates/climate/global_change.html:545
+#: climate/templates/climate/global_change.html:547
 msgid ""
 "Consumption of oil practically constant until 2100. Nuclear and renewable "
 "energies as secondary sources."
@@ -969,11 +958,11 @@ msgstr ""
 "Consumo de petróleo prácticamente constante hasta 2100. Energías nuclear y "
 "renovable como secundarias."
 
-#: climate/templates/climate/global_change.html:557
+#: climate/templates/climate/global_change.html:559
 msgid "RPC 6.0"
 msgstr "RPC 6.0"
 
-#: climate/templates/climate/global_change.html:565
+#: climate/templates/climate/global_change.html:567
 #, python-format
 msgid ""
 "Emissions 100%% higher than 2000 levels in 2060, with ever increasing "
@@ -984,11 +973,11 @@ msgstr ""
 "crecientes –reduciendo el ritmo a final de siglo–, alcanzando 620 ppm en "
 "2100."
 
-#: climate/templates/climate/global_change.html:575
+#: climate/templates/climate/global_change.html:577
 msgid "Growth up to 10,000 million inhabitants, with low GDP."
 msgstr "Crecimiento hasta los 10.000 millones de habitantes, con bajos PIB."
 
-#: climate/templates/climate/global_change.html:583
+#: climate/templates/climate/global_change.html:585
 msgid ""
 "Peak energy by 2060, reaching the level of RPC 2.6 in 2100. Consumptions "
 "similar to RPC 4.5 with minor importance secondary energies."
@@ -996,11 +985,11 @@ msgstr ""
 "Pico energético hacia 2060, llegando al nivel de RPC 2.6 en 2100. Consumos "
 "similares a RPC 4.5 con menor importancia de las energías secundarias."
 
-#: climate/templates/climate/global_change.html:595
+#: climate/templates/climate/global_change.html:597
 msgid "RPC 8.5"
 msgstr "RPC 8.5"
 
-#: climate/templates/climate/global_change.html:603
+#: climate/templates/climate/global_change.html:605
 #, python-format
 msgid ""
 "Emissions 375%% higher than the current levels in 2100. Concentration of 950 "
@@ -1009,12 +998,12 @@ msgstr ""
 "Emisiones un 375%% superiores a las actuales en RPC 2100. Concentración de "
 "950 ppm en 2100 y subiendo durante, mínimo, 100 años más."
 
-#: climate/templates/climate/global_change.html:612
+#: climate/templates/climate/global_change.html:614
 msgid "High population growth, up to 12,000 in 2100. Social inequality."
 msgstr ""
 "Crecimiento alto de población, hasta los 12.000 en 2100. Desigualdad social."
 
-#: climate/templates/climate/global_change.html:620
+#: climate/templates/climate/global_change.html:622
 msgid ""
 "Increased energy consumption throughout the century, three times higher than "
 "the 2000 levels. Use of oil until 2070 and coal until 2100."
@@ -1023,11 +1012,11 @@ msgstr ""
 "respecto al consumo del año 2000. Uso del petróleo hasta 2070 y carbón hasta "
 "2100."
 
-#: climate/templates/climate/global_change.html:631
+#: climate/templates/climate/global_change.html:633
 msgid "Consequences"
 msgstr "Consecuencias"
 
-#: climate/templates/climate/global_change.html:633
+#: climate/templates/climate/global_change.html:635
 msgid ""
 "<p> To meet the objective of keeping the global temperature <strong>below "
 "2°C</strong> above <strong>pre-industrial levels</strong>, it is necessary "
@@ -1078,7 +1067,7 @@ msgstr ""
 "danger\"></em> La propagación de <strong>enfermedades</strong> por vectores, "
 "agua y alimentos puede que se vea aumentada. </li> </ul>"
 
-#: climate/templates/climate/global_change.html:679
+#: climate/templates/climate/global_change.html:681
 msgid ""
 "<strong>Credit: </strong>IPCC. The full report is available <a href="
 "\"https://www.ipcc.ch/pdf/assessment-report/ar5/syr/"
@@ -1088,19 +1077,19 @@ msgstr ""
 "<a href=\"https://www.ipcc.ch/pdf/assessment-report/ar5/syr/"
 "SYR_AR5_FINAL_full_wcover.pdf\" target=\"_blank\">aquí</a>."
 
-#: climate/templates/climate/global_change.html:724
+#: climate/templates/climate/global_change.html:726
 msgid "Sea level rise (mm)"
 msgstr "Aumento del nivel del mar (mm)"
 
-#: climate/templates/climate/global_change.html:787
+#: climate/templates/climate/global_change.html:789
 msgid "Ice mass loss, Arctic (Gt)"
 msgstr "Pérdida de masa de hielo, Ártico (Gt)"
 
-#: climate/templates/climate/global_change.html:809
+#: climate/templates/climate/global_change.html:811
 msgid "Ice mass loss, Antarctica (Gt)"
 msgstr "Pérdida de masa de hielo, Antártida (Gt)"
 
-#: climate/templates/climate/global_change.html:869
+#: climate/templates/climate/global_change.html:871
 msgid "ppm"
 msgstr "ppm"
 
@@ -1242,11 +1231,11 @@ msgstr ""
 "La Tierra ha alcanzado <strong>niveles de CO₂</strong> más altos que nunca "
 "en la Historia."
 
-#: climate/templates/climate/locations.html:91
+#: climate/templates/climate/locations.html:82
 msgid "Such location does not exist, or there is no data available for it."
 msgstr "Esa localización no existe, o no existen datos disponibles sobre ella."
 
-#: climate/templates/climate/locations.html:97
+#: climate/templates/climate/locations.html:106
 msgid ""
 "Geolocation is disabled. <br/> <strong>Tip:</strong> Search for locations "
 "using the <strong>Search bar</strong>, or enable <strong>Geolocation</"
@@ -1258,23 +1247,23 @@ msgstr ""
 "<strong>geolocalización</strong> presionando el botón <kbd><em class=\"fa fa-"
 "location-arrow\"></em></kbd> ."
 
-#: climate/templates/climate/locations.html:115
+#: climate/templates/climate/locations.html:124
 msgid "View nearest location"
 msgstr "Visualice la localización más cercana"
 
-#: climate/templates/climate/locations.html:122
+#: climate/templates/climate/locations.html:131
 msgid "View all locations"
 msgstr "Visualice todas las localizaciones"
 
-#: climate/templates/climate/locations.html:155
+#: climate/templates/climate/locations.html:164
 msgid "Anytown"
 msgstr "Cualquier Lugar"
 
-#: climate/templates/climate/locations.html:178
+#: climate/templates/climate/locations.html:193
 msgid "<span><strong>Google Maps</strong> is unavailable.</span>"
 msgstr "<span><strong>Google Maps</strong> no está disponible.</span>"
 
-#: climate/templates/climate/locations.html:198
+#: climate/templates/climate/locations.html:213
 msgid ""
 "This location has both information about air pollution and weather "
 "conditions (real time and historical data)."
@@ -1282,7 +1271,7 @@ msgstr ""
 "Esta localización posee tanto información sobre la contaminación de aire "
 "como de las condiciones meteorológicas (en tiempo real y datos históricos)."
 
-#: climate/templates/climate/locations.html:214
+#: climate/templates/climate/locations.html:229
 #, python-format
 msgid ""
 "<strong>%(loc_name)s</strong> is the capital city of <strong>"
@@ -1291,12 +1280,12 @@ msgstr ""
 "<strong>%(loc_name)s</strong> es la capital de <strong>%(country_name)s</"
 "strong>"
 
-#: climate/templates/climate/locations.html:240
+#: climate/templates/climate/locations.html:255
 msgid "Once you have selected a location, more info will appear here."
 msgstr ""
 "Una vez haya seleccionado una localización, aquí aparecerá más información."
 
-#: climate/templates/climate/locations.html:359
+#: climate/templates/climate/locations.html:374
 msgid "Your current position"
 msgstr "Tu posición actual"
 
@@ -1760,7 +1749,7 @@ msgid "This year"
 msgstr "Este año"
 
 #: includes/air_pollution.html:468 includes/country_energy.html:341
-#: includes/country_environment.html:371 includes/historical_weather.html:483
+#: includes/country_environment.html:368 includes/historical_weather.html:481
 msgid "Clear"
 msgstr "Borrar"
 
@@ -2049,27 +2038,22 @@ msgstr ""
 "circula por tuberías, grifos públicos or fuentes, pozos, manantiales "
 "protegidos y la recolección del agua de lluvia."
 
-#: includes/country_environment.html:299
-#, python-format
-msgid "Population with access to improved drinking water source (%%)"
-msgstr "Población con acceso a fuentes de agua mejoradas (%%)"
-
-#: includes/country_environment.html:305
+#: includes/country_environment.html:302
 #, python-format
 msgid "Urban land below 5 meters (%%)"
 msgstr "Áreas urbanas por debajo de 5 metros (%%)"
 
-#: includes/country_environment.html:316
+#: includes/country_environment.html:313
 #, python-format
 msgid "Forest land (%%)"
 msgstr "Áreas boscosas (%%)"
 
-#: includes/country_environment.html:328
+#: includes/country_environment.html:325
 #, python-format
 msgid "Protected areas (%%)"
 msgstr "Áreas protegidas (%%)"
 
-#: includes/country_environment.html:340
+#: includes/country_environment.html:337
 #, python-format
 msgid "Improved drinking water source (%%)"
 msgstr "Fuentes de agua mejoradas (%%)"
@@ -2283,80 +2267,80 @@ msgid ""
 msgstr ""
 "<strong>%(loc_name)s</strong> no posee información meteorológica histórica."
 
-#: includes/historical_weather.html:369
+#: includes/historical_weather.html:367
 #, python-brace-format
 msgid "Less than {min} {name}"
 msgstr "Menos que {min} {name}"
 
-#: includes/historical_weather.html:370
+#: includes/historical_weather.html:368
 #, python-brace-format
 msgid "Between {down} and {up} {name}"
 msgstr "Entre {down} y {up} {name}"
 
-#: includes/historical_weather.html:371
+#: includes/historical_weather.html:369
 #, python-brace-format
 msgid "More than {max} {name}"
 msgstr "Más de {max} {name}"
 
-#: includes/historical_weather.html:374
+#: includes/historical_weather.html:372
 #, python-brace-format
 msgid "No value for {date}"
 msgstr "Sin datos para el {date}"
 
-#: includes/historical_weather.html:375
+#: includes/historical_weather.html:373
 #, python-brace-format
 msgid "{count} {name} on {date}"
 msgstr "{count} {name} el {date}"
 
-#: includes/historical_weather.html:387
+#: includes/historical_weather.html:385
 msgid "Highest annual temperature"
 msgstr "Temperatura anual más alta"
 
-#: includes/historical_weather.html:388
+#: includes/historical_weather.html:386
 msgid "Lowest max. annual temperature"
 msgstr "Temperatura anual máxima más baja"
 
-#: includes/historical_weather.html:389
+#: includes/historical_weather.html:387
 msgid "Highest min. annual temperature"
 msgstr "Temperatura anual mínima más alta"
 
-#: includes/historical_weather.html:390
+#: includes/historical_weather.html:388
 msgid "Lowest annual temperature"
 msgstr "Temperatura anual más baja"
 
-#: includes/historical_weather.html:391
+#: includes/historical_weather.html:389
 msgid "Average annual temperature"
 msgstr "Temperatura media anual"
 
-#: includes/historical_weather.html:392
+#: includes/historical_weather.html:390
 msgid "Fog"
 msgstr "Niebla"
 
-#: includes/historical_weather.html:392
+#: includes/historical_weather.html:390
 msgid "Hail"
 msgstr "Granizo"
 
-#: includes/historical_weather.html:392
+#: includes/historical_weather.html:390
 msgid "Thunder"
 msgstr "Tormenta"
 
-#: includes/historical_weather.html:393
+#: includes/historical_weather.html:391
 msgid "Tornado"
 msgstr "Tornado"
 
-#: includes/historical_weather.html:393
+#: includes/historical_weather.html:391
 msgid "Rain"
 msgstr "Lluvia"
 
-#: includes/historical_weather.html:393
+#: includes/historical_weather.html:391
 msgid "Snow"
 msgstr "Nieve"
 
-#: includes/historical_weather.html:394
+#: includes/historical_weather.html:392
 msgid "day"
 msgstr "día"
 
-#: includes/historical_weather.html:394
+#: includes/historical_weather.html:392
 msgid "days"
 msgstr "días"
 
@@ -2487,1408 +2471,1439 @@ msgstr ""
 "Condiciones actuales y previsión meteorológica: <a href=\"https://"
 "openweathermap.org/\" target=\"_blank\">OpenWeatherMap</a>."
 
-#: web/settings.py:104
+#: web/settings.py:112
 msgid "English"
 msgstr "Inglés"
 
-#: web/settings.py:105
+#: web/settings.py:113
 msgid "Spanish"
 msgstr "Español"
 
-msgid ""
-"<p class=\"mb-2\"> <strong>Disciplined</strong> and <strong>hard-working</"
-"strong>. I always try to make <strong>quality</strong> part of the DNA of "
-"the product. </p> <p class=\"mb-2\"> I can design <strong>web pages</"
-"strong> as well as implement the <strong>core of a system</strong> (as "
-"long as there is a cup of hot coffee by my side!). </p> <p class="
-"\"mb-2\"> In my spare time, I enjoy <strong>mountain biking</strong> and "
-"<strong>martial arts</strong>. </p>"
-msgstr ""
-"<p class=\"mb-2\"> <strong>Disciplinado</strong> y <strong>trabajador</"
-"strong>. Siempre intento conseguir que la <strong>calidad</strong> sea "
-"parte del ADN del producto. </p> <p class=\"mb-2\"> Puedo diseñar "
-"<strong>páginas web</strong> como implementar el <strong>núcleo de un "
-"sistema</strong> (siempre que haya una taza de café caliente a mi lado!). "
-"</p> <p class=\"mb-2\"> En mi tiempo libre, disfruto practicando "
-"<strong>mountain bike</strong> y <strong>artes marciales</strong>. </p>"
+#~ msgid "Roles"
+#~ msgstr "Roles"
+
+#~ msgid ""
+#~ "<p class=\"card-text text-justify\"> The <strong>University of A Coruña</"
+#~ "strong> was founded in 1989. Is a Spanish public university with campus "
+#~ "in A Coruña, Ferrol and Bastiagueiro. </p> <p> Its primary objective is "
+#~ "the <strong>generation, management and dissemination</strong> of culture "
+#~ "and scientific, technological and professional knowledge through the "
+#~ "development of research and teaching. </p> <p> The University of A Coruña "
+#~ "explicitly expresses its <strong>commitment to the study</strong> and the "
+#~ "integral development of Galicia, its social, cultural and linguistic "
+#~ "identity, and it will promote its <strong>full integration</strong> into "
+#~ "the European Higher Education and and the projection in Latin America. </"
+#~ "p>"
+#~ msgstr ""
+#~ "<p class=\"card-text text-justify\"> La <strong>Universidad de A Coruña</"
+#~ "strong> se fundó en 1989. Es una universidad pública española con campus "
+#~ "en A Coruña, Ferrol y Bastiagueiro. </p> <p> Su finalidad esencial es "
+#~ "la<strong>generación, gestión y difusión</strong> de la cultura y el "
+#~ "conocimiento científico, tecnológico y profesional a través del "
+#~ "desarrollo de la investigación y de docencia. </p> <p> La Universidad de "
+#~ "A Coruña manifiesta explícitamente su <strong>compromiso con el estudio</"
+#~ "strong> y desarrollo integral de Galicia, singularmente de su identidad "
+#~ "social, cultural y lingüística, y asimismo promoverá su <strong>plena "
+#~ "integración</strong> en el Espacio Europeo de Enseñanza Superior y la "
+#~ "proyección en América Latina. </p>"
+
+#~ msgid "Population with access to improved drinking water source (%%)"
+#~ msgstr "Población con acceso a fuentes de agua mejoradas (%%)"
+
+#~ msgid ""
+#~ "<p class=\"mb-2\"> <strong>Disciplined</strong> and <strong>hard-working</"
+#~ "strong>. I always try to make <strong>quality</strong> part of the DNA of "
+#~ "the product. </p> <p class=\"mb-2\"> I can design <strong>web pages</"
+#~ "strong> as well as implement the <strong>core of a system</strong> (as "
+#~ "long as there is a cup of hot coffee by my side!). </p> <p class="
+#~ "\"mb-2\"> In my spare time, I enjoy <strong>mountain biking</strong> and "
+#~ "<strong>martial arts</strong>. </p>"
+#~ msgstr ""
+#~ "<p class=\"mb-2\"> <strong>Disciplinado</strong> y <strong>trabajador</"
+#~ "strong>. Siempre intento conseguir que la <strong>calidad</strong> sea "
+#~ "parte del ADN del producto. </p> <p class=\"mb-2\"> Puedo diseñar "
+#~ "<strong>páginas web</strong> como implementar el <strong>núcleo de un "
+#~ "sistema</strong> (siempre que haya una taza de café caliente a mi lado!). "
+#~ "</p> <p class=\"mb-2\"> En mi tiempo libre, disfruto practicando "
+#~ "<strong>mountain bike</strong> y <strong>artes marciales</strong>. </p>"
+
+#~ msgid "From"
+#~ msgstr "Desde"
+
+#~ msgid "To"
+#~ msgstr "Hasta"
+
+#~ msgid "Urban land data is not available."
+#~ msgstr "Los datos sobre áreas urbanas no están disponibles."
+
+#~ msgid "Forest area data is not available."
+#~ msgstr "Los datos sobre áreas boscosas no están disponibles."
+
+#~ msgid "Protected areas data is not available."
+#~ msgstr "Datos sobre las áreas protegidas no están disponibles."
+
+#~ msgid "Improved water data is not available."
+#~ msgstr "Los datos sobre fuentes de agua mejoradas no están disponibles."
+
+#~ msgid "Sources"
+#~ msgstr "Fuentes"
+
+#~ msgid "Admin login"
+#~ msgstr "Administración - Iniciar sesión"
+
+#~ msgid "Organisation:"
+#~ msgstr "Organización:"
+
+#~ msgid "ACME, Inc."
+#~ msgstr "ACME, S.A."
+
+#~ msgid "This field is not required."
+#~ msgstr "Este campo no es requerido."
+
+#~ msgid ""
+#~ "If this field is included, its length must be %(min_org)s-%(max_org)s "
+#~ "characters long."
+#~ msgstr ""
+#~ "Si este campo se incluye, su longitud debe ser de %(min_org)s-%(max_org)s "
+#~ "caracteres."
+
+#~ msgid "East Asia & Pacific (excluding high income)"
+#~ msgstr "Asia oriental y el Pacífico (excluyendo niveles altos de renta)"
+
+#~ msgid "IDA total, excluding Sub-Saharan Africa"
+#~ msgstr "Países IDA, excluyendo África Subsahariana"
+
+#~ msgid ""
+#~ "IDA countries classified as fragile situations, excluding Sub-Saharan "
+#~ "Africa"
+#~ msgstr ""
+#~ "Países IDA clasificados como en situaciones frágiles, excluyendo África "
+#~ "Subsahariana"
 
-msgid "From"
-msgstr "Desde"
+#~ msgid "Non-resource rich Sub-Saharan Africa countries, of which landlocked"
+#~ msgstr "Países del África subsahariana sin recursos, sin salida al mar"
 
-msgid "To"
-msgstr "Hasta"
+#~ msgid ""
+#~ "IDA countries not classified as fragile situations, excluding Sub-Saharan "
+#~ "Africa"
+#~ msgstr ""
+#~ "Países IDA no clasificados como en situaciones frágiles, excluyendo "
+#~ "África Subsahariana"
 
-msgid "Urban land data is not available."
-msgstr "Los datos sobre áreas urbanas no están disponibles."
+#~ msgid "Non-resource rich Sub-Saharan Africa countries"
+#~ msgstr "Países del África Subsahariana pobres en recursos"
 
-msgid "Forest area data is not available."
-msgstr "Los datos sobre áreas boscosas no están disponibles."
+#~ msgid "Europe & Central Asia (excluding high income)"
+#~ msgstr "Europa y Asia Central (excluyendo niveles altos de renta)"
 
-msgid "Protected areas data is not available."
-msgstr "Datos sobre las áreas protegidas no están disponibles."
+#~ msgid "Sub-Saharan Africa excluding South Africa"
+#~ msgstr "África Subsahariana excluyendo Sudáfrica"
 
-msgid "Improved water data is not available."
-msgstr "Los datos sobre fuentes de agua mejoradas no están disponibles."
+#~ msgid "Sub-Saharan Africa excluding South Africa and Nigeria"
+#~ msgstr "África Subsahariana excluyendo Sudáfrica y Nigeria"
 
-msgid "Sources"
-msgstr "Fuentes"
+#~ msgid "Andorra"
+#~ msgstr "Andorra"
 
-msgid "Admin login"
-msgstr "Administración - Iniciar sesión"
+#~ msgid "United Arab Emirates"
+#~ msgstr "Emiratos Árabes Unidos"
 
-msgid "Organisation:"
-msgstr "Organización:"
+#~ msgid "Afghanistan"
+#~ msgstr "Afganistán"
 
-msgid "ACME, Inc."
-msgstr "ACME, S.A."
+#~ msgid "Antigua and Barbuda"
+#~ msgstr "Antigua y Barbuda"
 
-msgid "This field is not required."
-msgstr "Este campo no es requerido."
+#~ msgid "Albania"
+#~ msgstr "Albania"
 
-msgid ""
-"If this field is included, its length must be %(min_org)s-%(max_org)s "
-"characters long."
-msgstr ""
-"Si este campo se incluye, su longitud debe ser de %(min_org)s-%(max_org)s "
-"caracteres."
+#~ msgid "Armenia"
+#~ msgstr "Armenia"
 
-msgid "East Asia & Pacific (excluding high income)"
-msgstr "Asia oriental y el Pacífico (excluyendo niveles altos de renta)"
+#~ msgid "Angola"
+#~ msgstr "Angola"
 
-msgid "IDA total, excluding Sub-Saharan Africa"
-msgstr "Países IDA, excluyendo África Subsahariana"
+#~ msgid "Argentina"
+#~ msgstr "Argentina"
 
-msgid ""
-"IDA countries classified as fragile situations, excluding Sub-Saharan "
-"Africa"
-msgstr ""
-"Países IDA clasificados como en situaciones frágiles, excluyendo África "
-"Subsahariana"
+#~ msgid "American Samoa"
+#~ msgstr "Samoa Americana"
 
-msgid "Non-resource rich Sub-Saharan Africa countries, of which landlocked"
-msgstr "Países del África subsahariana sin recursos, sin salida al mar"
+#~ msgid "Austria"
+#~ msgstr "Austria"
 
-msgid ""
-"IDA countries not classified as fragile situations, excluding Sub-Saharan "
-"Africa"
-msgstr ""
-"Países IDA no clasificados como en situaciones frágiles, excluyendo "
-"África Subsahariana"
+#~ msgid "Australia"
+#~ msgstr "Australia"
 
-msgid "Non-resource rich Sub-Saharan Africa countries"
-msgstr "Países del África Subsahariana pobres en recursos"
+#~ msgid "Aruba"
+#~ msgstr "Aruba"
 
-msgid "Europe & Central Asia (excluding high income)"
-msgstr "Europa y Asia Central (excluyendo niveles altos de renta)"
+#~ msgid "Azerbaijan"
+#~ msgstr "Azerbaiyán"
 
-msgid "Sub-Saharan Africa excluding South Africa"
-msgstr "África Subsahariana excluyendo Sudáfrica"
+#~ msgid "IBRD countries classified as high income"
+#~ msgstr "Países IBRD clasificados como en nivel alto de renta"
 
-msgid "Sub-Saharan Africa excluding South Africa and Nigeria"
-msgstr "África Subsahariana excluyendo Sudáfrica y Nigeria"
+#~ msgid "Latin America & the Caribbean (IBRD-only countries)"
+#~ msgstr "América Latina y Caribe (países IBRD)"
 
-msgid "Andorra"
-msgstr "Andorra"
+#~ msgid "Middle East & North Africa (IBRD-only countries)"
+#~ msgstr "Norte de África y Medio Este (países IBRD)"
 
-msgid "United Arab Emirates"
-msgstr "Emiratos Árabes Unidos"
+#~ msgid "East Asia & Pacific (IBRD-only countries)"
+#~ msgstr "Asia oriental y Pacífico (países IBRD)"
 
-msgid "Afghanistan"
-msgstr "Afganistán"
+#~ msgid "Sub-Saharan Africa (IBRD-only countries)"
+#~ msgstr "África Subsahariana (países IBRD)"
 
-msgid "Antigua and Barbuda"
-msgstr "Antigua y Barbuda"
+#~ msgid "Europe & Central Asia (IBRD-only countries)"
+#~ msgstr "Europa y Asia Central (países IBRD)"
 
-msgid "Albania"
-msgstr "Albania"
+#~ msgid "Central Europe and the Baltics"
+#~ msgstr "Europa Central y Países Bálticos"
 
-msgid "Armenia"
-msgstr "Armenia"
+#~ msgid "Bosnia and Herzegovina"
+#~ msgstr "Bosnia y Herzegovina"
 
-msgid "Angola"
-msgstr "Angola"
+#~ msgid "Barbados"
+#~ msgstr "Barbados"
 
-msgid "Argentina"
-msgstr "Argentina"
+#~ msgid "Bangladesh"
+#~ msgstr "Bangladesh"
 
-msgid "American Samoa"
-msgstr "Samoa Americana"
+#~ msgid "Belgium"
+#~ msgstr "Bélgica"
 
-msgid "Austria"
-msgstr "Austria"
+#~ msgid "Burkina Faso"
+#~ msgstr "Burkina Faso"
 
-msgid "Australia"
-msgstr "Australia"
+#~ msgid "Bulgaria"
+#~ msgstr "Bulgaria"
 
-msgid "Aruba"
-msgstr "Aruba"
+#~ msgid "Bahrain"
+#~ msgstr "Bahréin"
 
-msgid "Azerbaijan"
-msgstr "Azerbaiyán"
+#~ msgid "Burundi"
+#~ msgstr "Burundi"
 
-msgid "IBRD countries classified as high income"
-msgstr "Países IBRD clasificados como en nivel alto de renta"
+#~ msgid "Benin"
+#~ msgstr "Benin"
 
-msgid "Latin America & the Caribbean (IBRD-only countries)"
-msgstr "América Latina y Caribe (países IBRD)"
+#~ msgid "Bermuda"
+#~ msgstr "Bermuda"
 
-msgid "Middle East & North Africa (IBRD-only countries)"
-msgstr "Norte de África y Medio Este (países IBRD)"
+#~ msgid "Brunei Darussalam"
+#~ msgstr "Brunei"
 
-msgid "East Asia & Pacific (IBRD-only countries)"
-msgstr "Asia oriental y Pacífico (países IBRD)"
+#~ msgid "Bolivia"
+#~ msgstr "Bolivia"
 
-msgid "Sub-Saharan Africa (IBRD-only countries)"
-msgstr "África Subsahariana (países IBRD)"
+#~ msgid "Brazil"
+#~ msgstr "Brasil"
 
-msgid "Europe & Central Asia (IBRD-only countries)"
-msgstr "Europa y Asia Central (países IBRD)"
+#~ msgid "Bahamas, The"
+#~ msgstr "Bahamas, Las"
 
-msgid "Central Europe and the Baltics"
-msgstr "Europa Central y Países Bálticos"
+#~ msgid "Bhutan"
+#~ msgstr "Bhutan"
 
-msgid "Bosnia and Herzegovina"
-msgstr "Bosnia y Herzegovina"
+#~ msgid "Botswana"
+#~ msgstr "Botswana"
 
-msgid "Barbados"
-msgstr "Barbados"
+#~ msgid "Belarus"
+#~ msgstr "Bielorrusia"
 
-msgid "Bangladesh"
-msgstr "Bangladesh"
+#~ msgid "Belize"
+#~ msgstr "Belice"
 
-msgid "Belgium"
-msgstr "Bélgica"
+#~ msgid "East Asia and the Pacific (IFC classification)"
+#~ msgstr "Asia oriental y Pacífico (clasificación IFC)"
 
-msgid "Burkina Faso"
-msgstr "Burkina Faso"
+#~ msgid "Europe and Central Asia (IFC classification)"
+#~ msgstr "Europa y Asia Central (clasificación IFC)"
 
-msgid "Bulgaria"
-msgstr "Bulgaria"
+#~ msgid "Latin America and the Caribbean (IFC classification)"
+#~ msgstr "América Latina y Caribe (clasificación IFC)"
 
-msgid "Bahrain"
-msgstr "Bahréin"
+#~ msgid "Middle East and North Africa (IFC classification)"
+#~ msgstr "Asia oriental y África del Norte (clasificación IFC)"
 
-msgid "Burundi"
-msgstr "Burundi"
+#~ msgid "South Asia (IFC classification)"
+#~ msgstr "Sur de Asia (clasificación IFC)"
 
-msgid "Benin"
-msgstr "Benin"
+#~ msgid "Sub-Saharan Africa (IFC classification)"
+#~ msgstr "África subsahariana (clasificación IFC)"
 
-msgid "Bermuda"
-msgstr "Bermuda"
+#~ msgid "Canada"
+#~ msgstr "Canadá"
 
-msgid "Brunei Darussalam"
-msgstr "Brunei"
+#~ msgid "Congo, Dem. Rep."
+#~ msgstr "Congo, República Democrática del"
 
-msgid "Bolivia"
-msgstr "Bolivia"
+#~ msgid "Central African Republic"
+#~ msgstr "República Centroafricana"
 
-msgid "Brazil"
-msgstr "Brasil"
+#~ msgid "Congo, Rep."
+#~ msgstr "Congo, República"
 
-msgid "Bahamas, The"
-msgstr "Bahamas, Las"
+#~ msgid "Switzerland"
+#~ msgstr "Suiza"
 
-msgid "Bhutan"
-msgstr "Bhutan"
+#~ msgid "Cote d'Ivoire"
+#~ msgstr "Costa de Marfil"
 
-msgid "Botswana"
-msgstr "Botswana"
+#~ msgid "Chile"
+#~ msgstr "Chile"
 
-msgid "Belarus"
-msgstr "Bielorrusia"
+#~ msgid "Cameroon"
+#~ msgstr "Camerún"
 
-msgid "Belize"
-msgstr "Belice"
+#~ msgid "China"
+#~ msgstr "China"
 
-msgid "East Asia and the Pacific (IFC classification)"
-msgstr "Asia oriental y Pacífico (clasificación IFC)"
+#~ msgid "Colombia"
+#~ msgstr "Colombia"
 
-msgid "Europe and Central Asia (IFC classification)"
-msgstr "Europa y Asia Central (clasificación IFC)"
+#~ msgid "Costa Rica"
+#~ msgstr "Costa Rica"
 
-msgid "Latin America and the Caribbean (IFC classification)"
-msgstr "América Latina y Caribe (clasificación IFC)"
+#~ msgid "Cuba"
+#~ msgstr "Cuba"
 
-msgid "Middle East and North Africa (IFC classification)"
-msgstr "Asia oriental y África del Norte (clasificación IFC)"
+#~ msgid "Cabo Verde"
+#~ msgstr "Cabo Verde"
 
-msgid "South Asia (IFC classification)"
-msgstr "Sur de Asia (clasificación IFC)"
+#~ msgid "Curacao"
+#~ msgstr "Curaçao"
 
-msgid "Sub-Saharan Africa (IFC classification)"
-msgstr "África subsahariana (clasificación IFC)"
+#~ msgid "Cyprus"
+#~ msgstr "Chipre"
 
-msgid "Canada"
-msgstr "Canadá"
+#~ msgid "Czech Republic"
+#~ msgstr "República Checa"
 
-msgid "Congo, Dem. Rep."
-msgstr "Congo, República Democrática del"
+#~ msgid "Latin America & the Caribbean (IDA-eligible countries)"
+#~ msgstr "América Latina y Caribe (países elegibles para IDA)"
 
-msgid "Central African Republic"
-msgstr "República Centroafricana"
+#~ msgid "Middle East & North Africa (IDA-eligible countries)"
+#~ msgstr "Norte de África y Medio Este (países elegibles para IDA)"
 
-msgid "Congo, Rep."
-msgstr "Congo, República"
+#~ msgid "East Asia & Pacific (IDA-eligible countries)"
+#~ msgstr "Asia oriental y Pacífico (países elegibles para IDA)"
 
-msgid "Switzerland"
-msgstr "Suiza"
+#~ msgid "South Asia (IDA-eligible countries)"
+#~ msgstr "Sur de Asia (países elegibles para IDA)"
 
-msgid "Cote d'Ivoire"
-msgstr "Costa de Marfil"
+#~ msgid "Sub-Saharan Africa (IDA-eligible countries)"
+#~ msgstr "África subsahariana (países elegibles para IDA)"
 
-msgid "Chile"
-msgstr "Chile"
+#~ msgid "Europe & Central Asia (IDA-eligible countries)"
+#~ msgstr "Europa y Asia Central (países elegibles para IDA)"
 
-msgid "Cameroon"
-msgstr "Camerún"
+#~ msgid "IDA countries classified as Fragile Situations"
+#~ msgstr "Países IDA clasificados como en Situación Frágil"
 
-msgid "China"
-msgstr "China"
+#~ msgid "IDA countries not classified as Fragile Situations"
+#~ msgstr "Países IDA no clasificados como en Situación Frágil"
 
-msgid "Colombia"
-msgstr "Colombia"
+#~ msgid "Germany"
+#~ msgstr "Alemania"
 
-msgid "Costa Rica"
-msgstr "Costa Rica"
+#~ msgid "Djibouti"
+#~ msgstr "Djibouti"
 
-msgid "Cuba"
-msgstr "Cuba"
+#~ msgid "Denmark"
+#~ msgstr "Dinamarca"
 
-msgid "Cabo Verde"
-msgstr "Cabo Verde"
+#~ msgid "Dominica"
+#~ msgstr "Dominica"
 
-msgid "Curacao"
-msgstr "Curaçao"
+#~ msgid "Dominican Republic"
+#~ msgstr "República Dominicana"
 
-msgid "Cyprus"
-msgstr "Chipre"
+#~ msgid "Algeria"
+#~ msgstr "Algeria"
 
-msgid "Czech Republic"
-msgstr "República Checa"
+#~ msgid "Ecuador"
+#~ msgstr "Ecuador"
 
-msgid "Latin America & the Caribbean (IDA-eligible countries)"
-msgstr "América Latina y Caribe (países elegibles para IDA)"
+#~ msgid "Estonia"
+#~ msgstr "Estonia"
 
-msgid "Middle East & North Africa (IDA-eligible countries)"
-msgstr "Norte de África y Medio Este (países elegibles para IDA)"
+#~ msgid "Egypt, Arab Rep."
+#~ msgstr "Egipto"
 
-msgid "East Asia & Pacific (IDA-eligible countries)"
-msgstr "Asia oriental y Pacífico (países elegibles para IDA)"
+#~ msgid "Eritrea"
+#~ msgstr "Eritrea"
 
-msgid "South Asia (IDA-eligible countries)"
-msgstr "Sur de Asia (países elegibles para IDA)"
+#~ msgid "Spain"
+#~ msgstr "España"
 
-msgid "Sub-Saharan Africa (IDA-eligible countries)"
-msgstr "África subsahariana (países elegibles para IDA)"
+#~ msgid "Ethiopia"
+#~ msgstr "Etiopía"
 
-msgid "Europe & Central Asia (IDA-eligible countries)"
-msgstr "Europa y Asia Central (países elegibles para IDA)"
+#~ msgid "Fragile and conflict affected situations"
+#~ msgstr "Situaciones frágiles y/o afectadas por conflictos"
 
-msgid "IDA countries classified as Fragile Situations"
-msgstr "Países IDA clasificados como en Situación Frágil"
+#~ msgid "IDA countries in Sub-Saharan Africa classified as fragile situations"
+#~ msgstr ""
+#~ "Países IDA en África subsahariana clasificados como en situación frágil"
 
-msgid "IDA countries not classified as Fragile Situations"
-msgstr "Países IDA no clasificados como en Situación Frágil"
+#~ msgid "Finland"
+#~ msgstr "Finlandia"
 
-msgid "Germany"
-msgstr "Alemania"
+#~ msgid "Fiji"
+#~ msgstr "Fiyi"
 
-msgid "Djibouti"
-msgstr "Djibouti"
+#~ msgid "Micronesia, Fed. Sts."
+#~ msgstr "Micronesia, Estados Federados de"
 
-msgid "Denmark"
-msgstr "Dinamarca"
+#~ msgid "Faroe Islands"
+#~ msgstr "Islas Faroe"
 
-msgid "Dominica"
-msgstr "Dominica"
+#~ msgid "France"
+#~ msgstr "Francia"
 
-msgid "Dominican Republic"
-msgstr "República Dominicana"
+#~ msgid "Gabon"
+#~ msgstr "Gabón"
 
-msgid "Algeria"
-msgstr "Algeria"
+#~ msgid "United Kingdom"
+#~ msgstr "Reino Unido"
 
-msgid "Ecuador"
-msgstr "Ecuador"
+#~ msgid "Grenada"
+#~ msgstr "Granada"
 
-msgid "Estonia"
-msgstr "Estonia"
+#~ msgid "Georgia"
+#~ msgstr "Georgia"
 
-msgid "Egypt, Arab Rep."
-msgstr "Egipto"
+#~ msgid "Ghana"
+#~ msgstr "Ghana"
 
-msgid "Eritrea"
-msgstr "Eritrea"
+#~ msgid "Gibraltar"
+#~ msgstr "Gibraltar"
 
-msgid "Spain"
-msgstr "España"
+#~ msgid "Greenland"
+#~ msgstr "Groenlandia"
 
-msgid "Ethiopia"
-msgstr "Etiopía"
+#~ msgid "Gambia, The"
+#~ msgstr "Gambia"
 
-msgid "Fragile and conflict affected situations"
-msgstr "Situaciones frágiles y/o afectadas por conflictos"
+#~ msgid "Guinea"
+#~ msgstr "Guinea"
 
-msgid "IDA countries in Sub-Saharan Africa classified as fragile situations"
-msgstr ""
-"Países IDA en África subsahariana clasificados como en situación frágil"
+#~ msgid "Equatorial Guinea"
+#~ msgstr "Guinea Ecuatorial"
 
-msgid "Finland"
-msgstr "Finlandia"
+#~ msgid "Greece"
+#~ msgstr "Grecia"
 
-msgid "Fiji"
-msgstr "Fiyi"
+#~ msgid "Guatemala"
+#~ msgstr "Guatemala"
 
-msgid "Micronesia, Fed. Sts."
-msgstr "Micronesia, Estados Federados de"
+#~ msgid "Guam"
+#~ msgstr "Guam"
 
-msgid "Faroe Islands"
-msgstr "Islas Faroe"
+#~ msgid "Guinea-Bissau"
+#~ msgstr "Ginea-Bissau"
 
-msgid "France"
-msgstr "Francia"
+#~ msgid "Guyana"
+#~ msgstr "Guayana"
 
-msgid "Gabon"
-msgstr "Gabón"
+#~ msgid "Hong Kong SAR, China"
+#~ msgstr "Hong Kong, Región Administrativa Especial, China"
 
-msgid "United Kingdom"
-msgstr "Reino Unido"
+#~ msgid "Honduras"
+#~ msgstr "Honduras"
 
-msgid "Grenada"
-msgstr "Granada"
+#~ msgid "Croatia"
+#~ msgstr "Croacia"
 
-msgid "Georgia"
-msgstr "Georgia"
+#~ msgid "Haiti"
+#~ msgstr "Haití"
 
-msgid "Ghana"
-msgstr "Ghana"
+#~ msgid "Hungary"
+#~ msgstr "Hungría"
 
-msgid "Gibraltar"
-msgstr "Gibraltar"
+#~ msgid "Indonesia"
+#~ msgstr "Indonesia"
 
-msgid "Greenland"
-msgstr "Groenlandia"
+#~ msgid "Ireland"
+#~ msgstr "Irlanda"
 
-msgid "Gambia, The"
-msgstr "Gambia"
+#~ msgid "Israel"
+#~ msgstr "Israel"
 
-msgid "Guinea"
-msgstr "Guinea"
+#~ msgid "Isle of Man"
+#~ msgstr "Isla de Man"
 
-msgid "Equatorial Guinea"
-msgstr "Guinea Ecuatorial"
+#~ msgid "India"
+#~ msgstr "India"
 
-msgid "Greece"
-msgstr "Grecia"
+#~ msgid "Iraq"
+#~ msgstr "Iraq"
 
-msgid "Guatemala"
-msgstr "Guatemala"
+#~ msgid "Iran, Islamic Rep."
+#~ msgstr "Irán, República Islámica de"
 
-msgid "Guam"
-msgstr "Guam"
+#~ msgid "Iceland"
+#~ msgstr "Islandia"
 
-msgid "Guinea-Bissau"
-msgstr "Ginea-Bissau"
+#~ msgid "Italy"
+#~ msgstr "Italia"
 
-msgid "Guyana"
-msgstr "Guayana"
+#~ msgid "Channel Islands"
+#~ msgstr "Islas del Canal"
 
-msgid "Hong Kong SAR, China"
-msgstr "Hong Kong, Región Administrativa Especial, China"
+#~ msgid "Jamaica"
+#~ msgstr "Jamaica"
 
-msgid "Honduras"
-msgstr "Honduras"
+#~ msgid "Jordan"
+#~ msgstr "Jordania"
 
-msgid "Croatia"
-msgstr "Croacia"
+#~ msgid "Japan"
+#~ msgstr "Japón"
 
-msgid "Haiti"
-msgstr "Haití"
+#~ msgid "Kenya"
+#~ msgstr "Kenia"
 
-msgid "Hungary"
-msgstr "Hungría"
+#~ msgid "Kyrgyz Republic"
+#~ msgstr "Kirguiza, República"
 
-msgid "Indonesia"
-msgstr "Indonesia"
+#~ msgid "Cambodia"
+#~ msgstr "Camboya"
 
-msgid "Ireland"
-msgstr "Irlanda"
+#~ msgid "Kiribati"
+#~ msgstr "Kiribati"
 
-msgid "Israel"
-msgstr "Israel"
+#~ msgid "Comoros"
+#~ msgstr "Comores"
 
-msgid "Isle of Man"
-msgstr "Isla de Man"
+#~ msgid "St. Kitts and Nevis"
+#~ msgstr "Saint Kitts y Nevis"
 
-msgid "India"
-msgstr "India"
+#~ msgid "Korea, Dem. People’s Rep."
+#~ msgstr "Corea del Norte"
 
-msgid "Iraq"
-msgstr "Iraq"
+#~ msgid "Korea, Rep."
+#~ msgstr "Corea del Sur"
 
-msgid "Iran, Islamic Rep."
-msgstr "Irán, República Islámica de"
+#~ msgid "Kuwait"
+#~ msgstr "Kuwait"
 
-msgid "Iceland"
-msgstr "Islandia"
+#~ msgid "Cayman Islands"
+#~ msgstr "Islas Caimán"
 
-msgid "Italy"
-msgstr "Italia"
+#~ msgid "Kazakhstan"
+#~ msgstr "Kazajistán"
 
-msgid "Channel Islands"
-msgstr "Islas del Canal"
+#~ msgid "Latin America and the Caribbean"
+#~ msgstr "América Latina y Caribe"
 
-msgid "Jamaica"
-msgstr "Jamaica"
+#~ msgid "Andean Region"
+#~ msgstr "Región Andina"
 
-msgid "Jordan"
-msgstr "Jordania"
+#~ msgid "Southern Cone"
+#~ msgstr "Cono Sur"
 
-msgid "Japan"
-msgstr "Japón"
+#~ msgid "Lao PDR"
+#~ msgstr "Lao, República Democrática Popular"
 
-msgid "Kenya"
-msgstr "Kenia"
+#~ msgid "Lebanon"
+#~ msgstr "Líbano"
 
-msgid "Kyrgyz Republic"
-msgstr "Kirguiza, República"
+#~ msgid "St. Lucia"
+#~ msgstr "Santa Lucía"
 
-msgid "Cambodia"
-msgstr "Camboya"
+#~ msgid "Liechtenstein"
+#~ msgstr "Liechtenstein"
 
-msgid "Kiribati"
-msgstr "Kiribati"
+#~ msgid "Sri Lanka"
+#~ msgstr "Sri Lanka"
 
-msgid "Comoros"
-msgstr "Comores"
+#~ msgid "Liberia"
+#~ msgstr "Liberia"
 
-msgid "St. Kitts and Nevis"
-msgstr "Saint Kitts y Nevis"
+#~ msgid "Lesotho"
+#~ msgstr "Lesotho"
 
-msgid "Korea, Dem. People’s Rep."
-msgstr "Corea del Norte"
+#~ msgid "Lithuania"
+#~ msgstr "Lituania"
 
-msgid "Korea, Rep."
-msgstr "Corea del Sur"
+#~ msgid "Luxembourg"
+#~ msgstr "Luxemburgo"
 
-msgid "Kuwait"
-msgstr "Kuwait"
+#~ msgid "Latvia"
+#~ msgstr "Letonia"
 
-msgid "Cayman Islands"
-msgstr "Islas Caimán"
+#~ msgid "Libya"
+#~ msgstr "Libia"
 
-msgid "Kazakhstan"
-msgstr "Kazajistán"
+#~ msgid "Middle East (developing only)"
+#~ msgstr "Medio Este (en desarrollo)"
 
-msgid "Latin America and the Caribbean"
-msgstr "América Latina y Caribe"
+#~ msgid "North Africa"
+#~ msgstr "África del Norte"
 
-msgid "Andean Region"
-msgstr "Región Andina"
+#~ msgid "Morocco"
+#~ msgstr "Marruecos"
 
-msgid "Southern Cone"
-msgstr "Cono Sur"
+#~ msgid "Monaco"
+#~ msgstr "Mónaco"
 
-msgid "Lao PDR"
-msgstr "Lao, República Democrática Popular"
+#~ msgid "Moldova"
+#~ msgstr "Moldavia"
 
-msgid "Lebanon"
-msgstr "Líbano"
+#~ msgid "Montenegro"
+#~ msgstr "Montenegro"
 
-msgid "St. Lucia"
-msgstr "Santa Lucía"
+#~ msgid "St. Martin (French part)"
+#~ msgstr "San Martín (Francia)"
 
-msgid "Liechtenstein"
-msgstr "Liechtenstein"
+#~ msgid "Madagascar"
+#~ msgstr "Madagascar"
 
-msgid "Sri Lanka"
-msgstr "Sri Lanka"
+#~ msgid "Marshall Islands"
+#~ msgstr "Islas Marshall"
 
-msgid "Liberia"
-msgstr "Liberia"
+#~ msgid "Macedonia, FYR"
+#~ msgstr "Macedonia, Ex República Yugoslava de"
 
-msgid "Lesotho"
-msgstr "Lesotho"
+#~ msgid "Mali"
+#~ msgstr "Mali"
 
-msgid "Lithuania"
-msgstr "Lituania"
+#~ msgid "Myanmar"
+#~ msgstr "Myanmar"
 
-msgid "Luxembourg"
-msgstr "Luxemburgo"
+#~ msgid "Mongolia"
+#~ msgstr "Mongolia"
 
-msgid "Latvia"
-msgstr "Letonia"
+#~ msgid "Macao SAR, China"
+#~ msgstr "Macao, Región Administrativa Especial, China"
 
-msgid "Libya"
-msgstr "Libia"
+#~ msgid "Northern Mariana Islands"
+#~ msgstr "Islas Marianas del Norte"
 
-msgid "Middle East (developing only)"
-msgstr "Medio Este (en desarrollo)"
+#~ msgid "Mauritania"
+#~ msgstr "Mauritania"
 
-msgid "North Africa"
-msgstr "África del Norte"
+#~ msgid "Malta"
+#~ msgstr "Malta"
 
-msgid "Morocco"
-msgstr "Marruecos"
+#~ msgid "Mauritius"
+#~ msgstr "Mauricio"
 
-msgid "Monaco"
-msgstr "Mónaco"
+#~ msgid "Maldives"
+#~ msgstr "Maldivas"
 
-msgid "Moldova"
-msgstr "Moldavia"
+#~ msgid "Malawi"
+#~ msgstr "Malawi"
 
-msgid "Montenegro"
-msgstr "Montenegro"
+#~ msgid "Mexico"
+#~ msgstr "Méjico"
 
-msgid "St. Martin (French part)"
-msgstr "San Martín (Francia)"
+#~ msgid "Malaysia"
+#~ msgstr "Malasia"
 
-msgid "Madagascar"
-msgstr "Madagascar"
+#~ msgid "Mozambique"
+#~ msgstr "Mozambique"
 
-msgid "Marshall Islands"
-msgstr "Islas Marshall"
+#~ msgid ""
+#~ "IDA countries in Sub-Saharan Africa not classified as fragile situations"
+#~ msgstr ""
+#~ "Países IDA en África Subsahariana no clasificados como en situación frágil"
 
-msgid "Macedonia, FYR"
-msgstr "Macedonia, Ex República Yugoslava de"
+#~ msgid "Namibia"
+#~ msgstr "Namibia"
 
-msgid "Mali"
-msgstr "Mali"
+#~ msgid "New Caledonia"
+#~ msgstr "Nueva Caledonia"
 
-msgid "Myanmar"
-msgstr "Myanmar"
+#~ msgid "Niger"
+#~ msgstr "Níger"
 
-msgid "Mongolia"
-msgstr "Mongolia"
+#~ msgid "Nigeria"
+#~ msgstr "Nigeria"
 
-msgid "Macao SAR, China"
-msgstr "Macao, Región Administrativa Especial, China"
+#~ msgid "Nicaragua"
+#~ msgstr "Nicaragua"
 
-msgid "Northern Mariana Islands"
-msgstr "Islas Marianas del Norte"
+#~ msgid "Netherlands"
+#~ msgstr "Países Bajos"
 
-msgid "Mauritania"
-msgstr "Mauritania"
+#~ msgid "Norway"
+#~ msgstr "Noruega"
 
-msgid "Malta"
-msgstr "Malta"
+#~ msgid "Nepal"
+#~ msgstr "Nepal"
 
-msgid "Mauritius"
-msgstr "Mauricio"
+#~ msgid "Nauru"
+#~ msgstr "Nauru"
 
-msgid "Maldives"
-msgstr "Maldivas"
+#~ msgid "New Zealand"
+#~ msgstr "Nueva Zelanda"
 
-msgid "Malawi"
-msgstr "Malawi"
+#~ msgid "Resource rich Sub-Saharan Africa countries, of which oil exporters"
+#~ msgstr ""
+#~ "Países de África Subsahariana ricos en recursos, exportadores de petróleo"
 
-msgid "Mexico"
-msgstr "Méjico"
+#~ msgid "OECD members"
+#~ msgstr "Miembros del OECD"
 
-msgid "Malaysia"
-msgstr "Malasia"
+#~ msgid "Oman"
+#~ msgstr "Omán"
 
-msgid "Mozambique"
-msgstr "Mozambique"
+#~ msgid "Panama"
+#~ msgstr "Panamá"
 
-msgid ""
-"IDA countries in Sub-Saharan Africa not classified as fragile situations"
-msgstr ""
-"Países IDA en África Subsahariana no clasificados como en situación frágil"
+#~ msgid "Peru"
+#~ msgstr "Perú"
 
-msgid "Namibia"
-msgstr "Namibia"
+#~ msgid "French Polynesia"
+#~ msgstr "Polinesia Francesa"
 
-msgid "New Caledonia"
-msgstr "Nueva Caledonia"
+#~ msgid "Papua New Guinea"
+#~ msgstr "Papúa Nueva Guinea"
 
-msgid "Niger"
-msgstr "Níger"
+#~ msgid "Philippines"
+#~ msgstr "Filipinas"
 
-msgid "Nigeria"
-msgstr "Nigeria"
+#~ msgid "Pakistan"
+#~ msgstr "Pakistán"
 
-msgid "Nicaragua"
-msgstr "Nicaragua"
+#~ msgid "Poland"
+#~ msgstr "Polonia"
 
-msgid "Netherlands"
-msgstr "Países Bajos"
+#~ msgid "Puerto Rico"
+#~ msgstr "Puerto Rico"
 
-msgid "Norway"
-msgstr "Noruega"
+#~ msgid "West Bank and Gaza"
+#~ msgstr "Cisjordania y Gaza"
 
-msgid "Nepal"
-msgstr "Nepal"
+#~ msgid "Portugal"
+#~ msgstr "Portugal"
 
-msgid "Nauru"
-msgstr "Nauru"
+#~ msgid "Palau"
+#~ msgstr "Palau"
 
-msgid "New Zealand"
-msgstr "Nueva Zelanda"
+#~ msgid "Paraguay"
+#~ msgstr "Paraguay"
 
-msgid "Resource rich Sub-Saharan Africa countries, of which oil exporters"
-msgstr ""
-"Países de África Subsahariana ricos en recursos, exportadores de petróleo"
+#~ msgid "Qatar"
+#~ msgstr "Qatar"
 
-msgid "OECD members"
-msgstr "Miembros del OECD"
+#~ msgid "Resource rich Sub-Saharan Africa countries"
+#~ msgstr "Países de África Subsahariana ricos en recursos"
 
-msgid "Oman"
-msgstr "Omán"
+#~ msgid "Romania"
+#~ msgstr "Rumanía"
 
-msgid "Panama"
-msgstr "Panamá"
+#~ msgid "Serbia"
+#~ msgstr "Serbia"
 
-msgid "Peru"
-msgstr "Perú"
+#~ msgid "Russian Federation"
+#~ msgstr "Rusia"
 
-msgid "French Polynesia"
-msgstr "Polinesia Francesa"
+#~ msgid "Rwanda"
+#~ msgstr "Ruanda"
 
-msgid "Papua New Guinea"
-msgstr "Papúa Nueva Guinea"
+#~ msgid "Small states"
+#~ msgstr "Estados pequeños"
 
-msgid "Philippines"
-msgstr "Filipinas"
+#~ msgid "Pacific island small states"
+#~ msgstr "Estados pequeños (Islas del Pacífico)"
 
-msgid "Pakistan"
-msgstr "Pakistán"
+#~ msgid "Caribbean small states"
+#~ msgstr "Estados pequeños (Caribe)"
 
-msgid "Poland"
-msgstr "Polonia"
+#~ msgid "Other small states"
+#~ msgstr "Otros Estados pequeños"
 
-msgid "Puerto Rico"
-msgstr "Puerto Rico"
+#~ msgid "Saudi Arabia"
+#~ msgstr "Arabia Saudí"
 
-msgid "West Bank and Gaza"
-msgstr "Cisjordania y Gaza"
+#~ msgid "Solomon Islands"
+#~ msgstr "Islas Salomón"
 
-msgid "Portugal"
-msgstr "Portugal"
+#~ msgid "Seychelles"
+#~ msgstr "Seychelles"
 
-msgid "Palau"
-msgstr "Palau"
+#~ msgid "Sudan"
+#~ msgstr "Sudán"
 
-msgid "Paraguay"
-msgstr "Paraguay"
+#~ msgid "Sweden"
+#~ msgstr "Suecia"
 
-msgid "Qatar"
-msgstr "Qatar"
+#~ msgid "Singapore"
+#~ msgstr "Singapur"
 
-msgid "Resource rich Sub-Saharan Africa countries"
-msgstr "Países de África Subsahariana ricos en recursos"
+#~ msgid "Slovenia"
+#~ msgstr "Eslovenia"
 
-msgid "Romania"
-msgstr "Rumanía"
+#~ msgid "Slovak Republic"
+#~ msgstr "Eslovaquia"
 
-msgid "Serbia"
-msgstr "Serbia"
+#~ msgid "Sierra Leone"
+#~ msgstr "Sierra Leona"
 
-msgid "Russian Federation"
-msgstr "Rusia"
+#~ msgid "San Marino"
+#~ msgstr "San Marino"
 
-msgid "Rwanda"
-msgstr "Ruanda"
+#~ msgid "Senegal"
+#~ msgstr "Senegal"
 
-msgid "Small states"
-msgstr "Estados pequeños"
+#~ msgid "Somalia"
+#~ msgstr "Somalia"
 
-msgid "Pacific island small states"
-msgstr "Estados pequeños (Islas del Pacífico)"
+#~ msgid "Suriname"
+#~ msgstr "Suriname"
 
-msgid "Caribbean small states"
-msgstr "Estados pequeños (Caribe)"
+#~ msgid "South Sudan"
+#~ msgstr "Sudán del Sur"
 
-msgid "Other small states"
-msgstr "Otros Estados pequeños"
+#~ msgid "Sao Tome and Principe"
+#~ msgstr "Santo Tomé y Príncipe"
 
-msgid "Saudi Arabia"
-msgstr "Arabia Saudí"
+#~ msgid "El Salvador"
+#~ msgstr "El Salvador"
 
-msgid "Solomon Islands"
-msgstr "Islas Salomón"
+#~ msgid "Sint Maarten (Dutch part)"
+#~ msgstr "San Martín (Alemania)"
 
-msgid "Seychelles"
-msgstr "Seychelles"
+#~ msgid "Syrian Arab Republic"
+#~ msgstr "Siria"
 
-msgid "Sudan"
-msgstr "Sudán"
+#~ msgid "Swaziland"
+#~ msgstr "Swazilandia"
 
-msgid "Sweden"
-msgstr "Suecia"
+#~ msgid "Latin America & the Caribbean (IDA & IBRD countries)"
+#~ msgstr "América Latina y Caribe (países IDA y IBRD)"
 
-msgid "Singapore"
-msgstr "Singapur"
+#~ msgid "Middle East & North Africa (IDA & IBRD countries)"
+#~ msgstr "Norte de África y Medio Este (países IDA y IBRD)"
 
-msgid "Slovenia"
-msgstr "Eslovenia"
+#~ msgid "East Asia & Pacific (IDA & IBRD countries)"
+#~ msgstr "Asia oriental y Pacífico (países IDA y IBRD)"
 
-msgid "Slovak Republic"
-msgstr "Eslovaquia"
+#~ msgid "South Asia (IDA & IBRD)"
+#~ msgstr "Sur de Asia (países IDA y IBRD)"
 
-msgid "Sierra Leone"
-msgstr "Sierra Leona"
+#~ msgid "Sub-Saharan Africa (IDA & IBRD countries)"
+#~ msgstr "África Subsahariana (países IDA y IBRD)"
 
-msgid "San Marino"
-msgstr "San Marino"
+#~ msgid "Europe & Central Asia (IDA & IBRD countries)"
+#~ msgstr "Europa y Asia Central (países IDA y IBRD)"
 
-msgid "Senegal"
-msgstr "Senegal"
+#~ msgid "Turks and Caicos Islands"
+#~ msgstr "Islas Turcas y Caicos"
 
-msgid "Somalia"
-msgstr "Somalia"
+#~ msgid "Chad"
+#~ msgstr "Chad"
 
-msgid "Suriname"
-msgstr "Suriname"
+#~ msgid "Togo"
+#~ msgstr "Togo"
 
-msgid "South Sudan"
-msgstr "Sudán del Sur"
+#~ msgid "Thailand"
+#~ msgstr "Tailandia"
 
-msgid "Sao Tome and Principe"
-msgstr "Santo Tomé y Príncipe"
+#~ msgid "Tajikistan"
+#~ msgstr "Tayikistán"
 
-msgid "El Salvador"
-msgstr "El Salvador"
+#~ msgid "Timor-Leste"
+#~ msgstr "Timor Oriental"
 
-msgid "Sint Maarten (Dutch part)"
-msgstr "San Martín (Alemania)"
+#~ msgid "Turkmenistan"
+#~ msgstr "Turkmenistán"
 
-msgid "Syrian Arab Republic"
-msgstr "Siria"
+#~ msgid "Tunisia"
+#~ msgstr "Túnez"
 
-msgid "Swaziland"
-msgstr "Swazilandia"
+#~ msgid "Tonga"
+#~ msgstr "Tonga"
 
-msgid "Latin America & the Caribbean (IDA & IBRD countries)"
-msgstr "América Latina y Caribe (países IDA y IBRD)"
+#~ msgid "Turkey"
+#~ msgstr "Turquía"
 
-msgid "Middle East & North Africa (IDA & IBRD countries)"
-msgstr "Norte de África y Medio Este (países IDA y IBRD)"
+#~ msgid "Trinidad and Tobago"
+#~ msgstr "Trinidad y Tobago"
 
-msgid "East Asia & Pacific (IDA & IBRD countries)"
-msgstr "Asia oriental y Pacífico (países IDA y IBRD)"
+#~ msgid "Tuvalu"
+#~ msgstr "Tuvalu"
 
-msgid "South Asia (IDA & IBRD)"
-msgstr "Sur de Asia (países IDA y IBRD)"
+#~ msgid "Taiwan, China"
+#~ msgstr "Taiwán"
 
-msgid "Sub-Saharan Africa (IDA & IBRD countries)"
-msgstr "África Subsahariana (países IDA y IBRD)"
+#~ msgid "Tanzania"
+#~ msgstr "Tanzania"
 
-msgid "Europe & Central Asia (IDA & IBRD countries)"
-msgstr "Europa y Asia Central (países IDA y IBRD)"
+#~ msgid "Ukraine"
+#~ msgstr "Ucrania"
 
-msgid "Turks and Caicos Islands"
-msgstr "Islas Turcas y Caicos"
+#~ msgid "Uganda"
+#~ msgstr "Uganda"
 
-msgid "Chad"
-msgstr "Chad"
+#~ msgid "United States"
+#~ msgstr "Estados Unidos"
 
-msgid "Togo"
-msgstr "Togo"
+#~ msgid "Uruguay"
+#~ msgstr "Uruguay"
 
-msgid "Thailand"
-msgstr "Tailandia"
+#~ msgid "Uzbekistan"
+#~ msgstr "Ubezkistan"
 
-msgid "Tajikistan"
-msgstr "Tayikistán"
+#~ msgid "Pre-demographic dividend"
+#~ msgstr "Dividendo pre-demográfico"
 
-msgid "Timor-Leste"
-msgstr "Timor Oriental"
+#~ msgid "Early-demographic dividend"
+#~ msgstr "Dividendo demográfico temprano"
 
-msgid "Turkmenistan"
-msgstr "Turkmenistán"
+#~ msgid "Late-demographic dividend"
+#~ msgstr "Dividendo demográfico tardío"
 
-msgid "Tunisia"
-msgstr "Túnez"
+#~ msgid "Post-demographic dividend"
+#~ msgstr "Dividendo post-demográfico"
 
-msgid "Tonga"
-msgstr "Tonga"
+#~ msgid "St. Vincent and the Grenadines"
+#~ msgstr "San Vicente y las Granadina"
 
-msgid "Turkey"
-msgstr "Turquía"
+#~ msgid "Venezuela, RB"
+#~ msgstr "Venezuela"
 
-msgid "Trinidad and Tobago"
-msgstr "Trinidad y Tobago"
+#~ msgid "British Virgin Islands"
+#~ msgstr "Islas Vírgenes (Reino Unido)"
 
-msgid "Tuvalu"
-msgstr "Tuvalu"
+#~ msgid "Virgin Islands (U.S.)"
+#~ msgstr "Islas Vírgenes (Estados Unidos)"
 
-msgid "Taiwan, China"
-msgstr "Taiwán"
+#~ msgid "Vietnam"
+#~ msgstr "Vietman"
 
-msgid "Tanzania"
-msgstr "Tanzania"
+#~ msgid "Vanuatu"
+#~ msgstr "Vanuatu"
 
-msgid "Ukraine"
-msgstr "Ucrania"
+#~ msgid "Samoa"
+#~ msgstr "Samoa"
 
-msgid "Uganda"
-msgstr "Uganda"
+#~ msgid "Heavily indebted poor countries (HIPC)"
+#~ msgstr "Países pobres altamente endeudados"
 
-msgid "United States"
-msgstr "Estados Unidos"
+#~ msgid "IBRD only"
+#~ msgstr "IRBD"
 
-msgid "Uruguay"
-msgstr "Uruguay"
+#~ msgid "IDA total"
+#~ msgstr "IDA (total)"
 
-msgid "Uzbekistan"
-msgstr "Ubezkistan"
+#~ msgid "IDA blend"
+#~ msgstr "IDA (mezcla)"
 
-msgid "Pre-demographic dividend"
-msgstr "Dividendo pre-demográfico"
+#~ msgid "IDA only"
+#~ msgstr "IDA"
 
-msgid "Early-demographic dividend"
-msgstr "Dividendo demográfico temprano"
+#~ msgid "Latin America & Caribbean (excluding high income)"
+#~ msgstr "América Latina y Caribe (excluyendo niveles altos de renta)"
 
-msgid "Late-demographic dividend"
-msgstr "Dividendo demográfico tardío"
+#~ msgid "Kosovo"
+#~ msgstr "Kosovo"
 
-msgid "Post-demographic dividend"
-msgstr "Dividendo post-demográfico"
+#~ msgid "Least developed countries: UN classification"
+#~ msgstr "Países menos desarrollados: clasificación UN"
 
-msgid "St. Vincent and the Grenadines"
-msgstr "San Vicente y las Granadina"
+#~ msgid "Middle East & North Africa (excluding high income)"
+#~ msgstr "Norte de África y Medio Este (excluyendo niveles altos de renta)"
 
-msgid "Venezuela, RB"
-msgstr "Venezuela"
+#~ msgid "Not classified"
+#~ msgstr "Sin clasificar"
 
-msgid "British Virgin Islands"
-msgstr "Islas Vírgenes (Reino Unido)"
+#~ msgid "Yemen, Rep."
+#~ msgstr "Yemen"
 
-msgid "Virgin Islands (U.S.)"
-msgstr "Islas Vírgenes (Estados Unidos)"
+#~ msgid "South Africa"
+#~ msgstr "Sudáfrica"
 
-msgid "Vietnam"
-msgstr "Vietman"
+#~ msgid "IBRD, including blend"
+#~ msgstr "IRBD (sin mezclar)"
 
-msgid "Vanuatu"
-msgstr "Vanuatu"
+#~ msgid "Sub-Saharan Africa (excluding high income)"
+#~ msgstr "África subsahariana (excluyendo niveles altos de renta)"
 
-msgid "Samoa"
-msgstr "Samoa"
+#~ msgid "Zambia"
+#~ msgstr "Zambia"
 
-msgid "Heavily indebted poor countries (HIPC)"
-msgstr "Países pobres altamente endeudados"
+#~ msgid "IDA & IBRD total"
+#~ msgstr "IDA y IBRD (total)"
 
-msgid "IBRD only"
-msgstr "IRBD"
-
-msgid "IDA total"
-msgstr "IDA (total)"
-
-msgid "IDA blend"
-msgstr "IDA (mezcla)"
-
-msgid "IDA only"
-msgstr "IDA"
-
-msgid "Latin America & Caribbean (excluding high income)"
-msgstr "América Latina y Caribe (excluyendo niveles altos de renta)"
-
-msgid "Kosovo"
-msgstr "Kosovo"
-
-msgid "Least developed countries: UN classification"
-msgstr "Países menos desarrollados: clasificación UN"
-
-msgid "Middle East & North Africa (excluding high income)"
-msgstr "Norte de África y Medio Este (excluyendo niveles altos de renta)"
-
-msgid "Not classified"
-msgstr "Sin clasificar"
-
-msgid "Yemen, Rep."
-msgstr "Yemen"
-
-msgid "South Africa"
-msgstr "Sudáfrica"
-
-msgid "IBRD, including blend"
-msgstr "IRBD (sin mezclar)"
-
-msgid "Sub-Saharan Africa (excluding high income)"
-msgstr "África subsahariana (excluyendo niveles altos de renta)"
-
-msgid "Zambia"
-msgstr "Zambia"
-
-msgid "IDA & IBRD total"
-msgstr "IDA y IBRD (total)"
-
-msgid "Zimbabwe"
-msgstr "Zimbabue"
+#~ msgid "Zimbabwe"
+#~ msgstr "Zimbabue"
 
 # Income levels
-msgid "Aggregates"
-msgstr "Agregaciones"
+#~ msgid "Aggregates"
+#~ msgstr "Agregaciones"
 
 # Weather types
-msgid "Clear sky"
-msgstr "Despejado"
+#~ msgid "Clear sky"
+#~ msgstr "Despejado"
 
-msgid "Scattered clouds"
-msgstr "Nubes dispersas"
+#~ msgid "Scattered clouds"
+#~ msgstr "Nubes dispersas"
 
-msgid "Heavy intensity drizzle"
-msgstr "Llovizna de alta intensidad"
+#~ msgid "Heavy intensity drizzle"
+#~ msgstr "Llovizna de alta intensidad"
 
-msgid "Windy"
-msgstr "Viento"
+#~ msgid "Windy"
+#~ msgstr "Viento"
 
-msgid "Heavy shower snow"
-msgstr "Fuertes nevadas"
+#~ msgid "Heavy shower snow"
+#~ msgstr "Fuertes nevadas"
 
-msgid "Thunderstom with light rain"
-msgstr "Tormenta con lluvia ligera"
+#~ msgid "Thunderstom with light rain"
+#~ msgstr "Tormenta con lluvia ligera"
 
-msgid "Severe gale"
-msgstr "Vendaval severo"
+#~ msgid "Severe gale"
+#~ msgstr "Vendaval severo"
 
-msgid "Drizzle"
-msgstr "Llovizna"
+#~ msgid "Drizzle"
+#~ msgstr "Llovizna"
 
-msgid "Light rain and snow"
-msgstr "Lluvia ligera y nieve"
+#~ msgid "Light rain and snow"
+#~ msgstr "Lluvia ligera y nieve"
 
-msgid "Light intensity shower rain"
-msgstr "Aguacero ligero"
+#~ msgid "Light intensity shower rain"
+#~ msgstr "Aguacero ligero"
 
-msgid "Light intensity drizzle"
-msgstr "Llovizna ligera"
+#~ msgid "Light intensity drizzle"
+#~ msgstr "Llovizna ligera"
 
-msgid "Thunderstom with rain"
-msgstr "Tormenta con lluvia"
+#~ msgid "Thunderstom with rain"
+#~ msgstr "Tormenta con lluvia"
 
-msgid "Light snow"
-msgstr "Nieve ligera"
+#~ msgid "Light snow"
+#~ msgstr "Nieve ligera"
 
-msgid "Shower rain"
-msgstr "Aguacero"
+#~ msgid "Shower rain"
+#~ msgstr "Aguacero"
 
-msgid "Light intensity drizzle rail"
-msgstr "Llovizna ligera"
+#~ msgid "Light intensity drizzle rail"
+#~ msgstr "Llovizna ligera"
 
-msgid "Light breeze"
-msgstr "Brisa ligera"
+#~ msgid "Light breeze"
+#~ msgstr "Brisa ligera"
 
-msgid "Overcast clouds"
-msgstr "Cubierto"
+#~ msgid "Overcast clouds"
+#~ msgstr "Cubierto"
 
-msgid "Thunderstorm with light drizzle"
-msgstr "Tormenta con llovizna ligera"
+#~ msgid "Thunderstorm with light drizzle"
+#~ msgstr "Tormenta con llovizna ligera"
 
-msgid "Dust"
-msgstr "Polvo"
+#~ msgid "Dust"
+#~ msgstr "Polvo"
 
-msgid "Hot"
-msgstr "Bochorno"
+#~ msgid "Hot"
+#~ msgstr "Bochorno"
 
-msgid "Freezing rain"
-msgstr "Lluvia helada"
+#~ msgid "Freezing rain"
+#~ msgstr "Lluvia helada"
 
-msgid "Gentle breeze"
-msgstr "Brisa generosa"
+#~ msgid "Gentle breeze"
+#~ msgstr "Brisa generosa"
 
-msgid "Cold"
-msgstr "Frío"
+#~ msgid "Cold"
+#~ msgstr "Frío"
 
-msgid "Heavy thunderstorm"
-msgstr "Fuerte tormenta"
+#~ msgid "Heavy thunderstorm"
+#~ msgstr "Fuerte tormenta"
 
-msgid "Rain and snow"
-msgstr "Lluvia y nieve"
+#~ msgid "Rain and snow"
+#~ msgstr "Lluvia y nieve"
 
-msgid "Heavy intensity drizzle rain"
-msgstr "Llovizna intensa"
+#~ msgid "Heavy intensity drizzle rain"
+#~ msgstr "Llovizna intensa"
 
-msgid "Very heavy rain"
-msgstr "Aguacero"
+#~ msgid "Very heavy rain"
+#~ msgstr "Aguacero"
 
-msgid "Tropical storm"
-msgstr "Tormenta tropical"
+#~ msgid "Tropical storm"
+#~ msgstr "Tormenta tropical"
 
-msgid "Sleet"
-msgstr "Aguanieve"
+#~ msgid "Sleet"
+#~ msgstr "Aguanieve"
 
-msgid "Heavy intensity rain"
-msgstr "Aguacero"
+#~ msgid "Heavy intensity rain"
+#~ msgstr "Aguacero"
 
-msgid "Light thunderstorm"
-msgstr "Tormenta ligera"
+#~ msgid "Light thunderstorm"
+#~ msgstr "Tormenta ligera"
 
-msgid "Fresh breeze"
-msgstr "Brisa fresca"
+#~ msgid "Fresh breeze"
+#~ msgstr "Brisa fresca"
 
-msgid "Drizzle rain"
-msgstr "Llovizna"
+#~ msgid "Drizzle rain"
+#~ msgstr "Llovizna"
 
-msgid "Hurricane"
-msgstr "Huracán"
+#~ msgid "Hurricane"
+#~ msgstr "Huracán"
 
-msgid "Few clouds"
-msgstr "Prácticamente despejado"
+#~ msgid "Few clouds"
+#~ msgstr "Prácticamente despejado"
 
-msgid "Heavy shower rain and drizzle"
-msgstr "Aguacero"
+#~ msgid "Heavy shower rain and drizzle"
+#~ msgstr "Aguacero"
 
-msgid "Ragged shower rain"
-msgstr "Lluvia a intervalos"
+#~ msgid "Ragged shower rain"
+#~ msgstr "Lluvia a intervalos"
 
-msgid "Moderate rain"
-msgstr "Lluvia moderada"
+#~ msgid "Moderate rain"
+#~ msgstr "Lluvia moderada"
 
-msgid "Shower rain and drizzle"
-msgstr "Aguacero"
+#~ msgid "Shower rain and drizzle"
+#~ msgstr "Aguacero"
 
-msgid "Gale"
-msgstr "Vendaval"
+#~ msgid "Gale"
+#~ msgstr "Vendaval"
 
-msgid "Strong breeze"
-msgstr "Brisa fuerte"
+#~ msgid "Strong breeze"
+#~ msgstr "Brisa fuerte"
 
-msgid "Haze"
-msgstr "Neblina"
+#~ msgid "Haze"
+#~ msgstr "Neblina"
 
-msgid "Moderate breeze"
-msgstr "Brisa moderada"
+#~ msgid "Moderate breeze"
+#~ msgstr "Brisa moderada"
 
-msgid "High wind, near gale"
-msgstr "Viento fuerte, casi vendaval"
+#~ msgid "High wind, near gale"
+#~ msgstr "Viento fuerte, casi vendaval"
 
-msgid "Calm"
-msgstr "Calmado"
+#~ msgid "Calm"
+#~ msgstr "Calmado"
 
-msgid "Thunderstom with heavy rain"
-msgstr "Tormenta con aguacero"
+#~ msgid "Thunderstom with heavy rain"
+#~ msgstr "Tormenta con aguacero"
 
-msgid "Storm"
-msgstr "Tormenta"
+#~ msgid "Storm"
+#~ msgstr "Tormenta"
 
-msgid "Mist"
-msgstr "Niebla"
+#~ msgid "Mist"
+#~ msgstr "Niebla"
 
-msgid "Shower snow"
-msgstr "Nieve"
+#~ msgid "Shower snow"
+#~ msgstr "Nieve"
 
-msgid "Broken clouds"
-msgstr "Nubes rotas"
+#~ msgid "Broken clouds"
+#~ msgstr "Nubes rotas"
 
-msgid "Thunderstorm with drizzle"
-msgstr "Tormenta con llovizna"
+#~ msgid "Thunderstorm with drizzle"
+#~ msgstr "Tormenta con llovizna"
 
-msgid "Ragged thunderstorm"
-msgstr "Tormenta a intervalos"
+#~ msgid "Ragged thunderstorm"
+#~ msgstr "Tormenta a intervalos"
 
-msgid "Light rain"
-msgstr "Lluvia ligera"
+#~ msgid "Light rain"
+#~ msgstr "Lluvia ligera"
 
-msgid "Volcanic ash"
-msgstr "Ceniza volcánica"
+#~ msgid "Volcanic ash"
+#~ msgstr "Ceniza volcánica"
 
-msgid "Sand"
-msgstr "Arena"
+#~ msgid "Sand"
+#~ msgstr "Arena"
 
-msgid "Sand, dust whirls"
-msgstr "Arena, remolinos de polvo"
+#~ msgid "Sand, dust whirls"
+#~ msgstr "Arena, remolinos de polvo"
 
-msgid "Thunderstorm with heavy drizzle"
-msgstr "Tormenta con llovizna intensa"
+#~ msgid "Thunderstorm with heavy drizzle"
+#~ msgstr "Tormenta con llovizna intensa"
 
-msgid "Heavy intensity shower rain"
-msgstr "Aguacero"
+#~ msgid "Heavy intensity shower rain"
+#~ msgstr "Aguacero"
 
-msgid "Squalls"
-msgstr "Chubascos"
+#~ msgid "Squalls"
+#~ msgstr "Chubascos"
 
-msgid "Heavy snow"
-msgstr "Nieve intensa"
+#~ msgid "Heavy snow"
+#~ msgstr "Nieve intensa"
 
-msgid "Violent storm"
-msgstr "Tormenta violenta"
+#~ msgid "Violent storm"
+#~ msgstr "Tormenta violenta"
 
-msgid "Shower sleet"
-msgstr "Aguanieve"
+#~ msgid "Shower sleet"
+#~ msgstr "Aguanieve"
 
-msgid "Light shower snow"
-msgstr "Nieve ligera"
+#~ msgid "Light shower snow"
+#~ msgstr "Nieve ligera"
 
-msgid "Extreme rain"
-msgstr "Lluvia extrema"
+#~ msgid "Extreme rain"
+#~ msgstr "Lluvia extrema"
 
-msgid "Shower drizzle"
-msgstr "Llovizna"
+#~ msgid "Shower drizzle"
+#~ msgstr "Llovizna"
 
-msgid "Smoke"
-msgstr "Humo"
+#~ msgid "Smoke"
+#~ msgstr "Humo"
 
 # Locations
-msgid "Dubai"
-msgstr "Dubai"
+#~ msgid "Dubai"
+#~ msgstr "Dubai"
 
-msgid "Kabul"
-msgstr "Kabul"
+#~ msgid "Kabul"
+#~ msgstr "Kabul"
 
-msgid "Buenos Aires"
-msgstr "Buenos Aires"
+#~ msgid "Buenos Aires"
+#~ msgstr "Buenos Aires"
 
-msgid "Vienna"
-msgstr "Viena"
+#~ msgid "Vienna"
+#~ msgstr "Viena"
 
-msgid "Perth"
-msgstr "Perth"
+#~ msgid "Perth"
+#~ msgstr "Perth"
 
-msgid "Brussels"
-msgstr "Bruselas"
+#~ msgid "Brussels"
+#~ msgstr "Bruselas"
 
-msgid "Brasília"
-msgstr "Brasília"
+#~ msgid "Brasília"
+#~ msgstr "Brasília"
 
-msgid "Fortaleza"
-msgstr "Fortaleza"
+#~ msgid "Fortaleza"
+#~ msgstr "Fortaleza"
 
-msgid "Rio de Janeiro"
-msgstr "Río de Janeiro"
+#~ msgid "Rio de Janeiro"
+#~ msgstr "Río de Janeiro"
 
-msgid "Vancouver"
-msgstr "Vancouver"
+#~ msgid "Vancouver"
+#~ msgstr "Vancouver"
 
-msgid "Mbandaka"
-msgstr "Mbandaka"
+#~ msgid "Mbandaka"
+#~ msgstr "Mbandaka"
 
-msgid "Santiago"
-msgstr "Santiago"
+#~ msgid "Santiago"
+#~ msgstr "Santiago"
 
-msgid "Beijing"
-msgstr "Beijing"
+#~ msgid "Beijing"
+#~ msgstr "Beijing"
 
-msgid "Bogotá"
-msgstr "Bogotá"
+#~ msgid "Bogotá"
+#~ msgstr "Bogotá"
 
-msgid "Praia"
-msgstr "Praia"
+#~ msgid "Praia"
+#~ msgstr "Praia"
 
-msgid "Berlin"
-msgstr "Berlín"
+#~ msgid "Berlin"
+#~ msgstr "Berlín"
 
-msgid "Copenhagen"
-msgstr "Copenhague"
+#~ msgid "Copenhagen"
+#~ msgstr "Copenhague"
 
-msgid "Cairo"
-msgstr "El Cairo"
+#~ msgid "Cairo"
+#~ msgstr "El Cairo"
 
-msgid "A Coruña"
-msgstr "A Coruña"
+#~ msgid "A Coruña"
+#~ msgstr "A Coruña"
 
-msgid "Barcelona"
-msgstr "Barcelona"
+#~ msgid "Barcelona"
+#~ msgstr "Barcelona"
 
-msgid "Madrid"
-msgstr "Madrid"
+#~ msgid "Madrid"
+#~ msgstr "Madrid"
 
-msgid "Sevilla"
-msgstr "Sevilla"
+#~ msgid "Sevilla"
+#~ msgstr "Sevilla"
 
-msgid "Addis Ababa"
-msgstr "Addis Abeba"
+#~ msgid "Addis Ababa"
+#~ msgstr "Addis Abeba"
 
-msgid "Helsinki"
-msgstr "Helsinki"
+#~ msgid "Helsinki"
+#~ msgstr "Helsinki"
 
-msgid "Paris"
-msgstr "París"
+#~ msgid "Paris"
+#~ msgstr "París"
 
-msgid "London"
-msgstr "Londres"
+#~ msgid "London"
+#~ msgstr "Londres"
 
-msgid "Athens"
-msgstr "Atenas"
+#~ msgid "Athens"
+#~ msgstr "Atenas"
 
-msgid "Guatemala City"
-msgstr "Guatemala"
+#~ msgid "Guatemala City"
+#~ msgstr "Guatemala"
 
-msgid "Budapest"
-msgstr "Budapest"
+#~ msgid "Budapest"
+#~ msgstr "Budapest"
 
-msgid "Dublin"
-msgstr "Dublín"
+#~ msgid "Dublin"
+#~ msgstr "Dublín"
 
-msgid "Delhi"
-msgstr "Delhi"
+#~ msgid "Delhi"
+#~ msgstr "Delhi"
 
-msgid "Indore"
-msgstr "Indore"
+#~ msgid "Indore"
+#~ msgstr "Indore"
 
-msgid "Tehran"
-msgstr "Teherán"
+#~ msgid "Tehran"
+#~ msgstr "Teherán"
 
-msgid "Rome"
-msgstr "Roma"
+#~ msgid "Rome"
+#~ msgstr "Roma"
 
-msgid "Tokyo"
-msgstr "Tokyo"
+#~ msgid "Tokyo"
+#~ msgstr "Tokyo"
 
-msgid "Nairobi"
-msgstr "Nairobi"
+#~ msgid "Nairobi"
+#~ msgstr "Nairobi"
 
-msgid "Bishkek"
-msgstr "Bishkek"
+#~ msgid "Bishkek"
+#~ msgstr "Bishkek"
 
-msgid "Pyongyang"
-msgstr "Pyongyang"
+#~ msgid "Pyongyang"
+#~ msgstr "Pyongyang"
 
-msgid "Seoul"
-msgstr "Seoul"
+#~ msgid "Seoul"
+#~ msgstr "Seoul"
 
-msgid "Astana"
-msgstr "Astaná"
+#~ msgid "Astana"
+#~ msgstr "Astaná"
 
-msgid "Oral"
-msgstr "Oral"
+#~ msgid "Oral"
+#~ msgstr "Oral"
 
-msgid "Beirut"
-msgstr "Beirut"
+#~ msgid "Beirut"
+#~ msgstr "Beirut"
 
-msgid "Marrakesh"
-msgstr "Marrakech"
+#~ msgid "Marrakesh"
+#~ msgstr "Marrakech"
 
-msgid "Antananarivo"
-msgstr "Antananarivo"
+#~ msgid "Antananarivo"
+#~ msgstr "Antananarivo"
 
-msgid "Ulan Bator"
-msgstr "Ulan Bátor"
+#~ msgid "Ulan Bator"
+#~ msgstr "Ulan Bátor"
 
-msgid "Mexico City"
-msgstr "Ciudad de Méjico"
+#~ msgid "Mexico City"
+#~ msgstr "Ciudad de Méjico"
 
-msgid "Lagos"
-msgstr "Lagos"
+#~ msgid "Lagos"
+#~ msgstr "Lagos"
 
-msgid "Amsterdam"
-msgstr "Ámsterdam"
+#~ msgid "Amsterdam"
+#~ msgstr "Ámsterdam"
 
-msgid "Oslo"
-msgstr "Oslo"
+#~ msgid "Oslo"
+#~ msgstr "Oslo"
 
-msgid "Kathmandu"
-msgstr "Kathmandú"
+#~ msgid "Kathmandu"
+#~ msgstr "Kathmandú"
 
-msgid "Wellington"
-msgstr "Wellington"
+#~ msgid "Wellington"
+#~ msgstr "Wellington"
 
-msgid "Panamá"
-msgstr "Panamá"
+#~ msgid "Panamá"
+#~ msgstr "Panamá"
 
-msgid "Cusco"
-msgstr "Cuzco"
+#~ msgid "Cusco"
+#~ msgstr "Cuzco"
 
-msgid "Port Moresby"
-msgstr "Port Moresby"
+#~ msgid "Port Moresby"
+#~ msgstr "Port Moresby"
 
-msgid "Warsaw"
-msgstr "Varsovia"
+#~ msgid "Warsaw"
+#~ msgstr "Varsovia"
 
-msgid "Bucharest"
-msgstr "Bucarest"
+#~ msgid "Bucharest"
+#~ msgstr "Bucarest"
 
-msgid "Moscow"
-msgstr "Moscú"
+#~ msgid "Moscow"
+#~ msgstr "Moscú"
 
-msgid "Vladivostok"
-msgstr "Vladivostok"
+#~ msgid "Vladivostok"
+#~ msgstr "Vladivostok"
 
-msgid "Yakutsk"
-msgstr "Yakutsk"
+#~ msgid "Yakutsk"
+#~ msgstr "Yakutsk"
 
-msgid "Stockholm"
-msgstr "Estocolmo"
+#~ msgid "Stockholm"
+#~ msgstr "Estocolmo"
 
-msgid "Singapur"
-msgstr "Singapur"
+#~ msgid "Singapur"
+#~ msgstr "Singapur"
 
-msgid "Bratislava"
-msgstr "Bratislava"
+#~ msgid "Bratislava"
+#~ msgstr "Bratislava"
 
-msgid "Mogadishu"
-msgstr "Mogadiscio"
+#~ msgid "Mogadishu"
+#~ msgstr "Mogadiscio"
 
-msgid "Bangkok"
-msgstr "Bangkok"
+#~ msgid "Bangkok"
+#~ msgstr "Bangkok"
 
-msgid "Tunis"
-msgstr "Túnez"
+#~ msgid "Tunis"
+#~ msgstr "Túnez"
 
-msgid "Ankara"
-msgstr "Ankara"
+#~ msgid "Ankara"
+#~ msgstr "Ankara"
 
-msgid "Muş"
-msgstr "Muş"
+#~ msgid "Muş"
+#~ msgstr "Muş"
 
-msgid "Taipei"
-msgstr "Taipei"
+#~ msgid "Taipei"
+#~ msgstr "Taipei"
 
-msgid "Kyiv"
-msgstr "Kiev"
+#~ msgid "Kyiv"
+#~ msgstr "Kiev"
 
-msgid "Anchorage"
-msgstr "Anchorage"
+#~ msgid "Anchorage"
+#~ msgstr "Anchorage"
 
-msgid "Atlanta"
-msgstr "Atlanta"
+#~ msgid "Atlanta"
+#~ msgstr "Atlanta"
 
-msgid "Chicago"
-msgstr "Chicago"
+#~ msgid "Chicago"
+#~ msgstr "Chicago"
 
-msgid "Denver"
-msgstr "Denver"
+#~ msgid "Denver"
+#~ msgstr "Denver"
 
-msgid "El Paso"
-msgstr "El Paso"
+#~ msgid "El Paso"
+#~ msgstr "El Paso"
 
-msgid "Homer"
-msgstr "Homer"
+#~ msgid "Homer"
+#~ msgstr "Homer"
 
-msgid "Honolulu"
-msgstr "Honolulu"
+#~ msgid "Honolulu"
+#~ msgstr "Honolulu"
 
-msgid "Houston"
-msgstr "Houston"
+#~ msgid "Houston"
+#~ msgstr "Houston"
 
-msgid "Los Angeles"
-msgstr "Los Ángeles"
+#~ msgid "Los Angeles"
+#~ msgstr "Los Ángeles"
 
-msgid "Miami"
-msgstr "Miami"
+#~ msgid "Miami"
+#~ msgstr "Miami"
 
-msgid "Minneapolis"
-msgstr "Minneapolis"
+#~ msgid "Minneapolis"
+#~ msgstr "Minneapolis"
 
-msgid "New York City"
-msgstr "Nueva York"
+#~ msgid "New York City"
+#~ msgstr "Nueva York"
 
-msgid "Phoenix"
-msgstr "Phoenix"
+#~ msgid "Phoenix"
+#~ msgstr "Phoenix"
 
-msgid "San Francisco"
-msgstr "San Francisco"
+#~ msgid "San Francisco"
+#~ msgstr "San Francisco"
 
-msgid "Seattle"
-msgstr "Seattle"
+#~ msgid "Seattle"
+#~ msgstr "Seattle"
 
-msgid "West Palm Beach"
-msgstr "West Palm Beach"
+#~ msgid "West Palm Beach"
+#~ msgstr "West Palm Beach"
 
-msgid "Montevideo"
-msgstr "Montevideo"
+#~ msgid "Montevideo"
+#~ msgstr "Montevideo"
 
-msgid "Hanoi"
-msgstr "Hanoi"
+#~ msgid "Hanoi"
+#~ msgstr "Hanoi"
 
-msgid "Cape Town"
-msgstr "Ciudad del Cabo"
+#~ msgid "Cape Town"
+#~ msgstr "Ciudad del Cabo"
 
-msgid "Johannesburg"
-msgstr "Johannesburgo"
+#~ msgid "Johannesburg"
+#~ msgstr "Johannesburgo"
 
-msgid "Pretoria"
-msgstr "Pretoria"
+#~ msgid "Pretoria"
+#~ msgstr "Pretoria"
