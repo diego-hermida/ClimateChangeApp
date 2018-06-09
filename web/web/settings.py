@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 WSGI_APPLICATION = 'web.wsgi.application'
 ROOT_URLCONF = 'web.urls'
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['*']
 INTERNAL_IPS = ['localhost']
 
 
