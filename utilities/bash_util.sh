@@ -73,6 +73,6 @@ function show_ip_addresses () {
 
 # Displays application's version and exits.
 function show_app_version () {
-    echo "Climate Change App, version 2.6 (2018.4)"
+    echo "Climate Change App, version 3.2-beta (2018.6)"
     exit 0
 }
