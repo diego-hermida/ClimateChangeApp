@@ -126,7 +126,7 @@
                             {% endblocktrans %}
                         </p>
                         <span id="seaLevelRiseValueCount" class="ml-3 badge badge-pill badge-primary"
-                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              data-toggle="tooltip" data-placement="bottom" data-trigger="hover"
                               title="{% trans "Number of plotted values" %}"></span>
                     </div>
                     <p class="mt-4 text-justify text-muted">
@@ -252,7 +252,7 @@
                             {% endblocktrans %}
                         </p>
                         <span id="arcticIceExtentValueCount" class="ml-3 badge badge-pill badge-primary"
-                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              data-toggle="tooltip" data-placement="bottom" data-trigger="hover"
                               title="{% trans "Number of plotted values" %}"></span>
                     </div>
                     <p class="mt-4 text-justify text-muted">
@@ -332,7 +332,7 @@
                             {% endblocktrans %}
                         </p>
                         <span id="antarcticaIceExtentValueCount" class="ml-3 badge badge-pill badge-primary"
-                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              data-toggle="tooltip" data-placement="bottom" data-trigger="hover"
                               title="{% trans "Number of plotted values" %}"></span>
                     </div>
                     <p class="mt-4 text-justify text-muted">
@@ -354,7 +354,8 @@
                         <div class="col-12 col-sm-6 col-lg-12 p-0 d-flex flex-column align-items-center
                                     align-items-lg-start offset-lg-1">
                             <div class="d-flex align-items-end">
-                                <em id="antarcticaIceExtentCurrentValueArrow" class="pb-3 pr-2 text-danger fa fa-lg"></em>
+                                <em id="antarcticaIceExtentCurrentValueArrow"
+                                    class="pb-3 pr-2 text-danger fa fa-lg"></em>
                                 <h1 class="mb-0 display-4">
                                     <span id="antarcticaIceExtentCurrentValue" class="display-4"></span>
                                     <small><span class="lead">Gt</span></small>
@@ -436,7 +437,7 @@
                             {% endblocktrans %}
                         </p>
                         <span id="RPCValueCount" class="ml-3 badge badge-pill badge-primary"
-                              data-toggle="tooltip" data-placement="bottom"data-trigger="hover"
+                              data-toggle="tooltip" data-placement="bottom" data-trigger="hover"
                               title="{% trans "Number of plotted values" %}"></span>
                     </div>
                     <p class="text-muted mt-4 ml-lg-5">
@@ -506,7 +507,8 @@
                             </div>
                             <div class="card-footer px-0 pb-0 bg-white">
                                 {% blocktrans trimmed %}
-                                    <em class="fa fa-check-circle text-success px-1"></em> This is the only scenario that
+                                    <em class="fa fa-check-circle text-success px-1"></em> This is the only scenario
+                                    that
                                     meets the
                                     objective of maintaining the temperature of the Earth <strong>below 2ºC above
                                     pre-industrial levels</strong>.
@@ -886,10 +888,10 @@
             });
         }
     </script>
-    <script async src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
-    <script async type="text/javascript" src="http://nvd3.org/assets/lib/fisheye.js"></script>
-    <script async type="text/javascript" src="http://nvd3.org/assets/js/nv.d3.js"></script>
-    <script async type="text/javascript" src="http://nvd3.org/assets/lib/d3.v2.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+    <script type="text/javascript" src="http://nvd3.org/assets/lib/fisheye.js"></script>
+    <script type="text/javascript" src="http://nvd3.org/assets/js/nv.d3.js"></script>
+    <script type="text/javascript" src="http://nvd3.org/assets/lib/d3.v2.js"></script>
     <script async type="text/javascript" src="{% static 'js/global-line-chart.js' %}"></script>
     <script async type="text/javascript" src="{% static 'js/rpc-chart.js' %}"></script>
     <script async type="text/javascript" src="{% static 'js/number-util.js' %}"></script>

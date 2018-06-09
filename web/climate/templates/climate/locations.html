@@ -49,15 +49,6 @@
 {% block body_content %}
     <div class="text-dark">
         <div class="row m-2 justify-content-center align-items-center">
-            {% if from_geo %}
-                <div class="d-flex mx-auto mt-3 mb-4 alert alert-success alert-sized">
-                    <span class="mb-0">{% trans "Geolocation has been successfully enabled." %}</span>
-                    <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
-                            aria-label="Close">
-                        <span aria-hidden="true"> &times;</span>
-                    </button>
-                </div>
-            {% endif %}
             {% if from_search %}
                 {% if results > 1 %}
                     <div class="alert alert-primary alert-sized mx-3 mb-4" role="alert">
@@ -91,7 +82,25 @@
                         {% trans "Such location does not exist, or there is no data available for it." %}
                     </span>
                 </div>
-            {% elif not geolocation and not current_location.location %}
+            {% elif from_geo %}
+                {% if not location_error %}
+                    <div class="d-flex mx-auto mt-3 mb-4 alert alert-success alert-sized">
+                        <span class="mb-0">{% trans "Geolocation has been successfully enabled." %}</span>
+                        <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                                aria-label="Close">
+                            <span aria-hidden="true"> &times;</span>
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="d-flex mx-auto mt-3 mb-4 alert alert-warning alert-sized">
+                        <span class="mb-0">{% trans "Geolocation has been successfully enabled, but nearest location is not available." %}</span>
+                        <button type="button" class="close ml-3 align-self-center" data-dismiss="alert"
+                                aria-label="Close">
+                            <span aria-hidden="true"> &times;</span>
+                        </button>
+                    </div>
+                {% endif %}
+            {% elif not geolocation and not current_location.location and not location_error %}
                 <div class="alert alert-primary alert-sized" role="alert">
                     <span>
                         {% blocktrans trimmed %}
@@ -130,8 +139,8 @@
                         title="{% trans 'Show or hide the map' %}" onclick="toggleMapButton()">
                     <em class="fa fa-map-o"></em>
                 </button>
-                {% if geolocation %}
-                    <span class="d-inline-block" data-toggle="tooltip" data-placement="top"data-trigger="hover"
+                {% if geolocation or location_error %}
+                    <span class="d-inline-block" data-toggle="tooltip" data-placement="top" data-trigger="hover"
                           title="{% trans 'Geolocation is enabled' %}">
                         <button class="btn btn-primary" type="button" style="pointer-events: none" disabled>
                             <em class="fa fa-location-arrow"></em>
@@ -152,16 +161,22 @@
                     <div class="input-group">
                         <input type="text" name="loc"
                                class="form-control {% if validation_error %}is-invalid{% elif from_search %}is-valid {% else %}border-primary{% endif %}"
-                               required placeholder="{% trans 'Anytown' %}">
+                               required minlength="{{ min_keywords_length }}" placeholder="{% trans 'Anytown' %}">
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-primary" style="border-radius: 0 0.25rem 0.25rem 0;">
                                 <em class="fa fa-search"></em>
                             </button>
                         </div>
                         <div class="invalid-feedback">
-                            {% blocktrans trimmed with keywords=invalid_data %}
-                                Keywords are invalid: "{{ keywords }}"
-                            {% endblocktrans %}
+                            {% if length_error %}
+                                {% blocktrans trimmed with len=min_keywords_length %}
+                                    Keywords must be, at least, {{ len }} characters long.
+                                {% endblocktrans %}
+                            {% else %}
+                                {% blocktrans trimmed with keywords=invalid_data %}
+                                    Keywords are invalid: "{{ keywords }}"
+                                {% endblocktrans %}
+                            {% endif %}
                         </div>
                         <div class="valid-feedback">{% trans "Good!" %}</div>
                     </div>
@@ -246,7 +261,7 @@
 {% endblock body_content %}
 
 {% block final_initialization_block %}
-    {% if not geolocation %}
+    {% if not geolocation and not location_error %}
         <script>
             function findGeoLocation() {
                 var geoLocationErrorMessage = $("#geoLocationError");
@@ -257,7 +272,7 @@
                 }
                 geoLocationSpinner.removeClass('d-none');
                 //geolocation API options
-                var options = {
+                const options = {
                     maximumAge: 5 * 60 * 1000,
                     enableHighAccuracy: true,
                     timeout: 10000
@@ -378,16 +393,15 @@
     </script>
     <script async defer
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBNo6yTF0nscZFnVXknj_SjRjn-pV7suag&language={{ LANGUAGE_CODE }}&callback=initMap"></script>
-    {% if current_location.wunderground_data or current_location.location.air_pollution_data %}
-        <script async type="text/javascript" src="{% static 'js/number-util.js' %}"></script>
-        <script async src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
-        <script async type="text/javascript" src="http://nvd3.org/assets/lib/fisheye.js"></script>
-        <script async type="text/javascript" src="http://nvd3.org/assets/js/nv.d3.js"></script>
-        <script async type="text/javascript" src="http://nvd3.org/assets/lib/d3.v2.js"></script>
+    {% if current_location.location.wunderground_data or current_location.location.air_pollution_data %}
+        <script type="text/javascript" src="{% static 'js/number-util.js' %}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+        <script type="text/javascript" src="http://nvd3.org/assets/lib/fisheye.js"></script>
+        <script type="text/javascript" src="http://nvd3.org/assets/js/nv.d3.js"></script>
+        <script type="text/javascript" src="http://nvd3.org/assets/lib/d3.v2.js"></script>
         <link rel="stylesheet" href="http://nvd3.org/assets/css/nv.d3.css">
     {% endif %}
     {% if current_location.current_conditions or current_location.weather_forecast %}
-        {% load static %}
         <link rel="stylesheet" href="{% static 'css/weather-icons.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/weather-icons-wind.min.css' %}">
     {% endif %}
