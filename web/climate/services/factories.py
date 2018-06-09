@@ -4,8 +4,8 @@ from climate.config.config import WEB_CONFIG
 
 from .abstract_services import AbstractCountryService, AbstractGlobalClimateChangeService, AbstractLikeService, \
     AbstractLocationService
-from .cache_services import CacheCountryService, CacheGlobalClimateChangeService, CacheLikeService, CacheLocationService
-from .services import CountryService, GlobalClimateChangeService, LikeService, LocationService
+from .cache_service_impl import CacheCountryService, CacheGlobalClimateChangeService, CacheLikeService, CacheLocationService
+from .service_impl import CountryService, GlobalClimateChangeService, LikeService, LocationService
 
 
 class Factory(ABC):

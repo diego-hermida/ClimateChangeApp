@@ -1,9 +1,10 @@
 from abc import ABC, abstractstaticmethod
 
 import climate.dto as dto
+from climate.webmodels.models import ContactMessage
 from django.core.paginator import Paginator
 
-from data_conversion_subsystem.data.models import Location
+from data_conversion_subsystem.data.models import AirPollutionMeasure, CurrentConditionsObservation, Location
 
 
 class AbstractLikeService(ABC):
@@ -58,6 +59,31 @@ class AbstractLocationService(ABC):
 
     @staticmethod
     @abstractstaticmethod
+    def has_air_pollution_measures(location_id: int) -> bool:
+        raise NotImplemented
+
+    @staticmethod
+    @abstractstaticmethod
+    def get_single_air_pollution_measure(measure_id: int) -> AirPollutionMeasure:
+        raise NotImplemented
+
+    @staticmethod
+    @abstractstaticmethod
+    def has_historical_weather_measures(location_id: int) -> bool:
+        raise NotImplemented
+
+    @staticmethod
+    @abstractstaticmethod
+    def get_weather_forecast_data(location_id: int) -> (list, list):
+        raise NotImplemented
+
+    @staticmethod
+    @abstractstaticmethod
+    def get_single_current_conditions_measure(location_id: int) -> CurrentConditionsObservation:
+        raise NotImplemented
+
+    @staticmethod
+    @abstractstaticmethod
     def get_historical_weather_data(location_id: int, temperature_type: int, start_year: int, end_year: int,
                                     as_objects) -> (list, bool):
         raise NotImplemented
@@ -84,6 +110,21 @@ class AbstractCountryService(ABC):
     @abstractstaticmethod
     def get_data_from_indicators(country_id: str, indicators: list, start_year: int, end_year: int,
                                  null_values: bool) -> list:
+        raise NotImplemented
+
+    @staticmethod
+    @abstractstaticmethod
+    def count_monitored_locations(country_id: str) -> int:
+        raise NotImplemented
+
+    @staticmethod
+    @abstractstaticmethod
+    def fetch_monitored_location_id(country_id: str) -> int:
+        raise NotImplemented
+
+    @staticmethod
+    @abstractstaticmethod
+    def get_population_data(country_id: str) -> (int, int, int, int, float):
         raise NotImplemented
 
 
@@ -122,7 +163,7 @@ class AbstractMessageService(ABC):
 
     @staticmethod
     @abstractstaticmethod
-    def create_message(subject, email, name, message):
+    def create_message(subject, email, name, message) -> ContactMessage:
         raise NotImplemented
 
     @staticmethod
