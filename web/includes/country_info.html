@@ -93,7 +93,8 @@
             </div>
         </div> <!-- end Population info -->
     {% else %}
-        <div class="col">
+        {# Changing this CSS class FIXES [BUG-050] #}
+        <div class="col-md-6 my-auto">
             <div class="d-flex mx-auto m-2 justify-content-center align-items-center">
                 <div class="alert alert-primary alert-sized mx-3 mb-4" role="alert">
                     {% blocktrans trimmed with name=current_country.country.name %}
