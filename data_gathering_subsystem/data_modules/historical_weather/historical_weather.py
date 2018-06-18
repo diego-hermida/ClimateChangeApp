@@ -81,8 +81,8 @@ class _HistoricalWeatherDataCollector(DataCollector):
                 self.data = None
                 return
             if len(current_locations) < locations_count:
-                self.state['missing_data_ids'] = [x['_id'] for x in self.collection.find(fields={'_id': 1}, 
-                        sort='_id', conditions={'wunderground_loc_id': {'$ne': None}, '_id': {'$nin': 
+                self.state['missing_data_ids'] = [x['location_id'] for x in self.collection.find(fields={'location_id': 1},
+                        sort='location_id', conditions={'wunderground_loc_id': {'$ne': None}, 'location_id': {'$nin':
                         current_locations}})[0]]
                 self.logger.info('One or more locations must have been recently added, since not all locations have '
                         'recent historical data collected.')
@@ -92,8 +92,8 @@ class _HistoricalWeatherDataCollector(DataCollector):
                 target_date = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0,
                                                                 tzinfo=UTC) - datetime.timedelta(
                     days=(self.config['TIME_INTERVAL'] + self.config['TIMEDELTA']))
-                self.state['missing_data_ids'] = list(set([x['location_id'] for x in self.collection.find(sort='_id',
-                        fields={'location_id': 1}, conditions={'_id.date_utc': {'$not': {'$gt': target_date}}})[0]]))
+                self.state['missing_data_ids'] = list(set([x['location_id'] for x in self.collection.find(sort='location_id',
+                        fields={'location_id': 1}, conditions={'date_utc': {'$not': {'$gt': target_date}}})[0]]))
                 if self.state['missing_data_ids']:
                     self.logger.info(
                         '%d location(s) have missing recent data.' % (len(self.state['missing_data_ids'])))
@@ -124,8 +124,9 @@ class _HistoricalWeatherDataCollector(DataCollector):
                     self.state['current_date'] = self._query_date()
                 # Finding current location in database
                 self.collection.connect(self.config['LOCATIONS_MODULE_NAME'])
-                location = self.collection.find_one({'_id': self.state['missing_data_ids'][0]})
-                self.collection.connect(collection_name=self.module_name)
+                # Since the `_id` field is now an ObjectID, changing the search key to `location_id` FIXES [BUG-055].
+                location = self.collection.find_one({'location_id': self.state['missing_data_ids'][0]})
+                self.collection.close()
                 try:
                     tokens = [x for x in self.config['TOKENS'] if self.state['tokens'][x]['usable']]
                     token_count = len(tokens)
@@ -149,7 +150,7 @@ class _HistoricalWeatherDataCollector(DataCollector):
                                 temp = json.loads(r.content.decode('utf-8', errors='replace'))
                                 # Removing the "_id" field FIXES [BUG-032].
                                 if temp['history']['observations'] and temp['history']['dailysummary']:
-                                    temp['location_id'] = location['_id']
+                                    temp['location_id'] = location['location_id']
                                     date = datetime.datetime(year=int(temp['history']['date']['year']), month=int(temp[
                                             'history']['date']['mon']), day=int(temp['history']['date']['mday']),
                                             hour=0, minute=0, second=0, microsecond=0, tzinfo=UTC)

@@ -45,7 +45,8 @@ class _WeatherForecastDataCollector(DataCollector):
                 temp = json.loads(r.content.decode('utf-8', errors='replace'))
                 # Removing the "_id" field FIXES [BUG-032].
                 if temp['cnt'] > 0 and temp['list']:
-                    temp['location_id'] = location['_id']
+                    # Since the `_id` field is now an ObjectID, changing the key to `location_id` FIXES [BUG-055].
+                    temp['location_id'] = location['location_id']
                     temp['station_id'] = temp['city']['id']
                     self.data.append(temp)
             # Adding json.decoder.JSONDecodeError FIXES [BUG-020]

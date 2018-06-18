@@ -37,7 +37,8 @@ class _LocationsDataConverter(DataConverter):
         self.data = []
         for value in self.elements_to_convert:
             try:
-                id = value['_id']
+                # Since the `_id` field is now an ObjectID, changing the key to `location_id` FIXES [BUG-056].
+                id = value['location_id']
                 name = value['name'].strip()
                 country_id = value['country_code']
                 climate_zone = value['climate_zone']

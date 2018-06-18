@@ -27,7 +27,7 @@ class TestAirPollution(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -60,7 +60,7 @@ class TestAirPollution(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], 1)
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], 1)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -116,7 +116,7 @@ class TestAirPollution(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -143,7 +143,7 @@ class TestAirPollution(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'waqi_station_id': 1}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -170,8 +170,8 @@ class TestAirPollution(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
-                     {'_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}], None)
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
+                     {'location_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -204,8 +204,8 @@ class TestAirPollution(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
-                     {'_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}], None)
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'waqi_station_id': 1},
+                     {'location_id': 2, 'name': 'Brampton, Ontario', 'waqi_station_id': 2}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)

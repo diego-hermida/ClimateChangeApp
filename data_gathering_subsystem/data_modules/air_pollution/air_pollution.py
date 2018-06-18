@@ -45,7 +45,8 @@ class _AirPollutionDataCollector(DataCollector):
                 # Adding only verified data
                 # Removing the "_id" field FIXES [BUG-032].
                 if temp['status'] == 'ok':
-                    temp['location_id'] = location['_id']
+                    # Since the `_id` field is now an ObjectID, changing the key to `location_id` FIXES [BUG-055].
+                    temp['location_id'] = location['location_id']
                     temp['station_id'] = location['waqi_station_id']
                     temp['time_utc'] = int(temp['data']['time']['v']) * 1000
                     self.data.append(temp)

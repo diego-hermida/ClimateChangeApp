@@ -46,7 +46,8 @@ class _CurrentConditionsDataCollector(DataCollector):
                 temp = json.loads(r.content.decode('utf-8', errors='replace'))
                 # Removing the "_id" field FIXES [BUG-032].
                 if temp['coord'] and temp['weather'] and temp['main'] and temp['wind'] and temp['sys']:
-                    temp['location_id'] = location['_id']
+                    # Since the `_id` field is now an ObjectID, changing the key to `location_id` FIXES [BUG-055].
+                    temp['location_id'] = location['location_id']
                     temp['station_id'] = temp['id']
                     temp['time_utc'] = int(temp['dt']) * 1000
                     del temp['id']

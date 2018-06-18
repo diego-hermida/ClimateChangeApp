@@ -278,11 +278,9 @@ def data(module_name: str):
             'MONGODB_DATABASE'])
     data, next_start_index = collection.find(conditions={'_execution_id': execution_id} if execution_id else None,
             sort='_id', start_index=start_index, count=count)
+    # Ensuring that all IDs are JSON serializable FIXES [BUG-053]
     for value in data:
-        if isinstance(value['_id'], ObjectId):
-            value['_id'] = str(value['_id'])
-        else:
-            break  # All '_id' values have the same type in a collection.
+        value['_id'] = str(value['_id']) if isinstance(value['_id'], ObjectId) else value['_id']
     return app.response_class(response=_dumps({'data': data, 'next_start_index': next_start_index}),
             status=200, mimetype='application/json')
 

@@ -61,7 +61,7 @@ class _LocationsDataCollector(DataCollector):
             # Optimization: Only updating missing locations.
             missing_locations = self.collection.find(fields={'name': 1}, conditions={'$and': [{'waqi_station_id':
                     {'$ne': None}}, {'wunderground_loc_id': {'$ne': None}}, {'owm_station_id': {'$ne': None}}]},
-                    sort='_id')[0]
+                    sort='location_id')[0]
             self.collection.close()
             omitted = 0
             locations_length = len(self.config['LOCATIONS'])
@@ -93,8 +93,8 @@ class _LocationsDataCollector(DataCollector):
                         date = date_to_millis_since_epoch(datetime.datetime.strptime(fields[18], "%Y-%m-%d").replace(tzinfo=UTC))
                         location = {'name': fields[1], 'latitude': float(fields[4]), 'longitude': float(fields[5]),
                                 'country_code': fields[8], 'population': fields[14], 'elevation': {'value': fields[15],
-                                'units': MeasureUnits.m}, 'timezone': fields[17], 'last_modified': date, '_id':
-                                loc['_id']}
+                                'units': MeasureUnits.m}, 'timezone': fields[17], 'last_modified': date, 'location_id':
+                                loc['location_id']}
                         loc['name'] = location['name']
                         if self._is_selected_location((loc['name'], loc['country_code'], loc['latitude'],
                                 loc['longitude']), (location['name'], location['country_code'], location['latitude'],
@@ -221,7 +221,9 @@ class _LocationsDataCollector(DataCollector):
         """
         super()._save_data()
         if self.data:
-            result = self.collection.bulk_write([UpdateOne({'_id': value['_id']}, update={'$set': value}, upsert=True)
+            # Changing the condition of upsert operation FIXES [BUG-054].
+            result = self.collection.bulk_write([UpdateOne({'location_id': value['location_id']},
+                                                           update={'$set': value}, upsert=True)
                                                  for value in self.data])
             self.state['inserted_elements'] = result.bulk_api_result['nInserted'] + result.bulk_api_result['nMatched'] \
                     + result.bulk_api_result['nUpserted']

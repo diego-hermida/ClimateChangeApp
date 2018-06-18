@@ -75,17 +75,17 @@ class TestHistoricalWeather(TestCase):
         mock_collection = Mock()
         mock_collection.close.return_value = None
         mock_collection.count.return_value = 10
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2},
-                     {'_id': 3, 'name': 'City 3', 'wunderground_loc_id': 3},
-                     {'_id': 4, 'name': 'City 4', 'wunderground_loc_id': 4},
-                     {'_id': 5, 'name': 'City 5', 'wunderground_loc_id': 5},
-                     {'_id': 6, 'name': 'City 6', 'wunderground_loc_id': 6},
-                     {'_id': 7, 'name': 'City 7', 'wunderground_loc_id': 7},
-                     {'_id': 8, 'name': 'City 8', 'wunderground_loc_id': 8},
-                     {'_id': 9, 'name': 'City 9', 'wunderground_loc_id': 9},
-                     {'_id': 10, 'name': 'City 10', 'wunderground_loc_id': 10}], None)
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'location_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2},
+                     {'location_id': 3, 'name': 'City 3', 'wunderground_loc_id': 3},
+                     {'location_id': 4, 'name': 'City 4', 'wunderground_loc_id': 4},
+                     {'location_id': 5, 'name': 'City 5', 'wunderground_loc_id': 5},
+                     {'location_id': 6, 'name': 'City 6', 'wunderground_loc_id': 6},
+                     {'location_id': 7, 'name': 'City 7', 'wunderground_loc_id': 7},
+                     {'location_id': 8, 'name': 'City 8', 'wunderground_loc_id': 8},
+                     {'location_id': 9, 'name': 'City 9', 'wunderground_loc_id': 9},
+                     {'location_id': 10, 'name': 'City 10', 'wunderground_loc_id': 10}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 10, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -111,6 +111,7 @@ class TestHistoricalWeather(TestCase):
                                               "5e1dd9d990fef0f8": {"daily_requests": 1, "usable": False}}}
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = 1
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -140,6 +141,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_check'] = True
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -163,6 +165,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_check'] = True
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -184,6 +187,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_check'] = True
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -200,10 +204,11 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     def test_correct_data_collection(self, mock_requests):
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {
@@ -243,7 +248,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {
@@ -254,6 +259,7 @@ class TestHistoricalWeather(TestCase):
         response.content = DATA
         # Actual execution
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1]
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -285,7 +291,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
@@ -294,6 +300,7 @@ class TestHistoricalWeather(TestCase):
         response.content = DATA
         # Actual execution
         self.data_collector.config['MAX_DAILY_REQUESTS_PER_TOKEN'] = 0
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1]
         self.data_collector.collection = mock_collection
         self.data_collector.run()
@@ -318,6 +325,7 @@ class TestHistoricalWeather(TestCase):
     @mock.patch('requests.get')
     def test_update_frequency_is_reset_when_tokens_are_usable_again(self, mock_requests):
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.config['STATE_STRUCT'] = {'update_frequency': {'value': 1, 'units': 'day'},
                                                       'last_request': None, 'data_elements': 0, 'inserted_elements': 0,
                                                       'restart_required': False, 'last_error': None, 'error': None,
@@ -339,7 +347,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {
@@ -364,7 +372,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {
@@ -403,7 +411,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {
@@ -441,7 +449,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
@@ -451,6 +459,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -474,7 +483,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
@@ -484,6 +493,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1]
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -502,6 +512,7 @@ class TestHistoricalWeather(TestCase):
     def test_data_collection_with_no_locations_will_schedule_check(self):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.run()
         self.assertTrue(self.data_collector.finished_execution())
         self.assertTrue(self.data_collector.successful_execution())
@@ -520,7 +531,7 @@ class TestHistoricalWeather(TestCase):
         # Mocking MongoDBCollection: initialization and operations
         mock_collection = Mock()
         mock_collection.close.return_value = None
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville',
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville',
                                                                          'wunderground_loc_id': 1}
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
@@ -529,6 +540,7 @@ class TestHistoricalWeather(TestCase):
         response.content = MISSING_DATA
         # Actual execution
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -546,9 +558,9 @@ class TestHistoricalWeather(TestCase):
         mock_collection = Mock()
         mock_collection.close.return_value = None
         mock_collection.count.return_value = 2
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'location_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 98, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -557,6 +569,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -574,9 +587,9 @@ class TestHistoricalWeather(TestCase):
         mock_collection = Mock()
         mock_collection.close.return_value = None
         mock_collection.count.return_value = 2
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'location_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 0, 'nMatched': 0, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -585,6 +598,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -602,9 +616,9 @@ class TestHistoricalWeather(TestCase):
         mock_collection = Mock()
         mock_collection.close.return_value = None
         mock_collection.count.return_value = 2
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'location_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 95, 'nMatched': 5, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -613,6 +627,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1, 2]
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
@@ -631,9 +646,9 @@ class TestHistoricalWeather(TestCase):
         mock_collection = Mock()
         mock_collection.close.return_value = None
         mock_collection.count.return_value = 2
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
-        mock_collection.find.return_value = ([{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
-                     {'_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
+        mock_collection.find.return_value = ([{'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1},
+                     {'location_id': 2, 'name': 'Brampton', 'wunderground_loc_id': 2}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 1, 'nMatched': 5, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -667,9 +682,9 @@ class TestHistoricalWeather(TestCase):
         mock_collection = Mock()
         mock_collection.close.return_value = None
         mock_collection.count.return_value = 1
-        mock_collection.find_one.return_value = {'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
+        mock_collection.find_one.return_value = {'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}
         mock_collection.find.return_value = (
-            [{'_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}], None)
+            [{'location_id': 1, 'name': 'Belleville', 'wunderground_loc_id': 1}], None)
         mock_collection.bulk_write.return_value = insert_result = Mock()
         insert_result.bulk_api_result = {'nInserted': 95, 'nMatched': 5, 'nUpserted': 0}
         # Mocking requests (get and response content)
@@ -678,6 +693,7 @@ class TestHistoricalWeather(TestCase):
         # Actual execution
         self.data_collector = historical_weather.instance(log_to_stdout=False, log_to_telegram=False)
         self.data_collector.config['STATE_STRUCT']['missing_data_ids'] = [1]
+        self.data_collector.config['MAX_REQUESTS_PER_MINUTE_AND_TOKEN'] = 10
         self.data_collector.collection = mock_collection
         self.data_collector.run()
         self.assertTrue(mock_collection.method_calls)
