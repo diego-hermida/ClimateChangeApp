@@ -1,5 +1,4 @@
 from django.conf.urls import url
-
 from . import views
 
 urlpatterns = [
@@ -18,6 +17,7 @@ urlpatterns = [
     url(r'global', views.global_change, name='global'),
     url(r'locations/(\d+)', views.locations__single, name='locations__single'),
     url(r'locations/air-pollution-data', views.locations__air_pollution, name='locations__air_pollution'),
+    url(r'locations/all-data', views.locations__all_as_json, name='locations__all_as_json'),
     url(r'locations/list-all', views.locations__list, name='locations__list'),
     url(r'locations/all', views.locations__all, name='locations__all'),
     url(r'locations/enable-geo', views.locations__geolocation, name='locations__geolocation'),

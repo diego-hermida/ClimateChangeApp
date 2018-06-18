@@ -7,11 +7,13 @@ from .services.factories import LikeServiceFactory
 like_service = LikeServiceFactory.get_instance()
 
 
-def base(request):
+def base(request) -> dict:
     """
-        Menu links and "Like" counter are passed to every page.
-        :param request: Request to be processed
-        :return: A 'dict' object, with the links and the "Like" counter.
+        Prepares values that might be used for multiple pages.
+        When there is computation, a callable object is passed, instead of the computation result. This avoids wasting
+        resources.
+        :param request: Request to be processed.
+        :return: A `dict` object, containing all the values.
     """
 
     def get_historical_weather_max_days() -> int:
@@ -44,9 +46,17 @@ def base(request):
                 {'url': '/admin/messages', 'name': _('Manage messages')}]
 
     def get_like_given() -> bool:
+        """
+            Depending on these value, the "like" button will be available to be clicked.
+            :return: Whether the user has already given "like" to the app.
+        """
         return request.session.get('like_given', False)
 
     def get_preselected_regions() -> list:
+        """
+            Retrieves a list of pre-selected regions, so that the user can select them at the locations page.
+            :return: The list of regions. Each region is represented as a `dict` with two keys: "name" and "url".
+        """
         base = '/countries/'
         return sorted([{'name': _('World'), 'url': base + '1W'}, {'name': _('Africa'), 'url': base + 'A9'},
                        {'name': _('European Union'), 'url': base + 'EU'}, {'name': _('Euro area'), 'url': base + 'XC'},
@@ -62,6 +72,10 @@ def base(request):
                       key=lambda v: unidecode.unidecode(v['name']))
 
     def get_preselected_income_levels() -> list:
+        """
+            Retrieves a list of pre-selected income levels, so that the user can select them at the locations page.
+            :return: The list of income levels. Each region is represented as a `dict` with two keys: "name" and "url".
+        """
         base = '/countries/'
         return sorted(
                 [{'name': _('High income'), 'url': base + 'XD'}, {'name': _('Lower middle income'), 'url': base + 'XN'},

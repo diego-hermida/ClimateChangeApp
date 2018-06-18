@@ -113,7 +113,7 @@ class LikeService(AbstractLikeService):
             return False
 
     @staticmethod
-    def get_like_count():
+    def get_like_count() -> int:
         try:
             return LikeCount.objects.get(pk=0).counter  # Fetching the current "like" count from database
         except LikeCount.DoesNotExist:
@@ -155,7 +155,8 @@ class LocationService(AbstractLocationService):
                 LocationService.get_single_air_pollution_measure(location.air_pollution_last_measure_id)
             current_conditions = None if not location.owm_data else \
                 LocationService.get_single_current_conditions_measure(location.id)
-            weather_forecast = [], [] if not location.owm_data else LocationService.get_weather_forecast_data(
+            # Putting this parentheses FIXES [BUG-051]
+            weather_forecast = ([], []) if not location.owm_data else LocationService.get_weather_forecast_data(
                     location.id)
             return dto.LocationDto(location, has_air_pollution_data, has_historical_weather_data,
                                    air_pollution_last_measure, current_conditions, weather_forecast)
@@ -314,13 +315,13 @@ class GlobalClimateChangeService(AbstractGlobalClimateChangeService):
                 SeaLevelRiseMeasure.objects.values_list('timestamp_epoch', 'value', 'year').order_by('timestamp_epoch'))
 
     @staticmethod
-    def get_ice_extent_data():
+    def get_ice_extent_data() -> list:
         return list(
             OceanMassMeasure.objects.filter().values_list('timestamp_epoch', 'mass', 'year', 'type', 'trend').order_by(
                 'timestamp_epoch'))
 
     @staticmethod
-    def get_future_emissions_data():
+    def get_future_emissions_data() -> list:
         return list(RpcDatabaseEmission.objects.filter(
                 scenario__in=[RpcDatabaseEmission.RPC_26, RpcDatabaseEmission.RPC_45, RpcDatabaseEmission.RPC_60,
                               RpcDatabaseEmission.RPC_85]).values_list('year', 'co2', 'scenario').order_by('scenario',
@@ -405,7 +406,7 @@ class MessageService(AbstractMessageService):
             return None, None
 
     @staticmethod
-    def count_unread_messages():
+    def count_unread_messages() -> int:
         try:
             return ContactMessage.objects.filter(replied=False, dismissed=False).count()
         except Exception:
