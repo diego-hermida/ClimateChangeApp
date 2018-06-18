@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        {% block page_title %}
+        {% endblock page_title %}
+    </title>
+</head>
+
+{# Load the tag library #}
+{% load bootstrap4 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% load i18n %}
+
+<style>
+    .big-text {
+        font-size: 30vw;
+    }
+
+    @media (min-width: 768px) {
+        .big-text {
+            font-size: 20vw;
+        }
+    }
+
+    .btn-rounded {
+        -webkit-border-radius: 24px;
+        -moz-border-radius: 24px;
+        border-radius: 24px;
+    }
+</style>
+
+<body>
+<div class="container align-items-center justify-content-center">
+    <div class="d-flex flex-column mt-4 mt-md-5 my-auto">
+        <div class="mx-auto">
+            <span class="big-text">
+                {% block code %}
+                {% endblock code %}
+            </span>
+        </div>
+        <div class="mx-auto mt-4">
+            <a class="btn btn-primary btn-rounded" href="/">
+                {% trans "Take me back to home" %}
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

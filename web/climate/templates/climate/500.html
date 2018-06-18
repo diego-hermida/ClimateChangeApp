@@ -1,0 +1,11 @@
+{% extends "climate/base_error.html" %}
+
+{% load i18n %}
+
+{% block page_title %}
+    {% trans "500 - Internal server error" %}
+{% endblock page_title %}
+
+{% block code %}
+    500
+{% endblock code %}
