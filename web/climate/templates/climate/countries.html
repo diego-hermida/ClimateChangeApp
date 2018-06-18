@@ -390,6 +390,7 @@
                     var area = map.getObjectById(country);
                     if (area !== undefined) {
                         area.showAsSelected = true;
+                        map.zoomToGroup([area]);
                         map.returnInitialColor(area);
                     }
                 }
