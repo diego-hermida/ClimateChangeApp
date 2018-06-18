@@ -65,8 +65,9 @@
                         </ul>
                         {% if more_results %}
                             <p>
-                                {% blocktrans trimmed with size=locations|length %}
-                                    (showing only the first {{ size }} results)
+                                {% blocktrans trimmed %}
+                                    A complete list of monitored locations is available
+                                    <a href="/locations/list-all">here</a>.
                                 {% endblocktrans %}
                             </p>
                         {% endif %}
@@ -156,8 +157,7 @@
                 {% endif %}
             </div>
             <div class="col-sm">
-                <form class="search d-inline" action="/locations/search"
-                      method='post'>
+                <form class="search d-inline" action="/locations/search" method='post'>
                     <div class="input-group">
                         <input type="text" name="loc"
                                class="form-control {% if validation_error %}is-invalid{% elif from_search %}is-valid {% else %}border-primary{% endif %}"
@@ -321,11 +321,41 @@
         </script>
     {% endif %}
     <script>
+        var map;
+        {% if not current_location.location %}
+            $(document).ready(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "/locations/all-data",
+                    data: null,
+                    beforeSend: function (xhr, settings) {
+                        xhr.setRequestHeader("X-CSRFToken", jQuery("[name=csrfmiddlewaretoken]").val());
+                    },
+                    success: function (data) {
+                        const locations = data.map_locations;
+                        var marker, i;
+                        for (i = 0; i < locations.length; i++) {
+                            marker = new google.maps.Marker({
+                                position: new google.maps.LatLng(locations[i].latitude, locations[i].longitude),
+                                map: map,
+                                title: locations[i].name,
+                                url: '/locations/' + locations[i].id,
+                                icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                            });
+                            google.maps.event.addListener(marker, 'click', function () {
+                                window.location.href = this.url;
+                            });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
         // Callback for the Google Maps API.
         function initMap() {
             try {
                 {% if current_location.location %}
-                    var map = new google.maps.Map(document.getElementById('googleMapsMap'), {
+                    map = new google.maps.Map(document.getElementById('googleMapsMap'), {
                         zoom: 10,
                         center: {
                             'lat': {{ current_location.location.latitude|safe }},
@@ -340,32 +370,10 @@
                         icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
                     });
                 {% else %}
-                    var map = new google.maps.Map(document.getElementById('googleMapsMap'), {
+                    map = new google.maps.Map(document.getElementById('googleMapsMap'), {
                         zoom: 2,
                         center: {lat: 20, lng: 0}
                     });
-                    var locations = [];
-                    {% for loc in map_locations %}
-                        locations.push({
-                            'name': '{{ loc.name }}',
-                            'latitude': {{ loc.latitude|safe }},
-                            'longitude': {{ loc.longitude|safe }},
-                            'url': '/locations/{{ loc.id }}'
-                        });
-                    {% endfor %}
-                    var marker, i;
-                    for (i = 0; i < locations.length; i++) {
-                        marker = new google.maps.Marker({
-                            position: new google.maps.LatLng(locations[i]['latitude'], locations[i]['longitude']),
-                            map: map,
-                            title: locations[i]['name'],
-                            url: locations[i]['url'],
-                            icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
-                        });
-                        google.maps.event.addListener(marker, 'click', function () {
-                            window.location.href = this.url;
-                        });
-                    }
                 {% endif %}
                 {% if geolocation %}
                     new google.maps.Marker({
