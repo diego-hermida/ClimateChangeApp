@@ -8,11 +8,13 @@ from django.utils.translation import ugettext_lazy as _
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 WSGI_APPLICATION = 'web.wsgi.application'
 ROOT_URLCONF = 'web.urls'
+# Changing this setting to '*' FIXES [BUG-049]
 ALLOWED_HOSTS = ['*']
 INTERNAL_IPS = ['localhost']
+DEBUG = False
 
 
-# Application definition
+# App definitions
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.admin',
@@ -27,6 +29,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'bootstrap_daterangepicker',
 ]
+
 
 # Middleware definition
 MIDDLEWARE = [
@@ -87,7 +90,6 @@ CACHES = {
 
 # Security
 SECURE_SSL_REDIRECT = False
-DEBUG = False
 SESSION_COOKIE_HTTPONLY = False
 CSRF_COOKIE_HTTPONLY = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
@@ -100,6 +102,7 @@ TEST_XML_RUNNER = 'utilities.xmltestrunner.XMLTestRunner'
 TEST_OUTPUT_VERBOSE = 2
 TEST_OUTPUT_DIR = GLOBAL_CONFIG['TEST_RESULTS_DIR']
 TEST_OUTPUT_FILE_NAME = WEB_CONFIG['TESTS_FILENAME']
+
 
 # Session settings
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&k3q+pmu)5%asj6yjpkag')
