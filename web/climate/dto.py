@@ -8,6 +8,15 @@ class LocationDto:
 
     def __init__(self, location, has_air_pollution_data, has_historical_weather_data, air_pollution_last_measure,
                  current_conditions, weather_forecast):
+        """
+            Initializes a LocationDto object. All of these fields can be obtained by invoking the LocationService.
+            :param location: A Location object.
+            :param has_air_pollution_data: Whether the Location has air pollution data or not.
+            :param has_historical_weather_data: Whether the Location has historical weather data or not.
+            :param air_pollution_last_measure: An AirPollutionMeasure object. This must be the latest available measure.
+            :param current_conditions: A CurrentConditionsObservation object.
+            :param weather_forecast: A list of WeatherForecastObservation objects, with all the forecast data.
+        """
         self.location = location
         self.current_conditions = current_conditions
         self.weather_forecast = LocationDto.normalize_weather_forecast_data(weather_forecast[0], weather_forecast[1])
@@ -20,6 +29,14 @@ class LocationDto:
         self.i18n()
 
     def i18n(self):
+        """
+            This method encapsulates the internationalization of all translatable fields. These are:
+                - Descriptions of metheorological phenomena.
+                - Name of the Location.
+                - Name of the Country.
+                - Name of the Income level.
+                - Name of the Country region.
+        """
         if self.current_conditions:
             self.current_conditions.weather.description = _(self.current_conditions.weather.description)
         if self.location:
@@ -30,6 +47,11 @@ class LocationDto:
 
     @staticmethod
     def normalize_last_air_pollution_measure(measure):
+        """
+            Converts an AirPollutionMeasure object to a `dict`, containing the required values for displaying its data.
+            :param measure: An AirPollutionMeasure object.
+            :return: A `dict` object.
+        """
         return {'last_measure': {'last_modified': measure.timestamp,
                                  'dominant_pollutant': {'value': measure.get_dominant_pollutant_value_display(),
                                                         'color': measure.get_dominant_pollutant_color_display(),
@@ -78,6 +100,18 @@ class AirPollutionDto:
 
     @staticmethod
     def get_statistics(measures: list) -> list:
+        """
+            Given a list of AirPollution statistics, computes them to retrieve the max, min and average values for all
+            pollutant.
+            Each number represents an AQI level, and has a related color to describe it. These colors are also added
+            here.
+            :param measures: A list of air pollution statistics. This method expects a list of tuples. Each tuple
+                             represents the values for all pollutants, as follows: (x.timestamp_epoch, x.co_aqi,
+                             x.no2_aqi, x.o3_aqi, x.pm25_aqi, x.pm10_aqi).
+            :return: A list, containing the max, min and average values for all pollutants. The concrete values are
+                     `dict` objects, with 3 keys: 'v' for the value, 'bg' for the background color and 't' for the color
+                     of the text.
+        """
         if not measures:
             return []
         stats = [[0, None, None, 0], [0, None, None, 0], [0, None, None, 0], [0, None, None, 0], [0, None, None, 0]]
@@ -100,12 +134,27 @@ class AirPollutionDto:
         return stats
 
     @staticmethod
-    def _with_color(value):
+    def _with_color(value: float):
+        """
+            Given a numeric value, converts this value to a `dict` with 3 keys: 'v' for the value, 'bg' for the
+            background color and 't' for the color of the text.
+            :param value: A number, representing an pollutant value, using the AQI scale.
+            :return: A `dict` object.
+        """
         bg, t = AirPollutionMeasure.get_colors_display(value)
         return {'v': value, 'bg': bg, 't': t}
 
     @staticmethod
     def get_pollutant_statistics(dom_pollutants: list) -> (int, list):
+        """
+            Given a list of dominant pollutants, retrieves the number of measures and a list, containing the percentage
+            for each dominant pollutant.
+            :param dom_pollutants: A list of dominant pollutants. These must be values of
+                                   AirPollutionMeasure.POLLUTANT_TYPE.
+            :return: An integer, as the count of all pollutant measures; and a list of percentages. Each percentage is
+                     represented as a `dict` object, with 2 keys: 'l' for the label of the pollutant (representative
+                     name) and 'v' for the percentage.
+        """
         if dom_pollutants is None:
             return []
         temp = {}
@@ -126,6 +175,18 @@ class HistoricalWeatherDto:
 
     @staticmethod
     def normalize_data(measures: list) -> (int, int, int, int, int, dict):
+        """
+            Normalizes historical weather data. To do so, computes:
+                - The number of measures.
+                - The date of the first value.
+                - The date of the last value.
+                - The year of the first value.
+                - The year of the last value.
+                - A `dict` containing all measures.
+            :param measures: A list of HistoricalWeatherObservation values, as `tuple` objects. Each tuple is composed
+                             by a timestamp and the temperature (max, min or avg).
+            :return: The computed elements, described before.
+        """
         if not measures:
             return 0, None, None, None, None, {}
         return len(measures), measures[0][0], measures[-1][0], parse_date_utc(measures[0][0]).year, parse_date_utc(
@@ -136,6 +197,11 @@ class SeaLevelRiseDto:
 
     @staticmethod
     def get_last_year_stats(data: list) -> (int, float):
+        """
+            Retrieves the evolution of sea level rise since the last year.
+            :param data: A list of SeaLevelRiseMeasure objects.
+            :return: A `tuple`, containing the last year and the sea level rise evolution since the previous year.
+        """
         if not data:
             return None, None
         last_year = data[-1][2]
@@ -156,6 +222,11 @@ class OceanMassMeasureDto:
 
     @staticmethod
     def normalize_data(data: list) -> (list, list):
+        """
+            Separates Arctic and Antarctica data.
+            :param data: A list of OceanMass measures.
+            :return: Two lists, one with Arctic values and another one with Antarctica values.
+        """
         arctic_data = []
         antarctica_data = []
         for v in data:
@@ -170,6 +241,12 @@ class RpcDatabaseEmissionDto:
 
     @staticmethod
     def normalize_data(data: list) -> dict:
+        """
+            Normalizes RpcDatabase data. To do so, values are separated according to the scenarios.
+            Also, metadata such as the count of data, the start year and the end year are computed.
+            :param data: A list of RpcDatabaseEmsision objects.
+            :return: A `dict` containing the data described above.
+        """
         if not data:
             return {}
         scenarios = RpcDatabaseEmission.get_scenarios_display()
@@ -194,6 +271,13 @@ class RpcDatabaseEmissionDto:
 class CountryDto:
 
     def __init__(self, country, monitored_locations, monitored_location_id, population_data):
+        """
+            Initializes a CountryDto object. All of these fields can be obtained by invoking the CountryService.
+            :param country: A Country object.
+            :param monitored_locations: The amount of monitored locations.
+            :param monitored_location_id: The ID of the monitored location, if the amount of monitored locations is 1.
+            :param population_data: A `tuple`, containing data of the evolution of population for the country.
+        """
         self.country = country
         self.monitored_locations = monitored_locations
         self.location_id = monitored_location_id
@@ -201,6 +285,12 @@ class CountryDto:
         self.i18n()
 
     def i18n(self):
+        """
+            This method encapsulates the internationalization of all translatable fields. These are:
+                - Name of the Country.
+                - Name of the Income level.
+                - Name of the Country region.
+        """
         self.country.name = _(self.country.name)
         self.country.income_level.name = _(self.country.income_level.name)
         self.country.region.name = _(self.country.region.name)
@@ -210,6 +300,11 @@ class CountryIndicatorDto:
 
     @staticmethod
     def normalize_data(measures: list) -> (int, int, int, dict):
+        """
+            Normalizes CountryIndicators' data.
+            :param measures: A list of `tuple` objects. Each one contains the indicator ID, the value and the year.
+            :return: A `tuple`, containing the amount of values, the first and last year, and a `dict` with all values.
+        """
         if not measures:
             return 0, None, None, None, None, {}
         return len(measures), parse_date_utc(measures[0][0]).year, parse_date_utc(measures[-1][0]).year, {
@@ -217,6 +312,12 @@ class CountryIndicatorDto:
 
     @staticmethod
     def get_pollution_statistics_and_normalize_data(measures: list) -> dict:
+        """
+            Computes pollution statistics and normalizes data. Aggregates the sum of emissions, and the value for the
+            last year. Also, metadata such as max, min and avg values are computed.
+            :param measures: A list of CountryIndicator objects.
+            :return: A `dict` containing all the stats.
+        """
         if not measures:
             return {'data': [], 'stats': [None, None, None], 'total_data': 0, 'start_year': None, 'end_year': None}
         data = {'data': [(x.year, x.value) for x in measures], 'total_data': len(measures),
@@ -237,6 +338,12 @@ class CountryIndicatorDto:
 
     @staticmethod
     def get_energy_statistics_and_normalize_data(measures: list, indicators: list) -> dict:
+        """
+            Computes energy statistics and normalizes data. Separates values by energy source, and the value for the
+            last year. Also, metadata such as the first and last years are computed.
+            :param measures: A list of CountryIndicator objects.
+            :return: A `dict` containing all the stats.
+        """
         if not measures:
             return {'data': None, 'total_data': 0, 'start_year': None, 'end_year': None}
         _values = {indicator: [] for indicator in indicators}
@@ -264,6 +371,12 @@ class CountryIndicatorDto:
 
     @staticmethod
     def get_environment_statistics_and_normalize_data(measures: list, indicators: list, normalized_names) -> dict:
+        """
+            Computes environment statistics and normalizes data. Separates values by indicator. Also, metadata such as
+            the first and last years are computed.
+            :param measures: A list of CountryIndicator objects.
+            :return: A `dict` containing all the stats.
+        """
         if not measures:
             return {'data': None, 'total_data': 0}
         _values = {indicator: [] for indicator in indicators}
