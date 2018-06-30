@@ -6,6 +6,7 @@ import zipfile
 from io import BytesIO
 from pymongo import UpdateOne
 from pytz import UTC
+from data_gathering_subsystem.config.config import DGS_CONFIG
 from data_gathering_subsystem.data_collector.data_collector import DataCollector
 from unidecode import unidecode
 from utilities.util import check_coordinates, date_to_millis_since_epoch, deserialize_date, MeasureUnits, \
@@ -161,24 +162,25 @@ class _LocationsDataCollector(DataCollector):
             multiple.clear()
 
             # Finding Station ID for Open Weather Map API requests
-            r = requests.get(self.config['URL_OPEN_WEATHER'])
-            open_weather_data = r.content.decode('utf-8', errors='replace').split('\n')
+            import gzip
+            with gzip.open(DGS_CONFIG['ROOT_DATA_GATHERING_SUBSYSTEM_FOLDER'] + self.config['OWM_FILEPATH']) as f:
+                open_weather_data = json.loads(f.read().decode('utf-8', errors='replace'))
             # Sorting locations by country code (as in 'open_weather_data')
             locations = sorted([x for x in list(self.config['LOCATIONS'].values()) if not x.get('missing', True)], key=lambda k: k['country_code'])
             for loc in locations:
                 loc['name'] = unidecode(loc['name'])
-            for line in open_weather_data[1:-1]:
-                values = line.split('\t')
+            for file_location in open_weather_data:
                 loc = None
                 for location in locations:
-                    if location['name'].split()[0] in values[1]:
+                    if location['name'].split()[0] in file_location['name']:
                         loc = location
                         break
                 if loc is None:
                     continue
                 # Filtering results by proximity and country, to avoid saving false positives
-                loc['owm_station_id'] = values[0] if check_coordinates(loc['latitude'], loc['longitude'], float(
-                        values[2]), float(values[3]), margin=0.35) and loc['country_code'] == values[4] else None
+                loc['owm_station_id'] = file_location['id'] if check_coordinates(loc['latitude'], loc['longitude'],
+                        float(file_location['coord']['lat']), float(file_location['coord']['lon']), margin=0.35) \
+                        and loc['country_code'] == file_location['country'] else None
                 if loc['owm_station_id']:
                     locations.remove(loc)  # Removing found location (so that false positives cannot overwrite the ID)
             for loc in self.data:
@@ -259,3 +261,6 @@ class _LocationsDataCollector(DataCollector):
             :rtype: bool
         """
         return loc[0] == data[0] and loc[1] == data[1] and check_coordinates(loc[2], loc[3], data[2], data[3], margin)
+
+if __name__ == '__main__':
+    instance().run()
