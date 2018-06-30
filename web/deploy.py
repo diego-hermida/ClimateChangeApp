@@ -34,7 +34,8 @@ def _execute_tests(xml_results=False) -> bool:
         settings.TEST_RUNNER = web_settings.TEST_XML_RUNNER
     test_runner_class = get_runner(settings)
     runner = test_runner_class(verbosity=2, failfast=True)
-    failures = runner.run_tests(["climate"])
+    # Changing "climate" to "climate.test" FIXES [BUG-057]
+    failures = runner.run_tests(["climate.test"])
     return failures == 0
 
 
