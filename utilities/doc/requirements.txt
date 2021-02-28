@@ -1,6 +1,6 @@
 argparse
 coverage
-Django==1.11.7
+Django==1.11.29
 psycopg2cffi
 pymongo
 python-dateutil
