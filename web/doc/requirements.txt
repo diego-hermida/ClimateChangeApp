@@ -1,7 +1,7 @@
 argparse
 coverage
 django-bootstrap4
-django==2.0.2
+django==2.2.24
 django-bootstrap-daterangepicker
 django-bootstrap4
 django-debug-toolbar
